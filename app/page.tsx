@@ -217,7 +217,7 @@ interface Education {
   institution: string;
   degree: string;
   field: string;
-  period: string; // e.g., "2016 - 2020"
+  period: string;
   description: string;
   logo?: string; // URL or path to logo
   achievements?: string[];
