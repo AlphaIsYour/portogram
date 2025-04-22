@@ -136,7 +136,6 @@ library.add(
   fas.faThumbsUp,
   fas.faClockRotateLeft,
 
-  // Brand Icons (keep adding as needed)
   fab.faGithub,
   fab.faTwitter,
   fab.faLinkedin,
