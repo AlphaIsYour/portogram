@@ -197,7 +197,7 @@ interface Skill {
     | "library"
     | "other";
   description: string;
-  years?: number; // Optional: Years of experience
+  years?: number;
   projectsUsedIn?: string[]; // Optional: Link to project titles
 }
 
