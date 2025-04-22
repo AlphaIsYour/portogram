@@ -1218,7 +1218,6 @@ const projects: Project[] = [
     githubUrl: `https://github.com/${GITHUB_USERNAME}/secureauth`,
     image: "/images/k4.jpg",
   },
-  // Add 1-2 more projects
   {
     id: "portfolio-v3",
     title: "Personal Portfolio Website (This site!)",
