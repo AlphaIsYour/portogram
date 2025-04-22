@@ -17,13 +17,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { fas } from "@fortawesome/free-solid-svg-icons";
 import { fab } from "@fortawesome/free-brands-svg-icons";
-import { Transition, Dialog } from "@headlessui/react"; // Added for modals
+import { Transition, Dialog } from "@headlessui/react";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import Image from "next/image";
 
-// Register Font Awesome icons explicitly for tree-shaking (though library.add does it broadly)
 library.add(
-  // Solid Icons (keep adding as needed)
   fas.faShareAlt,
   fas.faBookmark,
   fas.faEllipsisH,
@@ -138,7 +136,6 @@ library.add(
   fas.faThumbsUp,
   fas.faClockRotateLeft,
 
-  // Brand Icons (keep adding as needed)
   fab.faGithub,
   fab.faTwitter,
   fab.faLinkedin,
@@ -179,7 +176,6 @@ library.add(
   fab.faInstagram
 );
 
-// Register Chart.js components
 Chart.register(...registerables);
 
 // --- INTERFACES ---
@@ -187,9 +183,9 @@ Chart.register(...registerables);
 
 interface Skill {
   name: string;
-  percentage: number; // 0-100 scale
-  color: string; // Tailwind gradient class names e.g., "from-blue-600 to-indigo-500"
-  icon?: IconDefinition; // FontAwesome icon definition
+  percentage: number;
+  color: string;
+  icon?: IconDefinition;
   category:
     | "frontend"
     | "backend"
@@ -201,17 +197,17 @@ interface Skill {
     | "library"
     | "other";
   description: string;
-  years?: number; // Optional: Years of experience
-  projectsUsedIn?: string[]; // Optional: Link to project titles
+  years?: number;
+  projectsUsedIn?: string[];
 }
 
 interface Certification {
   name: string;
   issuer: string;
-  date: string; // Format: YYYY-MM or YYYY-MM-DD
-  icon: IconDefinition; // FontAwesome icon definition (use brand icons if possible)
+  date: string;
+  icon: IconDefinition;
   credentialId: string;
-  expiry?: string; // Format: YYYY-MM or 'Lifetime'
+  expiry?: string;
   skills: string[];
   description: string;
   verificationUrl?: string;
@@ -221,22 +217,22 @@ interface Education {
   institution: string;
   degree: string;
   field: string;
-  period: string; // e.g., "2016 - 2020"
+  period: string;
   description: string;
-  logo?: string; // URL or path to logo
+  logo?: string;
   achievements?: string[];
-  gpa?: string; // e.g., "3.92/4.0"
+  gpa?: string;
   location?: string;
 }
 
 interface WorkExperience {
   company: string;
   position: string;
-  period: string; // e.g., "Jan 2023 - Present"
+  period: string;
   description: string;
   technologies: string[];
   achievements: string[];
-  logo?: string; // URL or path to logo
+  logo?: string;
   location: string;
   type: "full-time" | "part-time" | "freelance" | "contract" | "internship";
   responsibilities: string[];
@@ -406,8 +402,8 @@ interface TimelineEvent {
 const PROJECTS_PER_PAGE = 6; // Increased projects per page
 const BLOG_POSTS_PER_PAGE = 4;
 const GITHUB_USERNAME = "AlphaIsYour"; // Replace with actual username if needed
-const LINKEDIN_USERNAME = "youralpha"; // Replace if needed
-const TWITTER_USERNAME = "eno4lph_"; // Replace if needed
+const LINKEDIN_USERNAME = "alphareno-yanuar-syaputra"; // Replace if needed
+const TWITTER_USERNAME = "yrlpha"; // Replace if needed
 
 // --- DATA ---
 // (Keep existing data, maybe add a few more items for demonstration)
@@ -800,7 +796,7 @@ const educationData: Education[] = [
       "Teaching Assistant for Advanced Algorithms course",
     ],
     location: "Stanford, CA",
-    logo: "/logos/stanford.png",
+    logo: "/logo/c1.png",
   },
   {
     institution: "University of California, Berkeley",
@@ -817,7 +813,7 @@ const educationData: Education[] = [
       "Recipient of EECS Departmental Scholarship",
     ],
     location: "Berkeley, CA",
-    logo: "/logos/berkeley.png",
+    logo: "/logo/c2.png",
   },
 ];
 
@@ -856,7 +852,7 @@ const workExperience: WorkExperience[] = [
       "Optimize application performance and cloud infrastructure costs.",
       "Troubleshoot complex technical issues in production environments.",
     ],
-    logo: "/logos/techinnovators.png",
+    logo: "/logo/c3.png",
     website: "https://techinnovators.example.com",
   },
   {
@@ -891,7 +887,7 @@ const workExperience: WorkExperience[] = [
       "Diagnosed and resolved bugs and performance bottlenecks in production systems.",
       "Wrote unit and integration tests to ensure code reliability.",
     ],
-    logo: "/logos/globalsoft.png",
+    logo: "/logo/c4.png",
     website: "https://globalsoft.example.com",
   },
   {
@@ -925,7 +921,7 @@ const workExperience: WorkExperience[] = [
       "Collaborated with frontend developers and data scientists.",
       "Participated in on-call rotation for production support.",
     ],
-    logo: "/logos/startech.png",
+    logo: "/logo/c7.png",
     website: "https://startech.example.com",
   },
   // Add one more experience entry
@@ -959,7 +955,7 @@ const workExperience: WorkExperience[] = [
       "Provided website maintenance and support.",
       "Managed project timelines and client communication.",
     ],
-    logo: "/logos/freelance.png",
+    logo: "/logo/c8.png",
   },
 ];
 
@@ -1005,7 +1001,7 @@ const projects: Project[] = [
     endDate: "2023-11",
     demoUrl: "https://tokoeno-demo.vercel.app",
     githubUrl: `https://github.com/${GITHUB_USERNAME}/tokoeno`,
-    image: "/images/projects/tokoeno.jpg",
+    image: "/images/c9.png",
     learnings: [
       "Optimizing complex database queries with Prisma.",
       "Implementing secure payment flows.",
@@ -1050,7 +1046,7 @@ const projects: Project[] = [
     startDate: "2023-06",
     collaborators: ["@techdev", "@codemaster"],
     githubUrl: `https://github.com/${GITHUB_USERNAME}/devtracker`,
-    image: "/images/projects/devtracker.jpg",
+    image: "/images/c10.png",
     learnings: [
       "Working with external APIs (GitHub).",
       "Implementing real-time updates with WebSockets (planned).",
@@ -1095,7 +1091,7 @@ const projects: Project[] = [
     endDate: "2023-05",
     demoUrl: "https://aiacademy.dev",
     githubUrl: `https://github.com/${GITHUB_USERNAME}/aiacademy`,
-    image: "/images/projects/aiacademy.jpg",
+    image: "/images/k1.jpg",
   },
   {
     id: "cloudstack",
@@ -1135,7 +1131,7 @@ const projects: Project[] = [
     endDate: "2023-08",
     demoUrl: "https://cloudstack.dev",
     githubUrl: `https://github.com/${GITHUB_USERNAME}/cloudstack`,
-    image: "/images/projects/cloudstack.jpg",
+    image: "/images/k2.jpg",
     learnings: [
       "Building a complex system in Golang.",
       "Integrating with multiple cloud provider APIs.",
@@ -1178,7 +1174,7 @@ const projects: Project[] = [
     startDate: "2023-03",
     collaborators: ["@datascientist", "@vizexpert"],
     githubUrl: `https://github.com/${GITHUB_USERNAME}/datavizpro`,
-    image: "/images/projects/datavizpro.jpg",
+    image: "/images/k3.jpg",
   },
   {
     id: "secureauth",
@@ -1220,7 +1216,7 @@ const projects: Project[] = [
     endDate: "2023-02",
     demoUrl: "https://secureauth.demo.app",
     githubUrl: `https://github.com/${GITHUB_USERNAME}/secureauth`,
-    image: "/images/projects/secureauth.jpg",
+    image: "/images/k4.jpg",
   },
   // Add 1-2 more projects
   {
@@ -1259,7 +1255,7 @@ const projects: Project[] = [
     status: "in-progress",
     startDate: "2024-01",
     githubUrl: `https://github.com/${GITHUB_USERNAME}/portfolio-nextjs`,
-    image: "/images/projects/portfolio.jpg",
+    image: "/images/k5.jpg",
     learnings: [
       "Deepening Next.js knowledge.",
       "Advanced Tailwind CSS techniques.",
@@ -1302,7 +1298,7 @@ const projects: Project[] = [
     endDate: "2024-01",
     demoUrl: "https://quicknotes-demo.app",
     githubUrl: `https://github.com/${GITHUB_USERNAME}/quicknotes`,
-    image: "/images/projects/quicknotes.jpg",
+    image: "/images/k6.jpg",
   },
 ];
 
@@ -1403,7 +1399,7 @@ const blogPosts: BlogPost[] = [
     category: "Frontend",
     views: 5400,
     author: "Youralpha",
-    image: "/images/blog/react-perf.jpg",
+    image: "/images/k7.jpg",
   },
   {
     slug: "scalable-nodejs-systems",
@@ -1426,7 +1422,7 @@ const blogPosts: BlogPost[] = [
     category: "Backend",
     views: 4800,
     author: "Youralpha",
-    image: "/images/blog/node-scale.jpg",
+    image: "/images/k8.jpg",
   },
   {
     slug: "future-web-development-2025",
@@ -1443,7 +1439,7 @@ const blogPosts: BlogPost[] = [
     category: "Industry",
     views: 7200,
     author: "Youralpha",
-    image: "/images/blog/web-future.jpg",
+    image: "/images/k9.jpg",
   },
   {
     slug: "mastering-typescript",
@@ -1466,7 +1462,7 @@ const blogPosts: BlogPost[] = [
     category: "Programming",
     views: 6100,
     author: "Youralpha",
-    image: "/images/blog/typescript.jpg",
+    image: "/images/k10.jpg",
   },
   // Add more blog posts
   {
@@ -1484,7 +1480,7 @@ const blogPosts: BlogPost[] = [
     category: "DevOps",
     views: 4000,
     author: "Youralpha",
-    image: "/images/blog/cicd.jpg",
+    image: "/images/k11.jpg",
   },
   {
     slug: "choosing-database",
@@ -1501,7 +1497,7 @@ const blogPosts: BlogPost[] = [
     category: "Database",
     views: 5500,
     author: "Youralpha",
-    image: "/images/blog/database.jpg",
+    image: "/images/k12.jpg",
   },
 ];
 
@@ -1516,7 +1512,7 @@ const testimonials: Testimonial[] = [
     rating: 5,
     date: "2024-02-10",
     relation: "Client",
-    avatar: "/images/avatars/sarah.jpg",
+    avatar: "/images/k13.jpg",
     projectLink: "Tech Innovators Apps",
   },
   {
@@ -1528,7 +1524,7 @@ const testimonials: Testimonial[] = [
     rating: 5,
     date: "2023-11-15",
     relation: "Colleague",
-    avatar: "/images/avatars/michael.jpg",
+    avatar: "/images/k15.jpg",
     projectLink: "CloudStack",
   },
   {
@@ -1540,7 +1536,7 @@ const testimonials: Testimonial[] = [
     rating: 4.5,
     date: "2023-09-22",
     relation: "Client (Indirect)",
-    avatar: "/images/avatars/elena.jpg",
+    avatar: "/images/c10.png",
     projectLink: "GlobalSoft E-comm",
   },
   {
@@ -1552,7 +1548,7 @@ const testimonials: Testimonial[] = [
     rating: 5,
     date: "2024-01-05",
     relation: "Client",
-    avatar: "/images/avatars/david.jpg",
+    avatar: "/images/c9.png",
   },
   // Add more testimonials
   {
@@ -1564,7 +1560,7 @@ const testimonials: Testimonial[] = [
     rating: 5,
     date: "2020-05-15",
     relation: "Professor",
-    avatar: "/images/avatars/davis.jpg",
+    avatar: "/images/k15.jpg",
   },
   {
     id: "t6",
@@ -1575,7 +1571,7 @@ const testimonials: Testimonial[] = [
     rating: 4,
     date: "2021-03-30",
     relation: "Manager",
-    avatar: "/images/avatars/john.jpg",
+    avatar: "/images/k2.jpg",
     projectLink: "Startech SaaS",
   },
 ];
@@ -3143,7 +3139,7 @@ const HomePage = () => {
       <div className="h-48 sm:h-64 md:h-80 bg-gradient-to-r from-cyan-900 via-blue-900 to-indigo-900 relative group">
         {/* Placeholder for dynamic cover image */}+{" "}
         <Image
-          src="/images/cover/default-cover.jpg"
+          src="/logo/c8.png"
           alt="Cover Photo"
           layout="fill"
           objectFit="cover"
@@ -3151,7 +3147,7 @@ const HomePage = () => {
           priority // Cover image biasanya penting
         />
         {/* Overlay */}
-        <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+        <div className="absolute inset-0 bg-transparent bg-opacity-30"></div>
         {/* Action Buttons */}
         <div className="absolute top-4 right-4 flex items-center space-x-2 z-10">
           <button className="p-2 rounded-full bg-gray-700 bg-opacity-60 text-gray-300 hover:bg-opacity-80 hover:text-white transition duration-150 focus:outline-none focus:ring-2 focus:ring-white">
@@ -3175,7 +3171,7 @@ const HomePage = () => {
         <div className="absolute -top-12 sm:-top-16 left-4 sm:left-6 transform ">
           <div className="relative">
             <Image
-              src="/images/avatars/profile-pic.jpg"
+              src="/images/c10.png"
               alt="Youralpha Profile Picture"
               width={128} // Ukuran terbesar (sm:w-32)
               height={128} // Ukuran terbesar (sm:h-32)
@@ -3184,7 +3180,7 @@ const HomePage = () => {
             />
             {/* Optional: Online/Status badge on avatar */}
             {/* <span className="absolute bottom-1 right-1 block h-4 w-4 rounded-full bg-green-500 border-2 border-white dark:border-gray-800 ring-2 ring-green-300"></span> */}
-            <div className="absolute -bottom-1 -right-1 bg-gradient-to-tr from-blue-500 to-purple-600 text-white text-xs font-bold rounded-full w-8 h-8 flex items-center justify-center border-2 border-gray-800 shadow-md">
+            <div className="absolute bottom-2 right-1 bg-gradient-to-tr from-blue-500 to-purple-600 text-white text-xs font-bold rounded-full w-8 h-8 flex items-center justify-center border-2 border-gray-800 shadow-md">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-50"></span>
               <FontAwesomeIcon icon={fas.faBolt} className="h-3 w-3 z-10" />
             </div>
@@ -3194,7 +3190,7 @@ const HomePage = () => {
         {/* Name, Handle, Actions */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end pt-16 sm:pt-4">
           {/* Left side: Name, Handle, Socials */}
-          <div className="w-full sm:w-auto">
+          <div className="w-full sm:w-auto mt-15">
             <h1 className="text-2xl sm:text-3xl font-bold text-white dark:text-white">
               Youralpha
             </h1>
@@ -3485,6 +3481,7 @@ const HomePage = () => {
                   {projects[0].image ? (
                     <Image
                       layout="fill"
+                      objectFit="cover"
                       src={projects[0].image}
                       alt={`${projects[0].title} screenshot`}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
@@ -3494,7 +3491,7 @@ const HomePage = () => {
                       <FontAwesomeIcon icon={fas.faCode} size="3x" />
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-10 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 bg-transparent bg-opacity-30 group-hover:bg-opacity-10 transition-opacity duration-300"></div>
                   {/* Status Badge */}
                   <span
                     className={`absolute top-2 right-2 text-xs font-semibold px-2 py-0.5 rounded-full ${
@@ -5397,7 +5394,7 @@ const BlogPostCard: React.FC<BlogPostCardProps> = ({ post, onClick }) => (
       </div>
     )}
     {!post.image && (
-      <div className="h-48 w-full bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center text-gray-500">
+      <div className="h-45 w-full bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center text-gray-500">
         <FontAwesomeIcon icon={fas.faBlog} size="3x" />
       </div>
     )}

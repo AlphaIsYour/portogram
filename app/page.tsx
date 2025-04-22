@@ -2105,305 +2105,6 @@ const HomePage = () => {
     return tempProjects;
   }, [searchQuery, activeFilters, activeSort]);
 
-  // Paginate the processed projects
-  const paginatedProjects = useMemo(() => {
-    const startIndex = (currentProjectPage - 1) * PROJECTS_PER_PAGE;
-    return processedProjects.slice(startIndex, startIndex + PROJECTS_PER_PAGE);
-  }, [processedProjects, currentProjectPage]);
-
-  // Calculate total pages for project pagination
-  const totalProjectPages = useMemo(() => {
-    return Math.ceil(processedProjects.length / PROJECTS_PER_PAGE);
-  }, [processedProjects]);
-
-  // Filter skills based on selected category
-  const filteredSkills = useMemo(() => {
-    if (activeSkillCategory === "all") {
-      return skillsData;
-    }
-    return skillsData.filter((skill) => skill.category === activeSkillCategory);
-  }, [activeSkillCategory]);
-
-  // Generate filter options dynamically from projects
-  const projectFilterOptions = useMemo(() => {
-    const tech: FilterOption[] = Array.from(
-      new Set(projects.flatMap((p) => p.techStack))
-    )
-      .sort()
-      .map((t) => ({ label: t, value: t, category: "tech" }));
-    const status: FilterOption[] = Array.from(
-      new Set(projects.map((p) => p.status))
-    )
-      .sort()
-      .map((s) => ({
-        label: s.charAt(0).toUpperCase() + s.slice(1),
-        value: s,
-        category: "status",
-      }));
-    const category: FilterOption[] = Array.from(
-      new Set(projects.map((p) => p.category))
-    )
-      .sort()
-      .map((c) => ({ label: c, value: c, category: "category" }));
-    return { tech, status, category };
-  }, []);
-
-  // Define sort options for projects
-  const projectSortOptions: SortOption[] = useMemo(
-    () => [
-      { field: "startDate", order: "desc", label: "Date (Newest)" },
-      { field: "startDate", order: "asc", label: "Date (Oldest)" },
-      { field: "title", order: "asc", label: "Title (A-Z)" },
-      { field: "title", order: "desc", label: "Title (Z-A)" },
-      { field: "stars", order: "desc", label: "Stars (High-Low)" },
-      { field: "stars", order: "asc", label: "Stars (Low-High)" },
-      { field: "views", order: "desc", label: "Views (High-Low)" },
-    ],
-    []
-  );
-
-  // Process and paginate blog posts
-  const paginatedBlogPosts = useMemo(() => {
-    // Add sorting/filtering later if needed
-    const sortedPosts = [...blogPosts].sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-    );
-    const startIndex = (currentBlogPostPage - 1) * BLOG_POSTS_PER_PAGE;
-    return sortedPosts.slice(startIndex, startIndex + BLOG_POSTS_PER_PAGE);
-  }, [currentBlogPostPage]);
-
-  const totalBlogPostPages = useMemo(() => {
-    return Math.ceil(blogPosts.length / BLOG_POSTS_PER_PAGE);
-  }, []);
-
-  // Create timeline data from various sources
-  const timelineData: TimelineEvent[] = useMemo(() => {
-    const events: TimelineEvent[] = [];
-
-    workExperience.forEach((exp, index) => {
-      events.push({
-        id: `work-${index}`,
-        date: exp.period.split(" - ")[0], // Use start date/period
-        type: "work",
-        title: exp.position,
-        subtitle: exp.company,
-        description: exp.description,
-        icon: fas.faBriefcase,
-        color: "text-blue-400",
-      });
-    });
-
-    educationData.forEach((edu, index) => {
-      events.push({
-        id: `edu-${index}`,
-        date: edu.period.split(" - ")[0],
-        type: "education",
-        title: edu.degree,
-        subtitle: edu.institution,
-        description: edu.field,
-        icon: fas.faGraduationCap,
-        color: "text-green-400",
-      });
-    });
-
-    achievements.slice(0, 5).forEach((ach, index) => {
-      // Limit achievements shown
-      events.push({
-        id: `ach-${index}`,
-        date: ach.date,
-        type: "achievement",
-        title: ach.title,
-        subtitle: ach.issuer,
-        description:
-          ach.description.substring(0, 100) +
-          (ach.description.length > 100 ? "..." : ""),
-        icon: ach.icon,
-        color: "text-yellow-400",
-      });
-    });
-
-    certifications.slice(0, 3).forEach((cert, index) => {
-      // Limit certs shown
-      events.push({
-        id: `cert-${index}`,
-        date: cert.date,
-        type: "certification",
-        title: cert.name,
-        subtitle: cert.issuer,
-        icon: fas.faCertificate,
-        color: "text-purple-400",
-      });
-    });
-
-    projects
-      .filter((p) => p.status === "completed")
-      .slice(0, 4)
-      .forEach((proj, index) => {
-        // Limit completed projects shown
-        events.push({
-          id: `proj-${index}`,
-          date: proj.startDate,
-          type: "project",
-          title: `Project: ${proj.title}`,
-          subtitle: proj.category,
-          icon: fas.faCodeBranch,
-          color: "text-red-400",
-        });
-      });
-
-    // Sort events by date, descending
-    return events.sort((a, b) => {
-      try {
-        // Handle different date formats (YYYY-MM vs YYYY-MM-DD)
-        const dateA = new Date(
-          a.date.includes("-") ? a.date : `${a.date}-01-01`
-        );
-        const dateB = new Date(
-          b.date.includes("-") ? b.date : `${b.date}-01-01`
-        );
-        return dateB.getTime() - dateA.getTime();
-      } catch {
-        return 0; // Fallback if date parsing fails
-      }
-    });
-  }, []);
-
-  // --- EFFECTS ---
-
-  // Initial loading simulation
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1500); // Simulate network/loading delay
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Handle dark mode persistence (example using localStorage)
-  useEffect(() => {
-    const savedMode = localStorage.getItem("darkMode");
-    if (savedMode) {
-      setDarkMode(savedMode === "true");
-    } else {
-      // Optional: Check system preference
-      const prefersDark =
-        window.matchMedia &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches;
-      setDarkMode(prefersDark); // Default to system preference if no saved pref
-    }
-  }, []);
-
-  useEffect(() => {
-    // Apply dark mode class to root element
-    if (darkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-    // Save preference
-    localStorage.setItem("darkMode", String(darkMode));
-    // Re-initialize charts on theme change if needed (colors might depend on theme)
-    if (!loading) {
-      // Avoid re-init during initial load
-      // Debounce or delay chart re-initialization
-      const timer = setTimeout(() => initOrUpdateCharts(), 300);
-      return () => clearTimeout(timer);
-    }
-  }, [darkMode, loading]); // Add loading dependency
-
-  // Navbar fixed position on scroll
-  useEffect(() => {
-    const handleScroll = () => {
-      const offset = navbarRef.current?.offsetTop ?? 0;
-      // Adjust the threshold value as needed (e.g., 300)
-      if (window.scrollY > offset + 50) {
-        // Make it fixed slightly after passing the original position
-        setIsNavbarFixed(true);
-      } else {
-        setIsNavbarFixed(false);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []); // Empty dependency array ensures this runs once on mount
-
-  // Generate mock notifications on mount
-  useEffect(() => {
-    const mockNotifications: Notification[] = [
-      {
-        id: "n1",
-        title: "New Follower",
-        message: "Michael Chen started following you.",
-        type: "info",
-        date: new Date(2024, 4, 22, 10, 30),
-        read: false,
-        link: "#",
-      },
-      {
-        id: "n2",
-        title: "Project Starred",
-        message: "Your 'Tokoeno E-Commerce' repo reached 150 stars!",
-        type: "success",
-        date: new Date(2024, 4, 21, 15, 0),
-        read: true,
-        link: `https://github.com/${GITHUB_USERNAME}/tokoeno`,
-      },
-      {
-        id: "n3",
-        title: "Certification Expiring Soon",
-        message: "Your CKA certification expires in less than 90 days.",
-        type: "warning",
-        date: new Date(2024, 4, 20, 8, 0),
-        read: false,
-      },
-      {
-        id: "n4",
-        title: "Deployment Failed",
-        message: "Deployment of 'DevTracker' to staging failed. Check logs.",
-        type: "error",
-        date: new Date(2024, 4, 19, 17, 45),
-        read: false,
-        link: "#",
-      },
-      {
-        id: "n5",
-        title: "New Message",
-        message: "You have a new message from Sarah Johnson.",
-        type: "info",
-        date: new Date(2024, 4, 18, 9, 15),
-        read: true,
-        link: "#",
-      },
-    ];
-    setNotifications(mockNotifications);
-
-    // Generate contribution data for heatmap
-    setContributionData(generateContributionData(new Date().getFullYear())); // Generate for current year
-  }, []); // Run only once on mount
-
-  // Close notification panel when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        notificationPanelRef.current &&
-        !notificationPanelRef.current.contains(event.target as Node)
-      ) {
-        setShowNotifications(false);
-      }
-    };
-
-    if (showNotifications) {
-      document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [showNotifications]);
-
-  // Function to initialize or update charts
   const initOrUpdateCharts = useCallback(() => {
     // Ensure DOM is ready and not loading
     if (loading || typeof window === "undefined") return;
@@ -2767,7 +2468,308 @@ const HomePage = () => {
         } as ChartConfiguration<"pie">["options"],
       });
     }
-  }, [loading, darkMode, contributionData]); // Add darkMode and data dependencies
+  }, [loading, darkMode, contributionData]);
+
+  // Paginate the processed projects
+  const paginatedProjects = useMemo(() => {
+    const startIndex = (currentProjectPage - 1) * PROJECTS_PER_PAGE;
+    return processedProjects.slice(startIndex, startIndex + PROJECTS_PER_PAGE);
+  }, [processedProjects, currentProjectPage]);
+
+  // Calculate total pages for project pagination
+  const totalProjectPages = useMemo(() => {
+    return Math.ceil(processedProjects.length / PROJECTS_PER_PAGE);
+  }, [processedProjects]);
+
+  // Filter skills based on selected category
+  const filteredSkills = useMemo(() => {
+    if (activeSkillCategory === "all") {
+      return skillsData;
+    }
+    return skillsData.filter((skill) => skill.category === activeSkillCategory);
+  }, [activeSkillCategory]);
+
+  // Generate filter options dynamically from projects
+  const projectFilterOptions = useMemo(() => {
+    const tech: FilterOption[] = Array.from(
+      new Set(projects.flatMap((p) => p.techStack))
+    )
+      .sort()
+      .map((t) => ({ label: t, value: t, category: "tech" }));
+    const status: FilterOption[] = Array.from(
+      new Set(projects.map((p) => p.status))
+    )
+      .sort()
+      .map((s) => ({
+        label: s.charAt(0).toUpperCase() + s.slice(1),
+        value: s,
+        category: "status",
+      }));
+    const category: FilterOption[] = Array.from(
+      new Set(projects.map((p) => p.category))
+    )
+      .sort()
+      .map((c) => ({ label: c, value: c, category: "category" }));
+    return { tech, status, category };
+  }, []);
+
+  // Define sort options for projects
+  const projectSortOptions: SortOption[] = useMemo(
+    () => [
+      { field: "startDate", order: "desc", label: "Date (Newest)" },
+      { field: "startDate", order: "asc", label: "Date (Oldest)" },
+      { field: "title", order: "asc", label: "Title (A-Z)" },
+      { field: "title", order: "desc", label: "Title (Z-A)" },
+      { field: "stars", order: "desc", label: "Stars (High-Low)" },
+      { field: "stars", order: "asc", label: "Stars (Low-High)" },
+      { field: "views", order: "desc", label: "Views (High-Low)" },
+    ],
+    []
+  );
+
+  // Process and paginate blog posts
+  const paginatedBlogPosts = useMemo(() => {
+    // Add sorting/filtering later if needed
+    const sortedPosts = [...blogPosts].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+    const startIndex = (currentBlogPostPage - 1) * BLOG_POSTS_PER_PAGE;
+    return sortedPosts.slice(startIndex, startIndex + BLOG_POSTS_PER_PAGE);
+  }, [currentBlogPostPage]);
+
+  const totalBlogPostPages = useMemo(() => {
+    return Math.ceil(blogPosts.length / BLOG_POSTS_PER_PAGE);
+  }, []);
+
+  // Create timeline data from various sources
+  const timelineData: TimelineEvent[] = useMemo(() => {
+    const events: TimelineEvent[] = [];
+
+    workExperience.forEach((exp, index) => {
+      events.push({
+        id: `work-${index}`,
+        date: exp.period.split(" - ")[0], // Use start date/period
+        type: "work",
+        title: exp.position,
+        subtitle: exp.company,
+        description: exp.description,
+        icon: fas.faBriefcase,
+        color: "text-blue-400",
+      });
+    });
+
+    educationData.forEach((edu, index) => {
+      events.push({
+        id: `edu-${index}`,
+        date: edu.period.split(" - ")[0],
+        type: "education",
+        title: edu.degree,
+        subtitle: edu.institution,
+        description: edu.field,
+        icon: fas.faGraduationCap,
+        color: "text-green-400",
+      });
+    });
+
+    achievements.slice(0, 5).forEach((ach, index) => {
+      // Limit achievements shown
+      events.push({
+        id: `ach-${index}`,
+        date: ach.date,
+        type: "achievement",
+        title: ach.title,
+        subtitle: ach.issuer,
+        description:
+          ach.description.substring(0, 100) +
+          (ach.description.length > 100 ? "..." : ""),
+        icon: ach.icon,
+        color: "text-yellow-400",
+      });
+    });
+
+    certifications.slice(0, 3).forEach((cert, index) => {
+      // Limit certs shown
+      events.push({
+        id: `cert-${index}`,
+        date: cert.date,
+        type: "certification",
+        title: cert.name,
+        subtitle: cert.issuer,
+        icon: fas.faCertificate,
+        color: "text-purple-400",
+      });
+    });
+
+    projects
+      .filter((p) => p.status === "completed")
+      .slice(0, 4)
+      .forEach((proj, index) => {
+        // Limit completed projects shown
+        events.push({
+          id: `proj-${index}`,
+          date: proj.startDate,
+          type: "project",
+          title: `Project: ${proj.title}`,
+          subtitle: proj.category,
+          icon: fas.faCodeBranch,
+          color: "text-red-400",
+        });
+      });
+
+    // Sort events by date, descending
+    return events.sort((a, b) => {
+      try {
+        // Handle different date formats (YYYY-MM vs YYYY-MM-DD)
+        const dateA = new Date(
+          a.date.includes("-") ? a.date : `${a.date}-01-01`
+        );
+        const dateB = new Date(
+          b.date.includes("-") ? b.date : `${b.date}-01-01`
+        );
+        return dateB.getTime() - dateA.getTime();
+      } catch {
+        return 0; // Fallback if date parsing fails
+      }
+    });
+  }, []);
+
+  // --- EFFECTS ---
+
+  // Initial loading simulation
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1500); // Simulate network/loading delay
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Handle dark mode persistence (example using localStorage)
+  useEffect(() => {
+    const savedMode = localStorage.getItem("darkMode");
+    if (savedMode) {
+      setDarkMode(savedMode === "true");
+    } else {
+      // Optional: Check system preference
+      const prefersDark =
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches;
+      setDarkMode(prefersDark); // Default to system preference if no saved pref
+    }
+  }, []);
+
+  useEffect(() => {
+    // Apply dark mode class to root element
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    // Save preference
+    localStorage.setItem("darkMode", String(darkMode));
+    // Re-initialize charts on theme change if needed (colors might depend on theme)
+    if (!loading) {
+      // Avoid re-init during initial load
+      // Debounce or delay chart re-initialization
+      const timer = setTimeout(() => initOrUpdateCharts(), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [darkMode, loading, initOrUpdateCharts]); // Add loading dependency
+
+  // Navbar fixed position on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const offset = navbarRef.current?.offsetTop ?? 0;
+      // Adjust the threshold value as needed (e.g., 300)
+      if (window.scrollY > offset + 50) {
+        // Make it fixed slightly after passing the original position
+        setIsNavbarFixed(true);
+      } else {
+        setIsNavbarFixed(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []); // Empty dependency array ensures this runs once on mount
+
+  // Generate mock notifications on mount
+  useEffect(() => {
+    const mockNotifications: Notification[] = [
+      {
+        id: "n1",
+        title: "New Follower",
+        message: "Michael Chen started following you.",
+        type: "info",
+        date: new Date(2024, 4, 22, 10, 30),
+        read: false,
+        link: "#",
+      },
+      {
+        id: "n2",
+        title: "Project Starred",
+        message: "Your 'Tokoeno E-Commerce' repo reached 150 stars!",
+        type: "success",
+        date: new Date(2024, 4, 21, 15, 0),
+        read: true,
+        link: `https://github.com/${GITHUB_USERNAME}/tokoeno`,
+      },
+      {
+        id: "n3",
+        title: "Certification Expiring Soon",
+        message: "Your CKA certification expires in less than 90 days.",
+        type: "warning",
+        date: new Date(2024, 4, 20, 8, 0),
+        read: false,
+      },
+      {
+        id: "n4",
+        title: "Deployment Failed",
+        message: "Deployment of 'DevTracker' to staging failed. Check logs.",
+        type: "error",
+        date: new Date(2024, 4, 19, 17, 45),
+        read: false,
+        link: "#",
+      },
+      {
+        id: "n5",
+        title: "New Message",
+        message: "You have a new message from Sarah Johnson.",
+        type: "info",
+        date: new Date(2024, 4, 18, 9, 15),
+        read: true,
+        link: "#",
+      },
+    ];
+    setNotifications(mockNotifications);
+
+    // Generate contribution data for heatmap
+    setContributionData(generateContributionData(new Date().getFullYear())); // Generate for current year
+  }, []); // Run only once on mount
+
+  // Close notification panel when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        notificationPanelRef.current &&
+        !notificationPanelRef.current.contains(event.target as Node)
+      ) {
+        setShowNotifications(false);
+      }
+    };
+
+    if (showNotifications) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showNotifications]);
+
+  // Function to initialize or update charts
+  // Add darkMode and data dependencies
 
   // Initialize charts after loading and on theme change
   useEffect(() => {
@@ -3139,7 +3141,7 @@ const HomePage = () => {
       <div className="h-48 sm:h-64 md:h-80 bg-gradient-to-r from-cyan-900 via-blue-900 to-indigo-900 relative group">
         {/* Placeholder for dynamic cover image */}+{" "}
         <Image
-          src="/images/cover/default-cover.jpg"
+          src="/logo/c8.png"
           alt="Cover Photo"
           layout="fill"
           objectFit="cover"
@@ -3147,7 +3149,7 @@ const HomePage = () => {
           priority // Cover image biasanya penting
         />
         {/* Overlay */}
-        <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+        <div className="absolute inset-0 bg-transparent bg-opacity-30"></div>
         {/* Action Buttons */}
         <div className="absolute top-4 right-4 flex items-center space-x-2 z-10">
           <button className="p-2 rounded-full bg-gray-700 bg-opacity-60 text-gray-300 hover:bg-opacity-80 hover:text-white transition duration-150 focus:outline-none focus:ring-2 focus:ring-white">
@@ -3171,7 +3173,7 @@ const HomePage = () => {
         <div className="absolute -top-12 sm:-top-16 left-4 sm:left-6 transform ">
           <div className="relative">
             <Image
-              src="/images/avatars/profile-pic.jpg"
+              src="/images/c10.png"
               alt="Youralpha Profile Picture"
               width={128} // Ukuran terbesar (sm:w-32)
               height={128} // Ukuran terbesar (sm:h-32)
@@ -3180,7 +3182,7 @@ const HomePage = () => {
             />
             {/* Optional: Online/Status badge on avatar */}
             {/* <span className="absolute bottom-1 right-1 block h-4 w-4 rounded-full bg-green-500 border-2 border-white dark:border-gray-800 ring-2 ring-green-300"></span> */}
-            <div className="absolute -bottom-1 -right-1 bg-gradient-to-tr from-blue-500 to-purple-600 text-white text-xs font-bold rounded-full w-8 h-8 flex items-center justify-center border-2 border-gray-800 shadow-md">
+            <div className="absolute bottom-2 right-1 bg-gradient-to-tr from-blue-500 to-purple-600 text-white text-xs font-bold rounded-full w-8 h-8 flex items-center justify-center border-2 border-gray-800 shadow-md">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-50"></span>
               <FontAwesomeIcon icon={fas.faBolt} className="h-3 w-3 z-10" />
             </div>
@@ -3190,7 +3192,7 @@ const HomePage = () => {
         {/* Name, Handle, Actions */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end pt-16 sm:pt-4">
           {/* Left side: Name, Handle, Socials */}
-          <div className="w-full sm:w-auto">
+          <div className="w-full sm:w-auto mt-15">
             <h1 className="text-2xl sm:text-3xl font-bold text-white dark:text-white">
               Youralpha
             </h1>
@@ -3481,6 +3483,7 @@ const HomePage = () => {
                   {projects[0].image ? (
                     <Image
                       layout="fill"
+                      objectFit="cover"
                       src={projects[0].image}
                       alt={`${projects[0].title} screenshot`}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
@@ -3490,7 +3493,7 @@ const HomePage = () => {
                       <FontAwesomeIcon icon={fas.faCode} size="3x" />
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-10 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 bg-transparent bg-opacity-30 group-hover:bg-opacity-10 transition-opacity duration-300"></div>
                   {/* Status Badge */}
                   <span
                     className={`absolute top-2 right-2 text-xs font-semibold px-2 py-0.5 rounded-full ${
@@ -4287,10 +4290,9 @@ const HomePage = () => {
 
       <div
         ref={navbarRef}
-        className={`sticky top-0 z-40 transition-shadow duration-300 ${
-          isNavbarFixed
-            ? "bg-gray-850 dark:bg-gray-850 shadow-lg"
-            : "bg-transparent"
+        className={`sticky top-0 z-40 transition-shadow duration-300 bg-gray-850 dark:bg-gray-850 ${
+          // Background selalu ada
+          isNavbarFixed ? "shadow-lg" : "" // Hanya shadow yang conditional
         }`}
       >
         <div className="container mx-auto px-4">
@@ -4324,7 +4326,7 @@ const HomePage = () => {
           leaveTo="opacity-0 scale-95"
         >
           <div
-            className="md:hidden absolute top-full left-0 right-0 bg-gray-800 dark:bg-gray-800 shadow-lg pb-4"
+            className="md:hidden absolute top-full left-0 right-0 bg-gray-800 dark:bg-gray-800 shadow-lg pb-4 border-t border-gray-700" // Tambah border pemisah?
             id="mobile-menu"
           >
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
@@ -5393,7 +5395,7 @@ const BlogPostCard: React.FC<BlogPostCardProps> = ({ post, onClick }) => (
       </div>
     )}
     {!post.image && (
-      <div className="h-48 w-full bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center text-gray-500">
+      <div className="h-45 w-full bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center text-gray-500">
         <FontAwesomeIcon icon={fas.faBlog} size="3x" />
       </div>
     )}
