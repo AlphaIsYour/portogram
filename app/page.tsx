@@ -198,7 +198,7 @@ interface Skill {
     | "other";
   description: string;
   years?: number;
-  projectsUsedIn?: string[]; // Optional: Link to project titles
+  projectsUsedIn?: string[];
 }
 
 interface Certification {
