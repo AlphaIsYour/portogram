@@ -221,7 +221,7 @@ interface Education {
   description: string;
   logo?: string;
   achievements?: string[];
-  gpa?: string; // e.g., "3.92/4.0"
+  gpa?: string;
   location?: string;
 }
 
