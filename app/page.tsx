@@ -204,7 +204,7 @@ interface Skill {
 interface Certification {
   name: string;
   issuer: string;
-  date: string; // Format: YYYY-MM or YYYY-MM-DD
+  date: string;
   icon: IconDefinition; // FontAwesome icon definition (use brand icons if possible)
   credentialId: string;
   expiry?: string; // Format: YYYY-MM or 'Lifetime'
