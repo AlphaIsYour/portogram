@@ -17,13 +17,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { fas } from "@fortawesome/free-solid-svg-icons";
 import { fab } from "@fortawesome/free-brands-svg-icons";
-import { Transition, Dialog } from "@headlessui/react"; // Added for modals
+import { Transition, Dialog } from "@headlessui/react";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import Image from "next/image";
 
-// Register Font Awesome icons explicitly for tree-shaking (though library.add does it broadly)
 library.add(
-  // Solid Icons (keep adding as needed)
   fas.faShareAlt,
   fas.faBookmark,
   fas.faEllipsisH,
