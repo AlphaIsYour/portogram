@@ -185,7 +185,7 @@ interface Skill {
   name: string;
   percentage: number;
   color: string;
-  icon?: IconDefinition; // FontAwesome icon definition
+  icon?: IconDefinition;
   category:
     | "frontend"
     | "backend"
