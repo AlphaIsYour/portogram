@@ -228,7 +228,7 @@ interface Education {
 interface WorkExperience {
   company: string;
   position: string;
-  period: string; // e.g., "Jan 2023 - Present"
+  period: string;
   description: string;
   technologies: string[];
   achievements: string[];
