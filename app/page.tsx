@@ -176,7 +176,6 @@ library.add(
   fab.faInstagram
 );
 
-// Register Chart.js components
 Chart.register(...registerables);
 
 // --- INTERFACES ---
