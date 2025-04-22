@@ -219,7 +219,7 @@ interface Education {
   field: string;
   period: string;
   description: string;
-  logo?: string; // URL or path to logo
+  logo?: string;
   achievements?: string[];
   gpa?: string; // e.g., "3.92/4.0"
   location?: string;
