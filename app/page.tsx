@@ -183,7 +183,7 @@ Chart.register(...registerables);
 
 interface Skill {
   name: string;
-  percentage: number; // 0-100 scale
+  percentage: number;
   color: string; // Tailwind gradient class names e.g., "from-blue-600 to-indigo-500"
   icon?: IconDefinition; // FontAwesome icon definition
   category:
