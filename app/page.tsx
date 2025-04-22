@@ -232,7 +232,7 @@ interface WorkExperience {
   description: string;
   technologies: string[];
   achievements: string[];
-  logo?: string;git 
+  logo?: string;
   location: string;
   type: "full-time" | "part-time" | "freelance" | "contract" | "internship";
   responsibilities: string[];
@@ -402,8 +402,8 @@ interface TimelineEvent {
 const PROJECTS_PER_PAGE = 6; // Increased projects per page
 const BLOG_POSTS_PER_PAGE = 4;
 const GITHUB_USERNAME = "AlphaIsYour"; // Replace with actual username if needed
-const LINKEDIN_USERNAME = "youralpha"; // Replace if needed
-const TWITTER_USERNAME = "eno4lph_"; // Replace if needed
+const LINKEDIN_USERNAME = "alphareno-yanuar-syaputra"; // Replace if needed
+const TWITTER_USERNAME = "yrlpha"; // Replace if needed
 
 // --- DATA ---
 // (Keep existing data, maybe add a few more items for demonstration)
@@ -796,7 +796,7 @@ const educationData: Education[] = [
       "Teaching Assistant for Advanced Algorithms course",
     ],
     location: "Stanford, CA",
-    logo: "/logos/stanford.png",
+    logo: "/logo/c1.png",
   },
   {
     institution: "University of California, Berkeley",
@@ -813,7 +813,7 @@ const educationData: Education[] = [
       "Recipient of EECS Departmental Scholarship",
     ],
     location: "Berkeley, CA",
-    logo: "/logos/berkeley.png",
+    logo: "/logo/c2.png",
   },
 ];
 
@@ -852,7 +852,7 @@ const workExperience: WorkExperience[] = [
       "Optimize application performance and cloud infrastructure costs.",
       "Troubleshoot complex technical issues in production environments.",
     ],
-    logo: "/logos/techinnovators.png",
+    logo: "/logo/c3.png",
     website: "https://techinnovators.example.com",
   },
   {
@@ -887,7 +887,7 @@ const workExperience: WorkExperience[] = [
       "Diagnosed and resolved bugs and performance bottlenecks in production systems.",
       "Wrote unit and integration tests to ensure code reliability.",
     ],
-    logo: "/logos/globalsoft.png",
+    logo: "/logo/c4.png",
     website: "https://globalsoft.example.com",
   },
   {
@@ -921,7 +921,7 @@ const workExperience: WorkExperience[] = [
       "Collaborated with frontend developers and data scientists.",
       "Participated in on-call rotation for production support.",
     ],
-    logo: "/logos/startech.png",
+    logo: "/logo/c7.png",
     website: "https://startech.example.com",
   },
   // Add one more experience entry
@@ -955,7 +955,7 @@ const workExperience: WorkExperience[] = [
       "Provided website maintenance and support.",
       "Managed project timelines and client communication.",
     ],
-    logo: "/logos/freelance.png",
+    logo: "/logo/c8.png",
   },
 ];
 
@@ -1001,7 +1001,7 @@ const projects: Project[] = [
     endDate: "2023-11",
     demoUrl: "https://tokoeno-demo.vercel.app",
     githubUrl: `https://github.com/${GITHUB_USERNAME}/tokoeno`,
-    image: "/images/projects/tokoeno.jpg",
+    image: "/images/c9.png",
     learnings: [
       "Optimizing complex database queries with Prisma.",
       "Implementing secure payment flows.",
@@ -1046,7 +1046,7 @@ const projects: Project[] = [
     startDate: "2023-06",
     collaborators: ["@techdev", "@codemaster"],
     githubUrl: `https://github.com/${GITHUB_USERNAME}/devtracker`,
-    image: "/images/projects/devtracker.jpg",
+    image: "/images/c10.png",
     learnings: [
       "Working with external APIs (GitHub).",
       "Implementing real-time updates with WebSockets (planned).",
@@ -1091,7 +1091,7 @@ const projects: Project[] = [
     endDate: "2023-05",
     demoUrl: "https://aiacademy.dev",
     githubUrl: `https://github.com/${GITHUB_USERNAME}/aiacademy`,
-    image: "/images/projects/aiacademy.jpg",
+    image: "/images/k1.jpg",
   },
   {
     id: "cloudstack",
@@ -1131,7 +1131,7 @@ const projects: Project[] = [
     endDate: "2023-08",
     demoUrl: "https://cloudstack.dev",
     githubUrl: `https://github.com/${GITHUB_USERNAME}/cloudstack`,
-    image: "/images/projects/cloudstack.jpg",
+    image: "/images/k2.jpg",
     learnings: [
       "Building a complex system in Golang.",
       "Integrating with multiple cloud provider APIs.",
@@ -1174,7 +1174,7 @@ const projects: Project[] = [
     startDate: "2023-03",
     collaborators: ["@datascientist", "@vizexpert"],
     githubUrl: `https://github.com/${GITHUB_USERNAME}/datavizpro`,
-    image: "/images/projects/datavizpro.jpg",
+    image: "/images/k3.jpg",
   },
   {
     id: "secureauth",
@@ -1216,7 +1216,7 @@ const projects: Project[] = [
     endDate: "2023-02",
     demoUrl: "https://secureauth.demo.app",
     githubUrl: `https://github.com/${GITHUB_USERNAME}/secureauth`,
-    image: "/images/projects/secureauth.jpg",
+    image: "/images/k4.jpg",
   },
   // Add 1-2 more projects
   {
@@ -1255,7 +1255,7 @@ const projects: Project[] = [
     status: "in-progress",
     startDate: "2024-01",
     githubUrl: `https://github.com/${GITHUB_USERNAME}/portfolio-nextjs`,
-    image: "/images/projects/portfolio.jpg",
+    image: "/images/k5.jpg",
     learnings: [
       "Deepening Next.js knowledge.",
       "Advanced Tailwind CSS techniques.",
@@ -1298,7 +1298,7 @@ const projects: Project[] = [
     endDate: "2024-01",
     demoUrl: "https://quicknotes-demo.app",
     githubUrl: `https://github.com/${GITHUB_USERNAME}/quicknotes`,
-    image: "/images/projects/quicknotes.jpg",
+    image: "/images/k6.jpg",
   },
 ];
 
@@ -1399,7 +1399,7 @@ const blogPosts: BlogPost[] = [
     category: "Frontend",
     views: 5400,
     author: "Youralpha",
-    image: "/images/blog/react-perf.jpg",
+    image: "/images/k7.jpg",
   },
   {
     slug: "scalable-nodejs-systems",
@@ -1422,7 +1422,7 @@ const blogPosts: BlogPost[] = [
     category: "Backend",
     views: 4800,
     author: "Youralpha",
-    image: "/images/blog/node-scale.jpg",
+    image: "/images/k8.jpg",
   },
   {
     slug: "future-web-development-2025",
@@ -1439,7 +1439,7 @@ const blogPosts: BlogPost[] = [
     category: "Industry",
     views: 7200,
     author: "Youralpha",
-    image: "/images/blog/web-future.jpg",
+    image: "/images/k9.jpg",
   },
   {
     slug: "mastering-typescript",
@@ -1462,7 +1462,7 @@ const blogPosts: BlogPost[] = [
     category: "Programming",
     views: 6100,
     author: "Youralpha",
-    image: "/images/blog/typescript.jpg",
+    image: "/images/k10.jpg",
   },
   // Add more blog posts
   {
@@ -1480,7 +1480,7 @@ const blogPosts: BlogPost[] = [
     category: "DevOps",
     views: 4000,
     author: "Youralpha",
-    image: "/images/blog/cicd.jpg",
+    image: "/images/k11.jpg",
   },
   {
     slug: "choosing-database",
@@ -1497,7 +1497,7 @@ const blogPosts: BlogPost[] = [
     category: "Database",
     views: 5500,
     author: "Youralpha",
-    image: "/images/blog/database.jpg",
+    image: "/images/k12.jpg",
   },
 ];
 
@@ -1512,7 +1512,7 @@ const testimonials: Testimonial[] = [
     rating: 5,
     date: "2024-02-10",
     relation: "Client",
-    avatar: "/images/avatars/sarah.jpg",
+    avatar: "/images/k13.jpg",
     projectLink: "Tech Innovators Apps",
   },
   {
@@ -1524,7 +1524,7 @@ const testimonials: Testimonial[] = [
     rating: 5,
     date: "2023-11-15",
     relation: "Colleague",
-    avatar: "/images/avatars/michael.jpg",
+    avatar: "/images/k15.jpg",
     projectLink: "CloudStack",
   },
   {
@@ -1536,7 +1536,7 @@ const testimonials: Testimonial[] = [
     rating: 4.5,
     date: "2023-09-22",
     relation: "Client (Indirect)",
-    avatar: "/images/avatars/elena.jpg",
+    avatar: "/images/c10.png",
     projectLink: "GlobalSoft E-comm",
   },
   {
@@ -1548,7 +1548,7 @@ const testimonials: Testimonial[] = [
     rating: 5,
     date: "2024-01-05",
     relation: "Client",
-    avatar: "/images/avatars/david.jpg",
+    avatar: "/images/c9.png",
   },
   // Add more testimonials
   {
@@ -1560,7 +1560,7 @@ const testimonials: Testimonial[] = [
     rating: 5,
     date: "2020-05-15",
     relation: "Professor",
-    avatar: "/images/avatars/davis.jpg",
+    avatar: "/images/k15.jpg",
   },
   {
     id: "t6",
@@ -1571,7 +1571,7 @@ const testimonials: Testimonial[] = [
     rating: 4,
     date: "2021-03-30",
     relation: "Manager",
-    avatar: "/images/avatars/john.jpg",
+    avatar: "/images/k2.jpg",
     projectLink: "Startech SaaS",
   },
 ];
