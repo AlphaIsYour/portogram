@@ -232,7 +232,7 @@ interface WorkExperience {
   description: string;
   technologies: string[];
   achievements: string[];
-  logo?: string; // URL or path to logo
+  logo?: string;git 
   location: string;
   type: "full-time" | "part-time" | "freelance" | "contract" | "internship";
   responsibilities: string[];
