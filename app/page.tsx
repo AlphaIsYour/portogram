@@ -207,7 +207,7 @@ interface Certification {
   date: string;
   icon: IconDefinition;
   credentialId: string;
-  expiry?: string; // Format: YYYY-MM or 'Lifetime'
+  expiry?: string;
   skills: string[];
   description: string;
   verificationUrl?: string;
