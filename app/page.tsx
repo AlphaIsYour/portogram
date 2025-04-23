@@ -288,7 +288,7 @@ interface BlogPost {
   likes: number;
   comments: number;
   shares: number;
-  category: string; // e.g., "Frontend", "Backend", "Industry"
+  category: string;
   views?: number; // Added
   author?: string; // Usually self, but could be guest post
 }
