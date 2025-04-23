@@ -252,7 +252,7 @@ interface Project {
     views: number;
     forks?: number;
     issues?: number;
-    commits?: number; // Added
+    commits?: number;
   };
   image?: string; // URL or path to project image/screenshot
   demoUrl?: string;
