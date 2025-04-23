@@ -270,7 +270,7 @@ interface Achievement {
   title: string;
   date: string;
   description: string;
-  icon: IconDefinition; // FontAwesome icon definition
+  icon: IconDefinition;
   category: string; // e.g., "Community", "Competition", "Open Source", "Speaking"
   issuer?: string;
   link?: string; // Optional link for verification or more info
