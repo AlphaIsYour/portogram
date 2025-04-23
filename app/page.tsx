@@ -259,7 +259,7 @@ interface Project {
   githubUrl?: string;
   features: string[];
   status: "completed" | "in-progress" | "planned" | "archived";
-  startDate: string; // Format: YYYY-MM
+  startDate: string;
   endDate?: string; // Format: YYYY-MM or null if in-progress/planned
   collaborators?: string[]; // GitHub usernames or names
   testimonials?: Testimonial[]; // Testimonials specific to this project
