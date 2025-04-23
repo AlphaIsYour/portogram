@@ -277,7 +277,7 @@ interface Achievement {
 }
 
 interface BlogPost {
-  slug: string; // Unique identifier for URL and key
+  slug: string;
   title: string;
   excerpt: string;
   content?: string; // Full markdown or HTML content (for potential detail view)
