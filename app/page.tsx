@@ -260,7 +260,7 @@ interface Project {
   features: string[];
   status: "completed" | "in-progress" | "planned" | "archived";
   startDate: string;
-  endDate?: string; // Format: YYYY-MM or null if in-progress/planned
+  endDate?: string;
   collaborators?: string[]; // GitHub usernames or names
   testimonials?: Testimonial[]; // Testimonials specific to this project
   learnings?: string[]; // Key takeaways or challenges overcome
