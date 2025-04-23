@@ -283,7 +283,7 @@ interface BlogPost {
   content?: string;
   date: string;
   tags: string[];
-  readTime: string; // e.g., "8 min read"
+  readTime: string;
   image?: string; // URL or path to cover image
   likes: number;
   comments: number;
