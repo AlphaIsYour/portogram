@@ -281,7 +281,7 @@ interface BlogPost {
   title: string;
   excerpt: string;
   content?: string;
-  date: string; // Format: YYYY-MM-DD
+  date: string;
   tags: string[];
   readTime: string; // e.g., "8 min read"
   image?: string; // URL or path to cover image
