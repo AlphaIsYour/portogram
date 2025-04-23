@@ -263,7 +263,7 @@ interface Project {
   endDate?: string;
   collaborators?: string[];
   testimonials?: Testimonial[];
-  learnings?: string[]; // Key takeaways or challenges overcome
+  learnings?: string[];
 }
 
 interface Achievement {
