@@ -271,7 +271,7 @@ interface Achievement {
   date: string;
   description: string;
   icon: IconDefinition;
-  category: string; // e.g., "Community", "Competition", "Open Source", "Speaking"
+  category: string;
   issuer?: string;
   link?: string; // Optional link for verification or more info
 }
