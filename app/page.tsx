@@ -240,7 +240,7 @@ interface WorkExperience {
 }
 
 interface Project {
-  id: string; // Unique ID for key prop and linking
+  id: string;
   title: string;
   description: string;
   longDescription?: string; // More detailed description for modal view
