@@ -254,7 +254,7 @@ interface Project {
     issues?: number;
     commits?: number;
   };
-  image?: string; // URL or path to project image/screenshot
+  image?: string;
   demoUrl?: string;
   githubUrl?: string;
   features: string[];
