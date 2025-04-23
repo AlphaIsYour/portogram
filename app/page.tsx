@@ -280,7 +280,7 @@ interface BlogPost {
   slug: string;
   title: string;
   excerpt: string;
-  content?: string; // Full markdown or HTML content (for potential detail view)
+  content?: string;
   date: string; // Format: YYYY-MM-DD
   tags: string[];
   readTime: string; // e.g., "8 min read"
