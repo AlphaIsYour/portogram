@@ -273,7 +273,7 @@ interface Achievement {
   icon: IconDefinition;
   category: string;
   issuer?: string;
-  link?: string; // Optional link for verification or more info
+  link?: string;
 }
 
 interface BlogPost {
