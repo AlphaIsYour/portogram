@@ -268,7 +268,7 @@ interface Project {
 
 interface Achievement {
   title: string;
-  date: string; // Format: YYYY-MM or YYYY-MM-DD
+  date: string;
   description: string;
   icon: IconDefinition; // FontAwesome icon definition
   category: string; // e.g., "Community", "Competition", "Open Source", "Speaking"
