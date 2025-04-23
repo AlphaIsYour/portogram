@@ -284,7 +284,7 @@ interface BlogPost {
   date: string;
   tags: string[];
   readTime: string;
-  image?: string; // URL or path to cover image
+  image?: string;
   likes: number;
   comments: number;
   shares: number;
