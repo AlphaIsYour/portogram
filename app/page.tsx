@@ -258,7 +258,7 @@ interface Project {
   demoUrl?: string;
   githubUrl?: string;
   features: string[];
-  status: "completed" | "in-progress" | "planned" | "archived"; // Added archived
+  status: "completed" | "in-progress" | "planned" | "archived";
   startDate: string; // Format: YYYY-MM
   endDate?: string; // Format: YYYY-MM or null if in-progress/planned
   collaborators?: string[]; // GitHub usernames or names
