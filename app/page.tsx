@@ -243,7 +243,7 @@ interface Project {
   id: string;
   title: string;
   description: string;
-  longDescription?: string; // More detailed description for modal view
+  longDescription?: string;
   category: string; // e.g., "Full Stack", "Web Application", "Library", "DevOps"
   techStack: string[];
   stats: {
