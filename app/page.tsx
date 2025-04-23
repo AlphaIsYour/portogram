@@ -261,7 +261,7 @@ interface Project {
   status: "completed" | "in-progress" | "planned" | "archived";
   startDate: string;
   endDate?: string;
-  collaborators?: string[]; // GitHub usernames or names
+  collaborators?: string[];
   testimonials?: Testimonial[]; // Testimonials specific to this project
   learnings?: string[]; // Key takeaways or challenges overcome
 }
