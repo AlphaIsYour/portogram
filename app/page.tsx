@@ -236,7 +236,7 @@ interface WorkExperience {
   location: string;
   type: "full-time" | "part-time" | "freelance" | "contract" | "internship";
   responsibilities: string[];
-  website?: string; // Company website
+  website?: string;
 }
 
 interface Project {
