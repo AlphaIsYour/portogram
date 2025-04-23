@@ -244,7 +244,7 @@ interface Project {
   title: string;
   description: string;
   longDescription?: string;
-  category: string; // e.g., "Full Stack", "Web Application", "Library", "DevOps"
+  category: string;
   techStack: string[];
   stats: {
     branches: number;
