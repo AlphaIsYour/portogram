@@ -323,7 +323,7 @@ interface Contact {
   type: "Email" | "Phone" | "Location" | "Website" | "Calendly" | "Custom";
   value: string;
   icon: IconDefinition;
-  isPublic: boolean; // Control visibility
+  isPublic: boolean;
   link?: string; // Optional: Direct link (e.g., mailto:, tel:, maps link)
 }
 
