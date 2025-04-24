@@ -316,7 +316,7 @@ interface Testimonial {
   rating: number;
   date: string;
   relation: string;
-  projectLink?: string; // Optional: Link to a specific project they worked on
+  projectLink?: string;
 }
 
 interface Contact {
