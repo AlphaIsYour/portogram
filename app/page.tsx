@@ -296,7 +296,7 @@ interface BlogPost {
 interface ContributionDay {
   date: string;
   count: number;
-  level: 0 | 1 | 2 | 3 | 4; // For coloring the heatmap cell
+  level: 0 | 1 | 2 | 3 | 4;
 }
 
 interface ContributionData {
