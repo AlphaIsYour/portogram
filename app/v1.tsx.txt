@@ -289,7 +289,7 @@ interface BlogPost {
   comments: number;
   shares: number;
   category: string;
-  views?: number;
+  views?: number; // Added
   author?: string; // Usually self, but could be guest post
 }
 
