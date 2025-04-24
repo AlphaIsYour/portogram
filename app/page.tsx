@@ -342,7 +342,7 @@ interface DevStats {
   followers: number;
   following: number;
   streak: number;
-  commits: number; // Total commits
+  commits: number;
   prsOpened?: number; // Added
   issuesClosed?: number; // Added
   rank?: string; // e.g., "Top 5% Contributor" (if available)
