@@ -314,7 +314,7 @@ interface Testimonial {
   text: string;
   avatar?: string;
   rating: number;
-  date: string; // Format: YYYY-MM-DD
+  date: string;
   relation: string; // e.g., "Client", "Colleague", "Manager"
   projectLink?: string; // Optional: Link to a specific project they worked on
 }
