@@ -345,7 +345,7 @@ interface DevStats {
   commits: number;
   prsOpened?: number;
   issuesClosed?: number;
-  rank?: string; // e.g., "Top 5% Contributor" (if available)
+  rank?: string;
 }
 
 interface TechStackItem {
