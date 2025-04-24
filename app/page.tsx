@@ -350,7 +350,7 @@ interface DevStats {
 
 interface TechStackItem {
   name: string;
-  icon: IconDefinition; // FontAwesome icon definition
+  icon: IconDefinition;
   proficiency: number; // Scale 1-5 or 1-100
   category:
     | "Frontend"
