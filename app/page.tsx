@@ -328,7 +328,7 @@ interface Contact {
 }
 
 interface SocialMedia {
-  platform: string; // e.g., "GitHub", "LinkedIn"
+  platform: string;
   url: string;
   icon: IconDefinition; // FontAwesome icon definition
   username: string;
