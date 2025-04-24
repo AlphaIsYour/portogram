@@ -313,7 +313,7 @@ interface Testimonial {
   company: string;
   text: string;
   avatar?: string;
-  rating: number; // 1-5 stars
+  rating: number;
   date: string; // Format: YYYY-MM-DD
   relation: string; // e.g., "Client", "Colleague", "Manager"
   projectLink?: string; // Optional: Link to a specific project they worked on
