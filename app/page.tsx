@@ -338,7 +338,7 @@ interface DevStats {
   repos: number;
   stars: number;
   contributions: number;
-  rating: string; // Can be calculated or static
+  rating: string;
   followers: number;
   following: number;
   streak: number; // Current or longest contribution streak
