@@ -341,7 +341,7 @@ interface DevStats {
   rating: string;
   followers: number;
   following: number;
-  streak: number; // Current or longest contribution streak
+  streak: number;
   commits: number; // Total commits
   prsOpened?: number; // Added
   issuesClosed?: number; // Added
