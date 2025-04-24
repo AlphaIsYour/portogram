@@ -361,7 +361,7 @@ interface TechStackItem {
     | "Tools"
     | "Other";
   yearsOfExperience: number;
-  description?: string; // Short description of proficiency/usage
+  description?: string;
 }
 
 interface FilterOption {
