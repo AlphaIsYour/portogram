@@ -312,7 +312,7 @@ interface Testimonial {
   position: string;
   company: string;
   text: string;
-  avatar?: string; // URL or path to avatar
+  avatar?: string;
   rating: number; // 1-5 stars
   date: string; // Format: YYYY-MM-DD
   relation: string; // e.g., "Client", "Colleague", "Manager"
