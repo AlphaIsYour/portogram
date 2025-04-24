@@ -351,7 +351,7 @@ interface DevStats {
 interface TechStackItem {
   name: string;
   icon: IconDefinition;
-  proficiency: number; // Scale 1-5 or 1-100
+  proficiency: number;
   category:
     | "Frontend"
     | "Backend"
