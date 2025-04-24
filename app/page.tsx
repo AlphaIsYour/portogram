@@ -307,7 +307,7 @@ interface ContributionData {
 }
 
 interface Testimonial {
-  id: string; // Unique ID
+  id: string;
   name: string;
   position: string;
   company: string;
