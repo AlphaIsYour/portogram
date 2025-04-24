@@ -290,7 +290,7 @@ interface BlogPost {
   shares: number;
   category: string;
   views?: number;
-  author?: string; // Usually self, but could be guest post
+  author?: string;
 }
 
 // Extended Contribution structure for heatmap
