@@ -343,7 +343,7 @@ interface DevStats {
   following: number;
   streak: number;
   commits: number;
-  prsOpened?: number; // Added
+  prsOpened?: number;
   issuesClosed?: number; // Added
   rank?: string; // e.g., "Top 5% Contributor" (if available)
 }
