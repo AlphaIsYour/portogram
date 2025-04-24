@@ -324,7 +324,7 @@ interface Contact {
   value: string;
   icon: IconDefinition;
   isPublic: boolean;
-  link?: string; // Optional: Direct link (e.g., mailto:, tel:, maps link)
+  link?: string;
 }
 
 interface SocialMedia {
