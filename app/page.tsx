@@ -330,7 +330,7 @@ interface Contact {
 interface SocialMedia {
   platform: string;
   url: string;
-  icon: IconDefinition; // FontAwesome icon definition
+  icon: IconDefinition;
   username: string;
 }
 
