@@ -293,7 +293,6 @@ interface BlogPost {
   author?: string;
 }
 
-// Extended Contribution structure for heatmap
 interface ContributionDay {
   date: string; // YYYY-MM-DD
   count: number;
