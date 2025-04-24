@@ -320,7 +320,7 @@ interface Testimonial {
 }
 
 interface Contact {
-  type: "Email" | "Phone" | "Location" | "Website" | "Calendly" | "Custom"; // Added more types
+  type: "Email" | "Phone" | "Location" | "Website" | "Calendly" | "Custom";
   value: string;
   icon: IconDefinition; // FontAwesome icon definition
   isPublic: boolean; // Control visibility
