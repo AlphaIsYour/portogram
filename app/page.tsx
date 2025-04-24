@@ -322,7 +322,7 @@ interface Testimonial {
 interface Contact {
   type: "Email" | "Phone" | "Location" | "Website" | "Calendly" | "Custom";
   value: string;
-  icon: IconDefinition; // FontAwesome icon definition
+  icon: IconDefinition;
   isPublic: boolean; // Control visibility
   link?: string; // Optional: Direct link (e.g., mailto:, tel:, maps link)
 }
