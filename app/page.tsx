@@ -337,7 +337,7 @@ interface SocialMedia {
 interface DevStats {
   repos: number;
   stars: number;
-  contributions: number; // Total contributions (maybe last year)
+  contributions: number;
   rating: string; // Can be calculated or static
   followers: number;
   following: number;
