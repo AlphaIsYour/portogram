@@ -1456,7 +1456,6 @@ const blogPosts: BlogPost[] = [
     author: "Youralpha",
     image: "/images/k10.jpg",
   },
-  // Add more blog posts
   {
     slug: "ci-cd-explained",
     title: "Demystifying CI/CD: A Practical Guide with GitHub Actions",
