@@ -367,7 +367,7 @@ interface TechStackItem {
 interface FilterOption {
   label: string;
   value: string;
-  category: string; // e.g., 'tech', 'status', 'category'
+  category: string;
 }
 
 interface SortOption {
