@@ -732,7 +732,7 @@ const certifications: Certification[] = [
     name: "Certified Kubernetes Administrator (CKA)",
     issuer: "Cloud Native Computing Foundation",
     date: "2023-08",
-    icon: fas.faServer, // Better icon
+    icon: fas.faServer,
     credentialId: "CKA-13579",
     expiry: "2026-08",
     skills: [
