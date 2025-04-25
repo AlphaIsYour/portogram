@@ -816,7 +816,6 @@ const educationData: Education[] = [
 ];
 
 const workExperience: WorkExperience[] = [
-  // Existing work experience...
   {
     company: "Tech Innovators Inc.",
     position: "Senior Full Stack Developer",
