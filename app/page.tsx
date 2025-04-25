@@ -1348,7 +1348,6 @@ const achievements: Achievement[] = [
     issuer: "O'Reilly Media",
     link: "#",
   },
-  // Add more achievements
   {
     title: "GitHub Arctic Code Vault Contributor",
     date: "2020-02",
