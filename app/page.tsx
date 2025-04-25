@@ -780,7 +780,6 @@ const certifications: Certification[] = [
 ];
 
 const educationData: Education[] = [
-  // Existing education...
   {
     institution: "Stanford University",
     degree: "Master of Science",
