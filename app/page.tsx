@@ -751,7 +751,7 @@ const certifications: Certification[] = [
     name: "MongoDB Professional Developer",
     issuer: "MongoDB, Inc.",
     date: "2022-12",
-    icon: fas.faDatabase, // Better icon
+    icon: fas.faDatabase,
     credentialId: "MDB-97531",
     skills: [
       "MongoDB",
