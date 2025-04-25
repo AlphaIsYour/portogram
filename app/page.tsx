@@ -388,7 +388,7 @@ interface Notification {
 
 interface TimelineEvent {
   id: string;
-  date: string; // YYYY-MM or YYYY
+  date: string;
   type: "work" | "education" | "achievement" | "project" | "certification";
   title: string;
   subtitle?: string;
