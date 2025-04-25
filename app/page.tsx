@@ -402,7 +402,7 @@ const PROJECTS_PER_PAGE = 6;
 const BLOG_POSTS_PER_PAGE = 4;
 const GITHUB_USERNAME = "AlphaIsYour";
 const LINKEDIN_USERNAME = "alphareno-yanuar-syaputra";
-const TWITTER_USERNAME = "yrlpha"; // Replace if needed
+const TWITTER_USERNAME = "yrlpha";
 
 // --- DATA ---
 // (Keep existing data, maybe add a few more items for demonstration)
