@@ -383,7 +383,7 @@ interface Notification {
   type: "info" | "success" | "warning" | "error";
   date: Date;
   read: boolean;
-  link?: string; // Optional link associated with the notification
+  link?: string;
 }
 
 interface TimelineEvent {
