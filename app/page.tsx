@@ -401,7 +401,7 @@ interface TimelineEvent {
 const PROJECTS_PER_PAGE = 6;
 const BLOG_POSTS_PER_PAGE = 4;
 const GITHUB_USERNAME = "AlphaIsYour";
-const LINKEDIN_USERNAME = "alphareno-yanuar-syaputra"; // Replace if needed
+const LINKEDIN_USERNAME = "alphareno-yanuar-syaputra";
 const TWITTER_USERNAME = "yrlpha"; // Replace if needed
 
 // --- DATA ---
