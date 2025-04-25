@@ -373,7 +373,7 @@ interface FilterOption {
 interface SortOption {
   field: string;
   order: "asc" | "desc";
-  label: string; // e.g., "Title (A-Z)", "Stars (High-Low)"
+  label: string;
 }
 
 interface Notification {
