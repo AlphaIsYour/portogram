@@ -957,7 +957,6 @@ const workExperience: WorkExperience[] = [
 ];
 
 const projects: Project[] = [
-  // Existing projects...
   {
     id: "tokoeno",
     title: "Tokoeno E-Commerce",
