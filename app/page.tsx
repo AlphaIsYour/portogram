@@ -1370,7 +1370,6 @@ const achievements: Achievement[] = [
 ];
 
 const blogPosts: BlogPost[] = [
-  // Existing blog posts...
   {
     slug: "optimizing-react-performance",
     title: "Optimizing React Applications for Peak Performance",
