@@ -394,7 +394,7 @@ interface TimelineEvent {
   subtitle?: string;
   description?: string;
   icon: IconDefinition;
-  color?: string; // Optional color for the timeline dot/icon
+  color?: string;
 }
 
 // --- CONSTANTS ---
