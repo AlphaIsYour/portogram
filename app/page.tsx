@@ -1493,7 +1493,6 @@ const blogPosts: BlogPost[] = [
 ];
 
 const testimonials: Testimonial[] = [
-  // Existing testimonials...
   {
     id: "t1",
     name: "Sarah Johnson",
