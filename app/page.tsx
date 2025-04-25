@@ -398,7 +398,7 @@ interface TimelineEvent {
 }
 
 // --- CONSTANTS ---
-const PROJECTS_PER_PAGE = 6; // Increased projects per page
+const PROJECTS_PER_PAGE = 6;
 const BLOG_POSTS_PER_PAGE = 4;
 const GITHUB_USERNAME = "AlphaIsYour"; // Replace with actual username if needed
 const LINKEDIN_USERNAME = "alphareno-yanuar-syaputra"; // Replace if needed
