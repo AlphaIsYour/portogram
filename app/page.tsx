@@ -765,7 +765,7 @@ const certifications: Certification[] = [
       "Certifies advanced knowledge of MongoDB database development, optimization, and data modeling.",
     verificationUrl: "#",
   },
-  // Add more certifications
+
   {
     name: "Professional Scrum Master™ I (PSM I)",
     issuer: "Scrum.org",
