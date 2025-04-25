@@ -1298,7 +1298,6 @@ const projects: Project[] = [
 ];
 
 const achievements: Achievement[] = [
-  // Existing achievements...
   {
     title: "Open Source Contributor of the Year (Nominee)",
     date: "2023-12",
