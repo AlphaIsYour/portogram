@@ -1589,14 +1589,14 @@ const contacts: Contact[] = [
     value: "+1 (555) 123-4567",
     icon: fas.faMobileAlt,
     isPublic: false,
-  }, // Keep non-public
+  },
   {
     type: "Calendly",
     value: "Book a Meeting",
     icon: fas.faCalendarCheck,
     isPublic: true,
     link: "https://calendly.com/youralpha/meeting",
-  }, // Added Calendly
+  },
 ];
 
 const socialMedia: SocialMedia[] = [
