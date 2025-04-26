@@ -179,7 +179,6 @@ library.add(
 Chart.register(...registerables);
 
 // --- INTERFACES ---
-// (Interfaces remain largely the same, maybe add optional fields if needed later)
 
 interface Skill {
   name: string;
