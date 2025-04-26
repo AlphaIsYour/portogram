@@ -4256,14 +4256,43 @@ const HomePage = () => {
 
   // --- MAIN RENDER ---
 
+  // Improved Loading Component
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white">
-        <FontAwesomeIcon
-          icon={fas.faSpinner}
-          className="animate-spin text-4xl text-blue-500"
-        />
-        <span className="ml-4 text-xl">Loading Portfolio...</span>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900">
+        <div className="relative">
+          {/* Outer circle with pulse effect */}
+          <div className="absolute inset-0 rounded-full bg-blue-500 opacity-30 animate-ping"></div>
+
+          {/* Inner spinning circle */}
+          <div className="relative flex items-center justify-center w-16 h-16 bg-gray-800 rounded-full">
+            <FontAwesomeIcon
+              icon={fas.faSpinner}
+              className="animate-spin text-2xl text-blue-400"
+            />
+          </div>
+        </div>
+
+        {/* Loading text with fade animation */}
+        <div className="mt-6 text-center">
+          <h3 className="text-xl font-semibold text-blue-400 animate-pulse">
+            Loading Portfolio
+          </h3>
+          <div className="flex justify-center mt-2">
+            <span
+              className="inline-block w-2 h-2 mx-1 bg-blue-400 rounded-full animate-bounce"
+              style={{ animationDelay: "0ms" }}
+            ></span>
+            <span
+              className="inline-block w-2 h-2 mx-1 bg-blue-400 rounded-full animate-bounce"
+              style={{ animationDelay: "300ms" }}
+            ></span>
+            <span
+              className="inline-block w-2 h-2 mx-1 bg-blue-400 rounded-full animate-bounce"
+              style={{ animationDelay: "600ms" }}
+            ></span>
+          </div>
+        </div>
       </div>
     );
   }
@@ -4280,47 +4309,57 @@ const HomePage = () => {
 
       <div
         ref={navbarRef}
-        className={`sticky top-0 z-40 transition-shadow duration-300 bg-gray-850 dark:bg-gray-850 ${
-          // Background selalu ada
-          isNavbarFixed ? "shadow-lg" : "" // Hanya shadow yang conditional
+        className={`sticky top-0 z-40 w-200 transition-all duration-300 bg-gray-900 backdrop-blur-sm ${
+          isNavbarFixed ? "shadow-lg shadow-gray-900/50" : ""
         }`}
       >
         <div className="container mx-auto px-4">
-          {/* Mobile Menu Button */}
-          <div className="md:hidden flex justify-end pt-4">
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
-              aria-controls="mobile-menu"
-              aria-expanded={mobileMenuOpen}
-            >
-              <span className="sr-only">Open main menu</span>
-              <FontAwesomeIcon
-                icon={mobileMenuOpen ? fas.faTimes : fas.faBars}
-                className="h-6 w-6"
-              />
-            </button>
+          <div className="flex items-center justify-between h-14">
+            {/* Desktop Navigation - with more space from logo */}
+            <div className="hidden md:block flex-grow mx-8">
+              <div className="flex justify-center space-x-4">
+                {renderNavigationTabs()}
+              </div>
+            </div>
+
+            {/* Right side actions */}
+            <div className="flex items-center">
+              {/* Mobile Menu Button */}
+              <div className="md:hidden">
+                <button
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  className="p-1 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 focus:outline-none"
+                  aria-controls="mobile-menu"
+                  aria-expanded={mobileMenuOpen}
+                >
+                  <span className="sr-only">Open main menu</span>
+                  <FontAwesomeIcon
+                    icon={mobileMenuOpen ? fas.faTimes : fas.faBars}
+                    className="h-5 w-5"
+                  />
+                </button>
+              </div>
+            </div>
           </div>
-          {/* Desktop Navigation */}
-          <div className="hidden md:block">{renderNavigationTabs()}</div>
         </div>
-        {/* Mobile Menu Panel */}
+
+        {/* Mobile Menu Panel - More compact */}
         <Transition
           show={mobileMenuOpen}
           as={Fragment}
           enter="transition ease-out duration-200"
-          enterFrom="opacity-0 scale-95"
-          enterTo="opacity-100 scale-100"
+          enterFrom="opacity-0 -translate-y-2"
+          enterTo="opacity-100 translate-y-0"
           leave="transition ease-in duration-150"
-          leaveFrom="opacity-100 scale-100"
-          leaveTo="opacity-0 scale-95"
+          leaveFrom="opacity-100 translate-y-0"
+          leaveTo="opacity-0 -translate-y-2"
         >
           <div
-            className="md:hidden absolute top-full left-0 right-0 bg-gray-800 dark:bg-gray-800 shadow-lg pb-4 border-t border-gray-700" // Tambah border pemisah?
+            className="md:hidden absolute top-full left-0 right-0 bg-gray-800 shadow-md border-t border-gray-700"
             id="mobile-menu"
           >
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-              {/* Reuse tab data for mobile */}
+            <div className="grid grid-cols-2 gap-1 p-1 max-h-[60vh] overflow-y-auto">
+              {/* Grid layout untuk menu mobile yang lebih padat */}
               {[
                 { id: "overview", icon: fas.faHome, label: "Overview" },
                 { id: "projects", icon: fas.faCodeBranch, label: "Projects" },
@@ -4356,15 +4395,18 @@ const HomePage = () => {
               ].map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => handleTabClick(tab.id)}
-                  className={`w-full text-left flex items-center px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                  onClick={() => {
+                    handleTabClick(tab.id);
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`flex items-center px-1 py-1 mr-5 rounded-md text-xs font-medium transition-colors ${
                     activeTab === tab.id
                       ? "bg-blue-600 text-white"
                       : "text-gray-300 hover:bg-gray-700 hover:text-white"
                   }`}
                   aria-current={activeTab === tab.id ? "page" : undefined}
                 >
-                  <FontAwesomeIcon icon={tab.icon} className="mr-3 h-5 w-5" />
+                  <FontAwesomeIcon icon={tab.icon} className="mr-2 h-3 w-3" />
                   {tab.label}
                 </button>
               ))}
