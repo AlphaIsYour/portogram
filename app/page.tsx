@@ -179,6 +179,7 @@ library.add(
 Chart.register(...registerables);
 
 // --- INTERFACES ---
+// (Interfaces remain largely the same, maybe add optional fields if needed later)
 
 interface Skill {
   name: string;
@@ -404,6 +405,7 @@ const LINKEDIN_USERNAME = "alphareno-yanuar-syaputra";
 const TWITTER_USERNAME = "yrlpha";
 
 // --- DATA ---
+// (Keep existing data, maybe add a few more items for demonstration)
 
 const skillsData: Skill[] = [
   // --- Backend ---
@@ -919,6 +921,7 @@ const workExperience: WorkExperience[] = [
     logo: "/logo/c7.png",
     website: "https://startech.example.com",
   },
+  // Add one more experience entry
   {
     company: "Web Solutions Agency (Freelance)",
     position: "Freelance Web Developer",
@@ -1564,6 +1567,7 @@ const testimonials: Testimonial[] = [
 ];
 
 const contacts: Contact[] = [
+  // Existing contacts...
   {
     type: "Email",
     value: "youralpha@example.com",
@@ -1589,17 +1593,18 @@ const contacts: Contact[] = [
     value: "+1 (555) 123-4567",
     icon: fas.faMobileAlt,
     isPublic: false,
-  },
+  }, // Keep non-public
   {
     type: "Calendly",
     value: "Book a Meeting",
     icon: fas.faCalendarCheck,
     isPublic: true,
     link: "https://calendly.com/youralpha/meeting",
-  },
+  }, // Added Calendly
 ];
 
 const socialMedia: SocialMedia[] = [
+  // Existing social media...
   {
     platform: "GitHub",
     url: `https://github.com/${GITHUB_USERNAME}`,
@@ -1635,30 +1640,31 @@ const socialMedia: SocialMedia[] = [
     url: "https://stackoverflow.com/users/1234567/youralpha",
     icon: fab.faStackOverflow,
     username: "youralpha",
-  },
+  }, // Added Stack Overflow
   {
     platform: "Codepen",
     url: "https://codepen.io/youralpha",
     icon: fab.faCodepen,
     username: "youralpha",
-  },
+  }, // Added Codepen
 ];
 
 const devStats: DevStats = {
   repos: 20,
   stars: 199,
-  contributions: 498,
-  rating: "4.9/5",
-  followers: 358,
-  following: 125,
-  streak: 87,
-  commits: 1245,
-  prsOpened: 150,
-  issuesClosed: 210,
-  rank: "Top 10% GitHub Contributor (Overall)",
+  contributions: 498, // Placeholder - could fetch real data
+  rating: "4.9/5", // Based on testimonials maybe?
+  followers: 358, // Placeholder
+  following: 125, // Placeholder
+  streak: 87, // Placeholder
+  commits: 1245, // Placeholder
+  prsOpened: 150, // Added
+  issuesClosed: 210, // Added
+  rank: "Top 10% GitHub Contributor (Overall)", // Added
 };
 
 const techStack: TechStackItem[] = [
+  // Existing tech stack... (Ensure consistency with skillsData)
   {
     name: "React",
     icon: fab.faReact,
@@ -1781,6 +1787,7 @@ const techStack: TechStackItem[] = [
   },
 ];
 
+// Generate more detailed contribution data for heatmap
 const generateContributionData = (year: number): ContributionData => {
   const startDate = new Date(year, 0, 1);
   const endDate = new Date(year, 11, 31);
@@ -1790,6 +1797,7 @@ const generateContributionData = (year: number): ContributionData => {
 
   while (currentDate <= endDate) {
     const dateString = currentDate.toISOString().split("T")[0];
+    // Simulate contribution count (skew towards weekdays)
     const dayOfWeek = currentDate.getDay(); // 0 = Sunday, 6 = Saturday
     let count = 0;
     if (dayOfWeek > 0 && dayOfWeek < 6) {
