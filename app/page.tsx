@@ -1655,7 +1655,7 @@ const devStats: DevStats = {
   commits: 1245,
   prsOpened: 150,
   issuesClosed: 210,
-  rank: "Top 10% GitHub Contributor (Overall)", // Added
+  rank: "Top 10% GitHub Contributor (Overall)",
 };
 
 const techStack: TechStackItem[] = [
