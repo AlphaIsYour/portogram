@@ -1659,7 +1659,6 @@ const devStats: DevStats = {
 };
 
 const techStack: TechStackItem[] = [
-  // Existing tech stack... (Ensure consistency with skillsData)
   {
     name: "React",
     icon: fab.faReact,
