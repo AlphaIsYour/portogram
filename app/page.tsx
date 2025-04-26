@@ -3047,7 +3047,7 @@ const HomePage = () => {
             <button
               key={tab.id}
               onClick={() => handleTabClick(tab.id)}
-              className={`flex items-center whitespace-nowrap px-2 py-3 text-sm md:text-base font-medium transition-all duration-200 ease-in-out border-b-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 rounded-t-md ${
+              className={`flex items-center whitespace-nowrap px-2 py-3 text-sm md:text-base font-medium transition-all duration-200 ease-in-out border-b-2 ${
                 activeTab === tab.id
                   ? "text-white border-blue-500"
                   : "text-gray-400 border-transparent hover:text-gray-200 hover:border-gray-500"
@@ -4309,15 +4309,15 @@ const HomePage = () => {
 
       <div
         ref={navbarRef}
-        className={`sticky top-0 z-40 w-200 transition-all duration-300 bg-gray-900 backdrop-blur-sm ${
+        className={`sticky top-0 z-40 px-2 transition-all duration-300 bg-gray-900 backdrop-blur-sm ${
           isNavbarFixed ? "shadow-lg shadow-gray-900/50" : ""
         }`}
       >
-        <div className="container mx-auto px-4">
+        <div className="container px-4">
           <div className="flex items-center justify-between h-14">
             {/* Desktop Navigation - with more space from logo */}
-            <div className="hidden md:block flex-grow mx-8">
-              <div className="flex justify-center space-x-4">
+            <div className="hidden md:block flex-grow mx-8 px-5">
+              <div className="flex justify-center space-x-4 mx-auto ml-5">
                 {renderNavigationTabs()}
               </div>
             </div>
@@ -4328,7 +4328,7 @@ const HomePage = () => {
               <div className="md:hidden">
                 <button
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                  className="p-1 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 focus:outline-none"
+                  className="p-1 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900"
                   aria-controls="mobile-menu"
                   aria-expanded={mobileMenuOpen}
                 >
@@ -4358,7 +4358,7 @@ const HomePage = () => {
             className="md:hidden absolute top-full left-0 right-0 bg-gray-800 shadow-md border-t border-gray-700"
             id="mobile-menu"
           >
-            <div className="grid grid-cols-2 gap-1 p-1 max-h-[60vh] overflow-y-auto">
+            <div className="grid grid-cols-2 gap-1 p-2 max-h-[60vh] overflow-y-auto">
               {/* Grid layout untuk menu mobile yang lebih padat */}
               {[
                 { id: "overview", icon: fas.faHome, label: "Overview" },
@@ -4399,7 +4399,7 @@ const HomePage = () => {
                     handleTabClick(tab.id);
                     setMobileMenuOpen(false);
                   }}
-                  className={`flex items-center px-1 py-1 mr-5 rounded-md text-xs font-medium transition-colors ${
+                  className={`flex items-center px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
                     activeTab === tab.id
                       ? "bg-blue-600 text-white"
                       : "text-gray-300 hover:bg-gray-700 hover:text-white"
