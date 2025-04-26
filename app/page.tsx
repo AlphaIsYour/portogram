@@ -919,7 +919,6 @@ const workExperience: WorkExperience[] = [
     logo: "/logo/c7.png",
     website: "https://startech.example.com",
   },
-  // Add one more experience entry
   {
     company: "Web Solutions Agency (Freelance)",
     position: "Freelance Web Developer",
