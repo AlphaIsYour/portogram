@@ -1654,7 +1654,7 @@ const devStats: DevStats = {
   streak: 87,
   commits: 1245,
   prsOpened: 150,
-  issuesClosed: 210, // Added
+  issuesClosed: 210,
   rank: "Top 10% GitHub Contributor (Overall)", // Added
 };
 
