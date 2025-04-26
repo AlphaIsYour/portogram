@@ -1647,7 +1647,7 @@ const socialMedia: SocialMedia[] = [
 const devStats: DevStats = {
   repos: 20,
   stars: 199,
-  contributions: 498, // Placeholder - could fetch real data
+  contributions: 498,
   rating: "4.9/5", // Based on testimonials maybe?
   followers: 358, // Placeholder
   following: 125, // Placeholder
