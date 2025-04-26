@@ -1781,7 +1781,6 @@ const techStack: TechStackItem[] = [
   },
 ];
 
-// Generate more detailed contribution data for heatmap
 const generateContributionData = (year: number): ContributionData => {
   const startDate = new Date(year, 0, 1);
   const endDate = new Date(year, 11, 31);
