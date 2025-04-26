@@ -3472,8 +3472,8 @@ const HomePage = () => {
                 <div className="h-48 bg-gradient-to-br from-gray-700 to-gray-800 relative overflow-hidden">
                   {projects[0].image ? (
                     <Image
-                      layout="fill"
-                      objectFit="cover"
+                      width={800}
+                      height={450}
                       src={projects[0].image}
                       alt={`${projects[0].title} screenshot`}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
@@ -4568,9 +4568,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           <Image
             src={project.image}
             alt={`${project.title}`}
-            width={128}
-            height={96}
-            className="w-full sm:w-32 h-auto sm:h-24 object-cover rounded-md mb-3 sm:mb-0 sm:mr-4 flex-shrink-0"
+            fill={true}
+            objectFit="cover"
+            className="object-cover rounded-md mb-3 sm:mb-0 sm:mr-4 flex-shrink-0"
           />
         )}
         {!project.image && (
@@ -4674,13 +4674,15 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         {/* Project Image */}
         <div className="h-48 bg-gradient-to-br from-gray-700 to-gray-800 relative overflow-hidden">
           {project.image ? (
-            <Image
-              src={project.image}
-              alt={`${project.title} screenshot`}
-              layout="fill"
-              objectFit="cover"
-              className="transition-transform duration-300 group-hover:scale-105"
-            />
+            <div className="w-full overflow-hidden rounded-md aspect-video">
+              <Image
+                width={800}
+                height={450}
+                src={project.image}
+                alt={`${project.title} screenshot`}
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              />
+            </div>
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-500">
               <FontAwesomeIcon icon={fas.faCodeBranch} size="3x" />
@@ -4863,13 +4865,15 @@ const ProjectDialog: React.FC<ProjectDialogProps> = ({
                 <div className="mt-2 space-y-4 max-h-[70vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700">
                   {/* Optional Image */}
                   {project.image && (
-                    <Image
-                      src={project.image}
-                      alt={`${project.title}`}
-                      width={800} // Sesuaikan dengan rasio gambar asli jika memungkinkan
-                      height={450} // Sesuaikan dengan rasio gambar asli jika memungkinkan
-                      className="w-full h-auto max-h-64 object-contain rounded-md mb-4 bg-gray-700"
-                    />
+                    <div className="relative w-full aspect-video max-h-64 mb-4 bg-gray-700 rounded-md">
+                      <Image
+                        src={project.image}
+                        alt={`${project.title}`}
+                        fill={true}
+                        className="object-cover rounded-md"
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                      />
+                    </div>
                   )}
 
                   {/* Description */}
