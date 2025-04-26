@@ -1,34 +1,37 @@
 "use client";
-
-//=============================================================================
-// 1. IMPORTS
-//=============================================================================
 import React, {
   useState,
   useEffect,
   useCallback,
   useMemo,
+  RefObject,
   useRef,
   createContext,
+  ReactElement,
   useContext,
   ReactNode,
 } from "react";
 import {
-  Chart,
+  Chart as ChartJS,
   registerables,
-  ChartConfiguration,
   ChartOptions,
   TooltipItem,
 } from "chart.js";
-import { Line, Radar, Doughnut, Pie, Bar } from "react-chartjs-2"; // Menggunakan react-chartjs-2
+import { Line, Radar } from "react-chartjs-2";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { library, IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { fas } from "@fortawesome/free-solid-svg-icons";
 import { fab } from "@fortawesome/free-brands-svg-icons";
-import { motion, AnimatePresence } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  HTMLMotionProps,
+  Variants,
+} from "framer-motion";
 import { useTranslation, I18nextProvider } from "react-i18next"; // Import useTranslation
 import i18n from "i18next"; // Import i18n instance (akan dikonfigurasi secara inline untuk demo)
 import { initReactI18next } from "react-i18next"; // Import initReactI18next
+import Image from "next/image";
 
 // Import ikon spesifik (jika perlu, bisa langsung dari fas atau fab)
 import {
@@ -39,6 +42,7 @@ import {
   faCodeBranch,
   faStar,
   faEye,
+  faArrowRight,
   faUserCircle,
   faHome,
   faCode,
@@ -54,7 +58,7 @@ import {
   faGlobe,
   faPaperPlane,
   faDownload,
-  faPrint,
+  faUser,
   faBars,
   faUserPlus,
   faFire,
@@ -62,64 +66,32 @@ import {
   faChevronLeft,
   faChevronRight,
   faSearch,
-  faFilter,
   faSort,
   faListUl,
   faTable,
-  faPlus,
-  faMinus,
   faCheck,
   faTimes,
   faInfoCircle,
   faExclamationCircle,
-  faQuestionCircle,
-  faLayerGroup,
   faServer,
   faDatabase,
-  faLock,
-  faShieldAlt,
-  faChartPie,
-  faChartBar,
-  faCloudUploadAlt,
-  faCloudDownloadAlt,
   faCog,
   faSync,
-  faPlay,
-  faPause,
-  faStop,
-  faForward,
-  faBackward,
   faBell,
   faExclamationTriangle,
-  faLightbulb,
-  faBolt,
-  faMagic,
   faGraduationCap,
-  faToolbox,
-  faNetworkWired,
-  faTerminal,
-  faMicrochip,
   faClock,
   faCalendarCheck,
   faFileCode,
-  faFileAlt,
   faFilePdf,
-  faFileExcel,
-  faLink,
-  faRocket,
   faTrophy,
   faMedal,
   faCertificate,
-  faHandshake,
-  faProjectDiagram,
   faHistory,
   faBookOpen,
   faLaptopCode,
-  faWindowMaximize,
+  faThumbsUp,
   faMobileAlt,
-  faTabletAlt,
-  faWrench,
-  faTools,
   faSun,
   faMoon,
   faDesktop,
@@ -137,6 +109,7 @@ import {
   faUserTie,
   faUserGraduate,
   faUserCog,
+  faArrowUp,
 } from "@fortawesome/free-solid-svg-icons";
 import {
   faGithub,
@@ -147,36 +120,12 @@ import {
   faReact,
   faNode,
   faPython,
-  faVuejs,
-  faAngular,
   faDocker,
-  faStripe,
   faJsSquare,
-  faCss3,
   faHtml5,
-  faBootstrap,
-  faFigma,
-  faWordpress,
-  faNpm,
-  faYarn,
   faGitAlt,
-  faGithubAlt,
-  faApple,
-  faAndroid,
-  faSlack,
-  faDiscord,
-  faTelegram,
-  faWhatsapp,
-  faStackOverflow,
   faMedium,
   faDev,
-  faCodepen,
-  faDigitalOcean,
-  faAmazon,
-  faGoogle,
-  faMicrosoft,
-  faFacebook,
-  faInstagram,
 } from "@fortawesome/free-brands-svg-icons";
 
 // Initialize FontAwesome library
@@ -202,18 +151,11 @@ library.add(
   faUserCog
 );
 
-// Register Chart.js components
-Chart.register(...registerables);
-
-//=============================================================================
-// 2. TYPESCRIPT INTERFACES & TYPES
-//=============================================================================
-
-/** Represents a skill with proficiency details */
+ChartJS.register(...registerables);
 interface Skill {
   name: string;
   percentage: number;
-  color: string; // Tailwind gradient class: e.g., "from-blue-600 to-indigo-500"
+  color: string;
   icon?: IconDefinition;
   category:
     | "frontend"
@@ -448,15 +390,6 @@ type FontSize = "default" | "large" | "xlarge";
 
 /** Type for export formats */
 type ExportFormat = "pdf" | "json";
-
-//=============================================================================
-// 3. MOCK DATA (Encapsulated)
-//=============================================================================
-
-/**
- * Centralized object holding all profile data.
- * In a real application, this might come from an API or CMS.
- */
 const profileData: ProfileData = {
   basicInfo: {
     name: "Youralpha",
@@ -464,8 +397,8 @@ const profileData: ProfileData = {
     headline: "Senior Full Stack Developer | React, Node.js, Laravel Expert",
     location: "San Francisco, CA",
     availability: "Full-time Available",
-    profilePictureUrl: "/image/r10.jpg", // Placeholder path
-    coverPictureUrl: "/image/r6.jpg", // Placeholder path
+    profilePictureUrl: "/images/k7.jpg", // Placeholder path
+    coverPictureUrl: "/images/c10.png", // Placeholder path
     developerLevel: 99,
     developerLevelProgress: 80,
     bio: "Passionate full-stack developer with 5+ years experience in building scalable web applications. Specialized in React, Node.js, and Laravel ecosystems with a strong focus on delivering high-performance, user-friendly solutions. Devoted to clean code, accessibility, and staying updated with the latest tech trends.",
@@ -919,6 +852,7 @@ const profileData: ProfileData = {
       endDate: "2023-11",
       demoUrl: "#",
       githubUrl: "#",
+      image: "/images/c9.png",
     },
     {
       id: "proj-2",
@@ -947,6 +881,7 @@ const profileData: ProfileData = {
       status: "in-progress",
       startDate: "2023-06",
       collaborators: ["@techdev", "@codemaster", "@devguru"],
+      image: "/images/c10.png",
     },
     {
       id: "proj-3",
@@ -977,6 +912,7 @@ const profileData: ProfileData = {
       endDate: "2023-05",
       demoUrl: "#",
       githubUrl: "#",
+      image: "/images/k10.jpg",
     },
     {
       id: "proj-4",
@@ -1006,6 +942,7 @@ const profileData: ProfileData = {
       endDate: "2023-08",
       demoUrl: "#",
       githubUrl: "#",
+      image: "/images/k12.jpg",
     },
     {
       id: "proj-5",
@@ -1031,6 +968,7 @@ const profileData: ProfileData = {
       status: "in-progress",
       startDate: "2023-03",
       collaborators: ["@datascientist", "@vizexpert"],
+      image: "/images/k15.jpg",
     },
     {
       id: "proj-6",
@@ -1062,6 +1000,7 @@ const profileData: ProfileData = {
       endDate: "2023-02",
       demoUrl: "#",
       githubUrl: "#",
+      image: "/images/k13.jpg",
     },
   ],
   achievements: [
@@ -1136,7 +1075,7 @@ const profileData: ProfileData = {
       shares: 124,
       category: "Frontend",
       slug: "optimizing-react-performance",
-      image: "/image/blog/react-perf.jpg",
+      image: "/images/k4.jpg",
     },
     {
       id: "blog-2",
@@ -1158,7 +1097,7 @@ const profileData: ProfileData = {
       shares: 86,
       category: "Backend",
       slug: "scalable-nodejs-microservices",
-      image: "/image/blog/node-scale.jpg",
+      image: "/images/k6.jpg",
     },
     {
       id: "blog-3",
@@ -1173,7 +1112,7 @@ const profileData: ProfileData = {
       shares: 178,
       category: "Industry",
       slug: "future-web-development-2025",
-      image: "/image/blog/web-future.jpg",
+      image: "/images/k7.jpg",
     },
     {
       id: "blog-4",
@@ -1195,7 +1134,7 @@ const profileData: ProfileData = {
       shares: 112,
       category: "Programming",
       slug: "mastering-typescript-advanced",
-      image: "/image/blog/ts-mastery.jpg",
+      image: "/images/k8.jpg",
     },
   ],
   testimonials: [
@@ -1208,7 +1147,7 @@ const profileData: ProfileData = {
       rating: 5,
       date: "2024-02-10",
       relation: "Client",
-      avatar: "/image/avatar/sarah.jpg",
+      avatar: "/images/k9.jpg",
     },
     {
       id: "test-2",
@@ -1219,7 +1158,7 @@ const profileData: ProfileData = {
       rating: 5,
       date: "2023-11-15",
       relation: "Colleague",
-      avatar: "/image/avatar/michael.jpg",
+      avatar: "/images/k10.jpg",
     },
     {
       id: "test-3",
@@ -1230,7 +1169,7 @@ const profileData: ProfileData = {
       rating: 5,
       date: "2023-09-22",
       relation: "Collaborator (Product)",
-      avatar: "/image/avatar/elena.jpg",
+      avatar: "/images/k11.jpg",
     },
     {
       id: "test-4",
@@ -1241,7 +1180,7 @@ const profileData: ProfileData = {
       rating: 5,
       date: "2024-01-05",
       relation: "Client (Startup)",
-      avatar: "/image/avatar/david.jpg",
+      avatar: "/images/k12.jpg",
     },
   ],
   techStack: [
@@ -1318,21 +1257,9 @@ const profileData: ProfileData = {
     };
   }).reverse(), // Ensure chronological order (Jan -> Dec)
 };
-
-//=============================================================================
-// 4. i18n Configuration (Inline Simulation)
-//=============================================================================
-/**
- * NOTE: Proper i18n setup requires separate files and configuration
- * (next-i18next.config.js, public/locales/[lang]/common.json, and integration in _app.tsx or layout.tsx).
- * This is an inline simulation for demonstration within this single file.
- * In a real App Router project, you'd likely fetch translations on the server
- * or use a client-side provider setup.
- */
 const resources = {
   en: {
     common: {
-      // --- PASTE CONTENT OF public/locales/en/common.json HERE ---
       appName: "Youralpha Profile",
       "navbar.home": "Overview",
       "navbar.projects": "Projects",
@@ -1648,12 +1575,6 @@ i18n
       useSuspense: false, // Optional: disable suspense if not needed
     },
   });
-
-//=============================================================================
-// 5. CONTEXTS & PROVIDERS
-//=============================================================================
-
-// --- Theme Context ---
 interface ThemeContextProps {
   theme: Theme;
   setTheme: (theme: Theme) => void;
@@ -1676,7 +1597,6 @@ const ThemeProvider = ({ children }: { children: ReactNode }) => {
         return storedTheme;
       }
     }
-    // 2. Fallback to system preference (or default to dark if no preference)
     return "dark"; // Defaulting to dark as per original code
   });
 
@@ -1688,7 +1608,7 @@ const ThemeProvider = ({ children }: { children: ReactNode }) => {
           ? "dark"
           : "light";
       }
-      return "dark"; // Default on server or if media query fails
+      return "dark";
     }
     return theme;
   }, [theme]);
@@ -1739,7 +1659,6 @@ const useTheme = (): ThemeContextProps => {
   return context;
 };
 
-// --- Accessibility Context ---
 interface AccessibilityContextProps {
   fontSize: FontSize;
   setFontSize: (size: FontSize) => void;
@@ -1773,7 +1692,7 @@ const AccessibilityProvider = ({ children }: { children: ReactNode }) => {
   const setFontSize = (size: FontSize) => {
     setFontSizeState(size);
     localStorage.setItem("fontSize", size);
-    document.documentElement.setAttribute("data-font-size", size); // Apply via data attribute
+    document.documentElement.setAttribute("data-font-size", size);
   };
 
   const setReduceMotion = (enabled: boolean) => {
@@ -1782,10 +1701,9 @@ const AccessibilityProvider = ({ children }: { children: ReactNode }) => {
     document.documentElement.setAttribute(
       "data-reduce-motion",
       String(enabled)
-    ); // Apply via data attribute
+    );
   };
 
-  // Apply initial settings on mount
   useEffect(() => {
     document.documentElement.setAttribute("data-font-size", fontSize);
     document.documentElement.setAttribute(
@@ -1811,7 +1729,6 @@ const AccessibilityProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-/** Hook to easily access accessibility context */
 const useAccessibility = (): AccessibilityContextProps => {
   const context = useContext(AccessibilityContext);
   if (context === undefined) {
@@ -1822,7 +1739,6 @@ const useAccessibility = (): AccessibilityContextProps => {
   return context;
 };
 
-// --- Combined App Provider ---
 /**
  * Combines all application-level providers for cleaner nesting in the main layout/page.
  * @param {object} props - Component props.
@@ -1839,10 +1755,6 @@ const AppProvider = ({ children }: { children: ReactNode }) => {
     </I18nextProvider>
   );
 };
-
-//=============================================================================
-// 6. CUSTOM HOOKS
-//=============================================================================
 
 /**
  * Hook to persist state in localStorage.
@@ -1899,7 +1811,6 @@ function useScrollPosition(): number {
     };
 
     window.addEventListener("scroll", handleScroll);
-    // Initial check in case the page loads scrolled
     handleScroll();
 
     return () => {
@@ -1935,27 +1846,29 @@ function useOnClickOutside(
       document.removeEventListener("mousedown", listener);
       document.removeEventListener("touchstart", listener);
     };
-  }, [ref, handler]); // Reload only if ref or handler changes
+  }, [ref, handler]);
 }
 
-//=============================================================================
-// 7. CORE UI COMPONENTS (Atomic Components)
-//=============================================================================
-
 // --- Button Component ---
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps
+  extends Omit<HTMLMotionProps<"button">, "onDrag" | "onAnimationStart"> {
   variant?: "primary" | "secondary" | "danger" | "ghost" | "outline";
   size?: "sm" | "md" | "lg";
   leftIcon?: IconDefinition;
   rightIcon?: IconDefinition;
   isLoading?: boolean;
-  children: ReactNode;
+  disabled?: boolean;
+  className?: string;
+  children?: React.ReactNode;
+  href?: string;
+  target?: string;
+  rel?: string;
 }
 
-/**
- * A versatile Button component with different variants, sizes, icons, and loading state.
- */
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+const Button = React.forwardRef<
+  HTMLButtonElement | HTMLAnchorElement,
+  ButtonProps & { href?: string }
+>(
   (
     {
       children,
@@ -1966,6 +1879,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       isLoading = false,
       className = "",
       disabled,
+      href,
       ...props
     },
     ref
@@ -2000,9 +1914,17 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     return (
       <motion.button
-        ref={ref}
+        ref={ref as React.Ref<HTMLButtonElement>}
         className={`${baseStyles} ${sizeStyles[size]} ${variantStyles[variant]} ${className}`}
         disabled={disabled || isLoading}
+        onClick={
+          href && !disabled
+            ? (e) => {
+                e.preventDefault();
+                window.location.href = href;
+              }
+            : undefined
+        }
         {...motionProps}
         {...props}
       >
@@ -2031,7 +1953,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 );
 Button.displayName = "Button";
 
-// --- Card Component ---
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
   shadow?: "sm" | "md" | "lg" | "xl" | "none";
@@ -2039,9 +1960,6 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
 }
 
-/**
- * A basic Card component for wrapping content sections.
- */
 const Card: React.FC<CardProps> = ({
   children,
   shadow = "lg",
@@ -2079,9 +1997,7 @@ interface IconProps {
   className?: string;
   color?: string; // Tailwind color class e.g., "text-blue-500"
 }
-/**
- * Wrapper around FontAwesomeIcon for consistent styling.
- */
+
 const Icon: React.FC<IconProps> = ({
   icon,
   size = "md",
@@ -2105,7 +2021,6 @@ const Icon: React.FC<IconProps> = ({
   );
 };
 
-// --- Modal Component ---
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -2114,9 +2029,6 @@ interface ModalProps {
   size?: "sm" | "md" | "lg" | "xl" | "full";
 }
 
-/**
- * A modal dialog component with animation.
- */
 const Modal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
@@ -2140,8 +2052,7 @@ const Modal: React.FC<ModalProps> = ({
     return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen, onClose]);
 
-  // Close modal on outside click
-  useOnClickOutside(modalRef, onClose);
+  useOnClickOutside(modalRef as RefObject<HTMLElement>, onClose);
 
   const sizeClasses = {
     sm: "max-w-sm",
@@ -2152,7 +2063,7 @@ const Modal: React.FC<ModalProps> = ({
   };
 
   const animationVariants = reduceMotion
-    ? {}
+    ? undefined
     : {
         hidden: { opacity: 0, scale: 0.9 },
         visible: {
@@ -2217,7 +2128,6 @@ const Modal: React.FC<ModalProps> = ({
   );
 };
 
-// --- Skeleton Component ---
 interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
   height?: string; // e.g., 'h-4', 'h-32'
   width?: string; // e.g., 'w-full', 'w-1/2'
@@ -2225,9 +2135,6 @@ interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
 }
 
-/**
- * A skeleton loading component with a shimmer animation.
- */
 const Skeleton: React.FC<SkeletonProps> = ({
   height = "h-4",
   width = "w-full",
@@ -2250,7 +2157,6 @@ const Skeleton: React.FC<SkeletonProps> = ({
   );
 };
 
-// --- Tag Component ---
 interface TagProps {
   children: ReactNode;
   color?:
@@ -2266,9 +2172,7 @@ interface TagProps {
   className?: string;
   icon?: IconDefinition;
 }
-/**
- * A simple Tag component for displaying labels or categories.
- */
+
 const Tag: React.FC<TagProps> = ({
   children,
   color = "gray",
@@ -2303,17 +2207,13 @@ const Tag: React.FC<TagProps> = ({
   );
 };
 
-// --- Tooltip Component ---
 interface TooltipProps {
   content: ReactNode;
   children: ReactElement; // Must be a single React element
   position?: "top" | "bottom" | "left" | "right";
   className?: string;
 }
-/**
- * A simple Tooltip component appearing on hover.
- * Uses basic CSS for positioning, could be enhanced with Popper.js.
- */
+
 const Tooltip: React.FC<TooltipProps> = ({
   content,
   children,
@@ -2329,7 +2229,6 @@ const Tooltip: React.FC<TooltipProps> = ({
     right: "left-full top-1/2 -translate-y-1/2 ml-2",
   };
 
-  // Ensure only one child is passed and add event handlers
   const child = React.Children.only(children);
   const trigger = React.cloneElement(child, {
     onMouseEnter: () => setIsVisible(true),
@@ -2337,7 +2236,7 @@ const Tooltip: React.FC<TooltipProps> = ({
     onFocus: () => setIsVisible(true),
     onBlur: () => setIsVisible(false),
     "aria-describedby": isVisible ? "tooltip-content" : undefined,
-  });
+  } as React.HTMLAttributes<HTMLElement>);
 
   return (
     <div className={`relative inline-block ${className}`}>
@@ -2361,7 +2260,6 @@ const Tooltip: React.FC<TooltipProps> = ({
   );
 };
 
-// --- Input Component ---
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
@@ -2369,9 +2267,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   rightIcon?: IconDefinition;
   wrapperClassName?: string;
 }
-/**
- * Styled Input component with optional label, error message, and icons.
- */
+
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   (
     {
@@ -2457,7 +2353,6 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 );
 Input.displayName = "Input";
 
-// --- Textarea Component ---
 interface TextareaProps
   extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
@@ -2466,9 +2361,6 @@ interface TextareaProps
   rows?: number;
 }
 
-/**
- * Styled Textarea component.
- */
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
   (
     {
@@ -2534,9 +2426,7 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   wrapperClassName?: string;
   options: { value: string | number; label: string }[];
 }
-/**
- * Styled Select dropdown component.
- */
+
 const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
   (
     {
@@ -2600,14 +2490,11 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
 );
 Select.displayName = "Select";
 
-// --- Notification Toast Component ---
 interface NotificationToastProps {
   notification: Notification;
   onDismiss: (id: string) => void;
 }
-/**
- * Displays a single notification toast message.
- */
+
 const NotificationToast: React.FC<NotificationToastProps> = ({
   notification,
   onDismiss,
@@ -2646,7 +2533,7 @@ const NotificationToast: React.FC<NotificationToastProps> = ({
     }, 5000); // 5 seconds
 
     return () => clearTimeout(timer);
-  }, [notification.id, onDismiss]);
+  }, [notification.id, onDismiss, setIsExiting]);
 
   const handleManualDismiss = () => {
     setIsExiting(true);
@@ -2666,8 +2553,10 @@ const NotificationToast: React.FC<NotificationToastProps> = ({
     <motion.div
       layout // Animate layout changes (when items are removed)
       {...animationProps}
-      className={`w-full max-w-sm p-4 mb-3 border ${borderColor} rounded-lg shadow-lg ${bgColor} pointer-events-auto flex items-start space-x-3`}
       role="alert"
+      className={`w-full max-w-sm p-4 mb-3 border ${borderColor} rounded-lg shadow-lg ${bgColor} pointer-events-auto flex items-start space-x-3 ${
+        isExiting ? "exiting" : ""
+      }`}
       aria-live="assertive"
       aria-atomic="true"
     >
@@ -2706,9 +2595,7 @@ interface NotificationContainerProps {
   notifications: Notification[];
   onDismiss: (id: string) => void;
 }
-/**
- * Manages the display and animation of multiple notification toasts.
- */
+
 const NotificationContainer: React.FC<NotificationContainerProps> = ({
   notifications,
   onDismiss,
@@ -2743,12 +2630,6 @@ const SkipLink: React.FC<{ mainContentId: string }> = ({ mainContentId }) => {
     </a>
   );
 };
-
-//=============================================================================
-// 8. LAYOUT COMPONENTS
-//=============================================================================
-
-// --- Navbar Component ---
 interface NavbarProps {
   activeTab: TabId;
   onTabChange: (tabId: TabId) => void;
@@ -2767,7 +2648,7 @@ const Navbar: React.FC<NavbarProps> = ({
   onOpenSettings,
 }) => {
   const { t, i18n } = useTranslation("common");
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
   const { reduceMotion } = useAccessibility();
   const scrollPosition = useScrollPosition();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -2791,8 +2672,12 @@ const Navbar: React.FC<NavbarProps> = ({
     { id: "contact", labelKey: "navbar.contact", icon: faEnvelope },
   ];
 
-  const navVariants = reduceMotion
-    ? {}
+  const navVariants: Variants = reduceMotion
+    ? {
+        initial: {},
+        animate: {},
+        exit: {},
+      }
     : {
         initial: { y: -100, opacity: 0 },
         animate: {
@@ -2819,10 +2704,14 @@ const Navbar: React.FC<NavbarProps> = ({
             ? "fixed top-0 left-0 right-0 shadow-lg bg-background/80 dark:bg-background-dark/80 backdrop-blur-md"
             : "relative bg-transparent"
         }`}
-        variants={navVariants}
-        initial={isFixed ? "initial" : false} // Only animate if starting fixed? Or always animate?
-        animate={isFixed ? "animate" : { y: 0, opacity: 1 }} // Ensure it's visible when not fixed
-        exit="exit" // Might not be needed if it never unmounts
+        {...(reduceMotion
+          ? {}
+          : {
+              variants: navVariants,
+              initial: isFixed ? "initial" : "animate",
+              animate: isFixed ? "animate" : { y: 0, opacity: 1 },
+              exit: "exit",
+            })}
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
@@ -3188,11 +3077,15 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             className="rounded-full border-4 border-card dark:border-gray-800 shadow-xl"
             {...profilePicAnimation}
           >
-            <img
-              src={data.profilePictureUrl}
-              alt={t("profile.name")}
-              className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover bg-gray-200 dark:bg-gray-700" // Added bg color as fallback
-            />
+            <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gray-200 dark:bg-gray-700">
+              <Image
+                src={data.profilePictureUrl}
+                fill
+                sizes="(max-width: 640px) 6rem, 8rem"
+                alt={t("profile.name")}
+                className="rounded-full object-cover"
+              />
+            </div>
             {/* Developer Level Badge */}
             <div className="absolute -bottom-1 -right-1 sm:bottom-0 sm:right-0 bg-gradient-to-tr from-red-500 to-pink-500 text-white text-xs font-bold rounded-full w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center border-2 border-card dark:border-gray-800 shadow-md">
               {data.developerLevel}
@@ -3272,9 +3165,8 @@ interface SectionWrapperProps {
   titleClassName?: string;
   contentClassName?: string;
 }
-/**
- * A wrapper component for consistent section styling with title and icon.
- */
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const SectionWrapper: React.FC<SectionWrapperProps> = ({
   id,
   titleKey,
@@ -3312,11 +3204,6 @@ const SectionWrapper: React.FC<SectionWrapperProps> = ({
   );
 };
 
-//=============================================================================
-// 9. SECTION COMPONENTS (Rendering specific parts of the profile)
-//=============================================================================
-
-// --- Overview Section ---
 interface OverviewSectionProps {
   data: Pick<
     ProfileData,
@@ -3339,7 +3226,6 @@ const OverviewSection: React.FC<OverviewSectionProps> = ({
   onProjectClick,
 }) => {
   const { t } = useTranslation("common");
-  const { resolvedTheme } = useTheme();
 
   const statCards = useMemo(
     () => [
@@ -3683,9 +3569,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         {...cardAnimation}
       >
         {project.image && (
-          <img
-            src={project.image || "/image/placeholder-project.png"}
+          <Image
+            src={project.image || "/images/c10.png"}
             alt={project.title}
+            layout="fill"
+            objectFit="cover"
             className="w-full sm:w-48 h-32 sm:h-full object-cover flex-shrink-0"
           />
         )}
@@ -3754,9 +3642,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       {/* Image */}
       <div className="h-48 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 relative">
         {project.image ? (
-          <img
-            src={project.image}
+          <Image
+            src={project.image || "/images/c10.png"}
             alt={project.title}
+            layout="fill"
+            objectFit="cover"
             className="w-full h-full object-cover"
           />
         ) : (
@@ -3843,7 +3733,6 @@ const ProjectsSection: React.FC<ProjectsSectionProps> = ({
   onProjectClick,
 }) => {
   const { t } = useTranslation("common");
-  const { resolvedTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterOptions, setFilterOptions] = useState<FilterOption[]>([]);
   const [sortOption, setSortOption] = useState<SortOption>({
@@ -3852,7 +3741,7 @@ const ProjectsSection: React.FC<ProjectsSectionProps> = ({
   }); // Default sort
   const [currentView, setCurrentView] = useState<"grid" | "list">("grid");
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(6); // Adjust as needed
+  const [itemsPerPage] = useState(6); // Adjust as needed
   const [isLoading, setIsLoading] = useState(true); // Simulate loading
 
   // Simulate loading delay
@@ -4322,32 +4211,34 @@ interface SkillsSectionProps {
   skills: Skill[];
   techStack: TechStackItem[]; // Add full tech stack for potential detailed view
 }
-/**
- * Renders the Skills tab content, showcasing skills with progress bars and potentially a radar chart.
- */
-const SkillsSection: React.FC<SkillsSectionProps> = ({ skills, techStack }) => {
+
+const SkillsSection: React.FC<SkillsSectionProps> = ({ skills = [] }) => {
   const { t } = useTranslation("common");
   const { resolvedTheme } = useTheme();
   const [activeCategory, setActiveCategory] = useState<
     Skill["category"] | "all"
   >("all");
-  const skillRadarChartRef = useRef<HTMLCanvasElement>(null); // Ref for chart canvas
+  const chartRef = useRef<ChartJS<
+    "radar",
+    (number | [number, number] | null)[],
+    unknown
+  > | null>(null);
 
   const categories = useMemo(
     () =>
-      ["all", ...[...new Set(skills.map((s) => s.category))].sort()] as (
-        | Skill["category"]
-        | "all"
-      )[],
+      [
+        "all",
+        ...[...new Set(skills.filter(Boolean).map((s) => s.category))].sort(),
+      ] as (Skill["category"] | "all")[],
     [skills]
   );
 
   const filteredSkills = useMemo(
     () =>
       activeCategory === "all"
-        ? skills.sort((a, b) => b.percentage - a.percentage) // Sort all skills by percentage desc
+        ? skills.filter(Boolean).sort((a, b) => b.percentage - a.percentage) // Sort all skills by percentage desc
         : skills
-            .filter((skill) => skill.category === activeCategory)
+            .filter((skill) => skill && skill.category === activeCategory)
             .sort((a, b) => b.percentage - a.percentage),
     [skills, activeCategory]
   );
@@ -4364,7 +4255,7 @@ const SkillsSection: React.FC<SkillsSectionProps> = ({ skills, techStack }) => {
     ];
     const categoryAverages = radarCategories.map((category) => {
       const categorySkills = skills.filter(
-        (skill) => skill.category === category
+        (skill) => skill && skill.category === category
       );
       const average = categorySkills.length
         ? categorySkills.reduce((sum, skill) => sum + skill.percentage, 0) /
@@ -4374,7 +4265,11 @@ const SkillsSection: React.FC<SkillsSectionProps> = ({ skills, techStack }) => {
     });
     return {
       labels: radarCategories.map((cat) =>
-        t(`skills.filter${cat.charAt(0).toUpperCase() + cat.slice(1)}` as any)
+        t(
+          `skills.filter${
+            cat.charAt(0).toUpperCase() + cat.slice(1)
+          }` as keyof (typeof resources)["en"]["common"]
+        )
       ), // Use translation keys
       datasets: [
         {
@@ -4468,7 +4363,7 @@ const SkillsSection: React.FC<SkillsSectionProps> = ({ skills, techStack }) => {
             {t(
               `skills.filter${
                 category.charAt(0).toUpperCase() + category.slice(1)
-              }` as any
+              }` as keyof (typeof resources)["en"]["common"]
             )}
           </Button>
         ))}
@@ -4529,21 +4424,12 @@ const SkillsSection: React.FC<SkillsSectionProps> = ({ skills, techStack }) => {
         {/* Radar Chart */}
         <div className="relative h-64 md:h-96">
           <Radar
-            ref={skillRadarChartRef}
+            ref={chartRef}
             data={radarChartData}
             options={radarChartOptions}
           />
         </div>
       </div>
-
-      {/* Optional: Detailed Tech Stack Table (Example) */}
-      {/* <div className="mt-12">
-              <h3 className="text-xl font-semibold text-text mb-4">{t('overview.coreTech')} (Detailed)</h3>
-               <div className="overflow-x-auto">
-                    // Add a table here listing techStack items with proficiency, years, category etc.
-                    // This can significantly increase line count if needed.
-               </div>
-         </div> */}
     </div>
   );
 };
@@ -4618,9 +4504,11 @@ const ExperienceSection: React.FC<ExperienceSectionProps> = ({
                   </p>
                 </div>
                 {exp.logo && (
-                  <img
+                  <Image
                     src={exp.logo}
                     alt={`${exp.company} logo`}
+                    layout="fill"
+                    objectFit="cover"
                     className="w-12 h-12 object-contain rounded-md mt-2 sm:mt-0 ml-auto flex-shrink-0"
                   />
                 )}
@@ -4770,9 +4658,11 @@ const EducationSection: React.FC<EducationSectionProps> = ({ education }) => {
               {/* Logo (Optional) */}
               {edu.logo && (
                 <div className="flex-shrink-0 w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center overflow-hidden p-1 self-center sm:self-start">
-                  <img
+                  <Image
                     src={edu.logo}
                     alt={`${edu.institution} logo`}
+                    layout="fill"
+                    objectFit="cover"
                     className="max-w-full max-h-full object-contain"
                   />
                 </div>
@@ -4798,8 +4688,6 @@ const AchievementsSection: React.FC<AchievementsSectionProps> = ({
   certifications,
 }) => {
   const { t } = useTranslation("common");
-  const { resolvedTheme } = useTheme();
-
   // Combine and sort achievements & certifications by date (most recent first)
   const combinedItems = useMemo(() => {
     const allItems = [
@@ -4816,6 +4704,9 @@ const AchievementsSection: React.FC<AchievementsSectionProps> = ({
     ];
     return allItems.sort((a, b) => b.dateObj.getTime() - a.dateObj.getTime());
   }, [achievements, certifications]);
+
+  // Example usage of combinedItems
+  console.log(combinedItems); // Replace this with actual logic to use combinedItems
 
   return (
     <div className="space-y-8">
@@ -4979,17 +4870,18 @@ interface ActivitySectionProps {
   contributions: Contribution[];
   devStats: DevStats;
 }
-/**
- * Renders the Activity tab, showing contribution chart and developer stats.
- */
+
 const ActivitySection: React.FC<ActivitySectionProps> = ({
   contributions,
   devStats,
 }) => {
   const { t } = useTranslation("common");
   const { resolvedTheme } = useTheme();
-  const activityChartRef = useRef<HTMLCanvasElement>(null); // Ref for chart canvas
-
+  const chartRef = useRef<ChartJS<
+    "line",
+    (number | [number, number] | null)[],
+    unknown
+  > | null>(null);
   // Contribution Line Chart Data & Options
   const lineChartData = useMemo(
     () => ({
@@ -5106,7 +4998,7 @@ const ActivitySection: React.FC<ActivitySectionProps> = ({
         icon: faCheckCircle,
       },
     ],
-    [devStats, t]
+    [devStats]
   );
 
   return (
@@ -5118,7 +5010,7 @@ const ActivitySection: React.FC<ActivitySectionProps> = ({
         </h3>
         <div className="h-72 md:h-96 relative">
           <Line
-            ref={activityChartRef}
+            ref={chartRef}
             data={lineChartData}
             options={lineChartOptions}
           />
@@ -5218,9 +5110,11 @@ const BlogSection: React.FC<BlogSectionProps> = ({ posts }) => {
               >
                 {post.image && (
                   <div className="h-48 overflow-hidden">
-                    <img
-                      src={post.image}
+                    <Image
+                      src={post.image || "/images/c10.png"}
                       alt={post.title}
+                      layout="fill"
+                      objectFit="cover"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
@@ -5318,9 +5212,9 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
   const [currentIndex, setCurrentIndex] = useState(0);
   const { reduceMotion } = useAccessibility();
 
-  const nextTestimonial = () => {
+  const nextTestimonial = useCallback(() => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % testimonials.length);
-  };
+  }, [testimonials.length]);
 
   const prevTestimonial = () => {
     setCurrentIndex(
@@ -5337,7 +5231,7 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
     }, 7000); // Change every 7 seconds
 
     return () => clearInterval(timer);
-  }, [testimonials.length, reduceMotion]);
+  }, [testimonials.length, reduceMotion, nextTestimonial]);
 
   return (
     <div className="relative overflow-hidden">
@@ -5371,14 +5265,16 @@ const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
               className="text-center border border-border p-6 md:p-8"
             >
               {testimonials[currentIndex].avatar && (
-                <img
+                <Image
                   src={testimonials[currentIndex].avatar}
                   alt={testimonials[currentIndex].name}
+                  layout="fill"
+                  objectFit="cover"
                   className="w-16 h-16 rounded-full mx-auto mb-4 shadow-md border-2 border-white dark:border-gray-700"
                 />
               )}
               <blockquote className="text-base md:text-lg italic text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
-                "{testimonials[currentIndex].text}"
+                {testimonials[currentIndex].text}
               </blockquote>
               <div className="font-semibold text-text">
                 {testimonials[currentIndex].name}
@@ -5884,9 +5780,11 @@ const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
         {/* Left Column: Image & Links */}
         <div className="md:col-span-1 space-y-4">
           {project.image && (
-            <img
-              src={project.image}
+            <Image
+              src={project.image || "/images/c10.png"}
               alt={project.title}
+              layout="fill"
+              objectFit="cover"
               className="w-full h-auto rounded-lg shadow-md border border-border object-cover"
             />
           )}
@@ -6083,26 +5981,15 @@ const HomePage = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false); // Maybe manage via modal/dropdown instead?
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [showContactForm, setShowContactForm] = useState(false); // Maybe integrate into Contact tab directly?
   const [isExporting, setIsExporting] = useState(false);
 
   // Hooks for context data
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const { t, i18n } = useTranslation("common");
   const { fontSize, setFontSize, reduceMotion, setReduceMotion } =
     useAccessibility();
-
-  // --- Refs ---
-  // Refs are generally okay here, but chart instances are managed by react-chartjs-2 now
-  // const navbarRef = useRef<HTMLDivElement>(null); // Potentially needed if Navbar wasn't a separate component
-
-  // --- Data Fetching/Initialization ---
-  // Using the static profileData object defined earlier
   const data = profileData; // In real app, fetch this data
 
-  // --- Effects ---
-
-  // Initial Loading Simulation
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsInitialLoading(false);
@@ -6527,13 +6414,6 @@ const HomePage = () => {
   );
 };
 
-//=============================================================================
-// 11. DEFAULT EXPORT & PROVIDER WRAPPER
-//=============================================================================
-
-/**
- * Wrapper component that includes the necessary global providers.
- */
 const HomePageWithProviders = () => (
   <AppProvider>
     <HomePage />

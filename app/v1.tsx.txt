@@ -289,15 +289,14 @@ interface BlogPost {
   comments: number;
   shares: number;
   category: string;
-  views?: number; // Added
-  author?: string; // Usually self, but could be guest post
+  views?: number;
+  author?: string;
 }
 
-// Extended Contribution structure for heatmap
 interface ContributionDay {
-  date: string; // YYYY-MM-DD
+  date: string;
   count: number;
-  level: 0 | 1 | 2 | 3 | 4; // For coloring the heatmap cell
+  level: 0 | 1 | 2 | 3 | 4;
 }
 
 interface ContributionData {
@@ -308,51 +307,51 @@ interface ContributionData {
 }
 
 interface Testimonial {
-  id: string; // Unique ID
+  id: string;
   name: string;
   position: string;
   company: string;
   text: string;
-  avatar?: string; // URL or path to avatar
-  rating: number; // 1-5 stars
-  date: string; // Format: YYYY-MM-DD
-  relation: string; // e.g., "Client", "Colleague", "Manager"
-  projectLink?: string; // Optional: Link to a specific project they worked on
+  avatar?: string;
+  rating: number;
+  date: string;
+  relation: string;
+  projectLink?: string;
 }
 
 interface Contact {
-  type: "Email" | "Phone" | "Location" | "Website" | "Calendly" | "Custom"; // Added more types
+  type: "Email" | "Phone" | "Location" | "Website" | "Calendly" | "Custom";
   value: string;
-  icon: IconDefinition; // FontAwesome icon definition
-  isPublic: boolean; // Control visibility
-  link?: string; // Optional: Direct link (e.g., mailto:, tel:, maps link)
+  icon: IconDefinition;
+  isPublic: boolean;
+  link?: string;
 }
 
 interface SocialMedia {
-  platform: string; // e.g., "GitHub", "LinkedIn"
+  platform: string;
   url: string;
-  icon: IconDefinition; // FontAwesome icon definition
+  icon: IconDefinition;
   username: string;
 }
 
 interface DevStats {
   repos: number;
   stars: number;
-  contributions: number; // Total contributions (maybe last year)
-  rating: string; // Can be calculated or static
+  contributions: number;
+  rating: string;
   followers: number;
   following: number;
-  streak: number; // Current or longest contribution streak
-  commits: number; // Total commits
-  prsOpened?: number; // Added
-  issuesClosed?: number; // Added
-  rank?: string; // e.g., "Top 5% Contributor" (if available)
+  streak: number;
+  commits: number;
+  prsOpened?: number;
+  issuesClosed?: number;
+  rank?: string;
 }
 
 interface TechStackItem {
   name: string;
-  icon: IconDefinition; // FontAwesome icon definition
-  proficiency: number; // Scale 1-5 or 1-100
+  icon: IconDefinition;
+  proficiency: number;
   category:
     | "Frontend"
     | "Backend"
@@ -362,19 +361,19 @@ interface TechStackItem {
     | "Tools"
     | "Other";
   yearsOfExperience: number;
-  description?: string; // Short description of proficiency/usage
+  description?: string;
 }
 
 interface FilterOption {
   label: string;
   value: string;
-  category: string; // e.g., 'tech', 'status', 'category'
+  category: string;
 }
 
 interface SortOption {
-  field: string; // e.g., 'title', 'stars', 'date'
+  field: string;
   order: "asc" | "desc";
-  label: string; // e.g., "Title (A-Z)", "Stars (High-Low)"
+  label: string;
 }
 
 interface Notification {
@@ -384,26 +383,26 @@ interface Notification {
   type: "info" | "success" | "warning" | "error";
   date: Date;
   read: boolean;
-  link?: string; // Optional link associated with the notification
+  link?: string;
 }
 
 interface TimelineEvent {
   id: string;
-  date: string; // YYYY-MM or YYYY
+  date: string;
   type: "work" | "education" | "achievement" | "project" | "certification";
   title: string;
   subtitle?: string;
   description?: string;
   icon: IconDefinition;
-  color?: string; // Optional color for the timeline dot/icon
+  color?: string;
 }
 
 // --- CONSTANTS ---
-const PROJECTS_PER_PAGE = 6; // Increased projects per page
+const PROJECTS_PER_PAGE = 6;
 const BLOG_POSTS_PER_PAGE = 4;
-const GITHUB_USERNAME = "AlphaIsYour"; // Replace with actual username if needed
-const LINKEDIN_USERNAME = "alphareno-yanuar-syaputra"; // Replace if needed
-const TWITTER_USERNAME = "yrlpha"; // Replace if needed
+const GITHUB_USERNAME = "AlphaIsYour";
+const LINKEDIN_USERNAME = "alphareno-yanuar-syaputra";
+const TWITTER_USERNAME = "yrlpha";
 
 // --- DATA ---
 // (Keep existing data, maybe add a few more items for demonstration)
@@ -733,7 +732,7 @@ const certifications: Certification[] = [
     name: "Certified Kubernetes Administrator (CKA)",
     issuer: "Cloud Native Computing Foundation",
     date: "2023-08",
-    icon: fas.faServer, // Better icon
+    icon: fas.faServer,
     credentialId: "CKA-13579",
     expiry: "2026-08",
     skills: [
@@ -752,7 +751,7 @@ const certifications: Certification[] = [
     name: "MongoDB Professional Developer",
     issuer: "MongoDB, Inc.",
     date: "2022-12",
-    icon: fas.faDatabase, // Better icon
+    icon: fas.faDatabase,
     credentialId: "MDB-97531",
     skills: [
       "MongoDB",
@@ -766,7 +765,7 @@ const certifications: Certification[] = [
       "Certifies advanced knowledge of MongoDB database development, optimization, and data modeling.",
     verificationUrl: "#",
   },
-  // Add more certifications
+
   {
     name: "Professional Scrum Master™ I (PSM I)",
     issuer: "Scrum.org",
@@ -781,7 +780,6 @@ const certifications: Certification[] = [
 ];
 
 const educationData: Education[] = [
-  // Existing education...
   {
     institution: "Stanford University",
     degree: "Master of Science",
@@ -818,7 +816,6 @@ const educationData: Education[] = [
 ];
 
 const workExperience: WorkExperience[] = [
-  // Existing work experience...
   {
     company: "Tech Innovators Inc.",
     position: "Senior Full Stack Developer",
@@ -960,7 +957,6 @@ const workExperience: WorkExperience[] = [
 ];
 
 const projects: Project[] = [
-  // Existing projects...
   {
     id: "tokoeno",
     title: "Tokoeno E-Commerce",
@@ -1302,7 +1298,6 @@ const projects: Project[] = [
 ];
 
 const achievements: Achievement[] = [
-  // Existing achievements...
   {
     title: "Open Source Contributor of the Year (Nominee)",
     date: "2023-12",
@@ -1353,7 +1348,6 @@ const achievements: Achievement[] = [
     issuer: "O'Reilly Media",
     link: "#",
   },
-  // Add more achievements
   {
     title: "GitHub Arctic Code Vault Contributor",
     date: "2020-02",
@@ -1376,7 +1370,6 @@ const achievements: Achievement[] = [
 ];
 
 const blogPosts: BlogPost[] = [
-  // Existing blog posts...
   {
     slug: "optimizing-react-performance",
     title: "Optimizing React Applications for Peak Performance",
@@ -1463,7 +1456,6 @@ const blogPosts: BlogPost[] = [
     author: "Youralpha",
     image: "/images/k10.jpg",
   },
-  // Add more blog posts
   {
     slug: "ci-cd-explained",
     title: "Demystifying CI/CD: A Practical Guide with GitHub Actions",
@@ -1501,7 +1493,6 @@ const blogPosts: BlogPost[] = [
 ];
 
 const testimonials: Testimonial[] = [
-  // Existing testimonials...
   {
     id: "t1",
     name: "Sarah Johnson",
