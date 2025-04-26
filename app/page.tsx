@@ -1641,7 +1641,7 @@ const socialMedia: SocialMedia[] = [
     url: "https://codepen.io/youralpha",
     icon: fab.faCodepen,
     username: "youralpha",
-  }, // Added Codepen
+  },
 ];
 
 const devStats: DevStats = {
