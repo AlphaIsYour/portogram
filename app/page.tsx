@@ -1649,7 +1649,7 @@ const devStats: DevStats = {
   stars: 199,
   contributions: 498,
   rating: "4.9/5",
-  followers: 358, // Placeholder
+  followers: 358,
   following: 125, // Placeholder
   streak: 87, // Placeholder
   commits: 1245, // Placeholder
