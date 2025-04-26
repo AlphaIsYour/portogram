@@ -1790,7 +1790,6 @@ const generateContributionData = (year: number): ContributionData => {
 
   while (currentDate <= endDate) {
     const dateString = currentDate.toISOString().split("T")[0];
-    // Simulate contribution count (skew towards weekdays)
     const dayOfWeek = currentDate.getDay(); // 0 = Sunday, 6 = Saturday
     let count = 0;
     if (dayOfWeek > 0 && dayOfWeek < 6) {
