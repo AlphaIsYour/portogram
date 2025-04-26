@@ -404,7 +404,6 @@ const LINKEDIN_USERNAME = "alphareno-yanuar-syaputra";
 const TWITTER_USERNAME = "yrlpha";
 
 // --- DATA ---
-// (Keep existing data, maybe add a few more items for demonstration)
 
 const skillsData: Skill[] = [
   // --- Backend ---
