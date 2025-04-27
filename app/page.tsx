@@ -1794,9 +1794,9 @@ const generateContributionData = (year: number): ContributionData => {
     const dayOfWeek = currentDate.getDay();
     let count = 0;
     if (dayOfWeek > 0 && dayOfWeek < 6) {
-      count = Math.random() < 0.6 ? Math.floor(Math.random() * 8) : 0; // Higher chance of commits
+      count = Math.random() < 0.6 ? Math.floor(Math.random() * 8) : 0;
     } else {
-      count = Math.random() < 0.2 ? Math.floor(Math.random() * 4) : 0; // Lower chance
+      count = Math.random() < 0.2 ? Math.floor(Math.random() * 4) : 0;
     }
 
     // Determine level for heatmap color
