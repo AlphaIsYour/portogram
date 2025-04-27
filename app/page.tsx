@@ -1642,14 +1642,14 @@ const socialMedia: SocialMedia[] = [
     url: "https://codepen.io/youralpha",
     icon: fab.faCodepen,
     username: "youralpha",
-  }, // Added Codepen
+  },
 ];
 
 const devStats: DevStats = {
   repos: 20,
   stars: 199,
-  contributions: 498, // Placeholder - could fetch real data
-  rating: "4.9/5", // Based on testimonials maybe?
+  contributions: 498,
+  rating: "4.9/5",
   followers: 358, // Placeholder
   following: 125, // Placeholder
   streak: 87, // Placeholder
