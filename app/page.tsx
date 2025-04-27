@@ -1851,14 +1851,12 @@ const formatDate = (
       options.year = "numeric";
       options.month = "long";
     } else {
-      // long
       options.year = "numeric";
       options.month = "long";
       if (parts.length > 2) {
         options.day = "numeric";
       }
     }
-    // Adjust for cases like "YYYY-MM" where day is not specified
     if (parts.length === 2 && format === "long") {
       return date.toLocaleDateString(undefined, {
         year: "numeric",
@@ -1869,7 +1867,7 @@ const formatDate = (
     return date.toLocaleDateString(undefined, options);
   } catch (error) {
     console.error("Error formatting date:", dateString, error);
-    return dateString; // Fallback
+    return dateString;
   }
 };
 
