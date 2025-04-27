@@ -1900,18 +1900,14 @@ const calculateDuration = (
       months += 12;
     }
 
-    // Add the partial month from the start date day
     if (
       start.getDate() > 1 &&
       end.getFullYear() === start.getFullYear() &&
       end.getMonth() === start.getMonth()
     ) {
-      // If same month/year, don't add month if less than a full month passed effectively
     } else if (end.getDate() >= start.getDate()) {
-      // Full month passed or same day
-      months += 1; // Count the end month as well if end date is past start date day
+      months += 1;
     }
-    // if end date day is before start date day, the previous logic handles it
 
     if (months >= 12) {
       years += Math.floor(months / 12);
