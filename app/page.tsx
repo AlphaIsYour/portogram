@@ -1653,8 +1653,8 @@ const devStats: DevStats = {
   followers: 358,
   following: 125,
   streak: 87,
-  commits: 1245, // Placeholder
-  prsOpened: 150, // Added
+  commits: 1245,
+  prsOpened: 150,
   issuesClosed: 210, // Added
   rank: "Top 10% GitHub Contributor (Overall)", // Added
 };
