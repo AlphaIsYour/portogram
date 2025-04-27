@@ -1597,7 +1597,7 @@ const contacts: Contact[] = [
     icon: fas.faCalendarCheck,
     isPublic: true,
     link: "https://calendly.com/youralpha/meeting",
-  }, // Added Calendly
+  },
 ];
 
 const socialMedia: SocialMedia[] = [
