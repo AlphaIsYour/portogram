@@ -670,7 +670,6 @@ const skillsData: Skill[] = [
 ];
 
 const certifications: Certification[] = [
-  // Existing certifications...
   {
     name: "AWS Certified Developer - Associate",
     issuer: "Amazon Web Services",
