@@ -1636,7 +1636,7 @@ const socialMedia: SocialMedia[] = [
     url: "https://stackoverflow.com/users/1234567/youralpha",
     icon: fab.faStackOverflow,
     username: "youralpha",
-  }, // Added Stack Overflow
+  },
   {
     platform: "Codepen",
     url: "https://codepen.io/youralpha",
