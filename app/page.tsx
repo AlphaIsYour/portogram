@@ -1601,7 +1601,6 @@ const contacts: Contact[] = [
 ];
 
 const socialMedia: SocialMedia[] = [
-  // Existing social media...
   {
     platform: "GitHub",
     url: `https://github.com/${GITHUB_USERNAME}`,
