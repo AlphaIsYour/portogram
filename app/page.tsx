@@ -1655,12 +1655,11 @@ const devStats: DevStats = {
   streak: 87,
   commits: 1245,
   prsOpened: 150,
-  issuesClosed: 210, // Added
-  rank: "Top 10% GitHub Contributor (Overall)", // Added
+  issuesClosed: 210,
+  rank: "Top 10% GitHub Contributor (Overall)",
 };
 
 const techStack: TechStackItem[] = [
-  // Existing tech stack... (Ensure consistency with skillsData)
   {
     name: "React",
     icon: fab.faReact,
