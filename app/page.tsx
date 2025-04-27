@@ -1565,7 +1565,6 @@ const testimonials: Testimonial[] = [
 ];
 
 const contacts: Contact[] = [
-  // Existing contacts...
   {
     type: "Email",
     value: "youralpha@example.com",
