@@ -1799,7 +1799,6 @@ const generateContributionData = (year: number): ContributionData => {
       count = Math.random() < 0.2 ? Math.floor(Math.random() * 4) : 0;
     }
 
-    // Determine level for heatmap color
     let level: ContributionDay["level"] = 0;
     if (count > 0 && count <= 2) level = 1;
     else if (count > 2 && count <= 4) level = 2;
@@ -1842,7 +1841,7 @@ const formatDate = (
     const day = parts.length > 2 ? parseInt(parts[2]) : 1;
     const date = new Date(year, month, day);
 
-    if (isNaN(date.getTime())) return dateString; // Return original if invalid
+    if (isNaN(date.getTime())) return dateString;
 
     const options: Intl.DateTimeFormatOptions = {};
     if (format === "short") {
