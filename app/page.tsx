@@ -1923,14 +1923,13 @@ const calculateDuration = (
       durationStr += `${months} mo${months > 1 ? "s" : ""}`;
     }
 
-    // Handle cases less than a month
     if (!durationStr) {
       const diffTime = Math.abs(end.getTime() - start.getTime());
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      if (diffDays > 0) return `< 1 mo`; // Less than a month duration
+      if (diffDays > 0) return `< 1 mo`;
     }
 
-    return durationStr || "< 1 mo"; // Fallback for very short durations
+    return durationStr || "< 1 mo";
   } catch (error) {
     console.error("Error calculating duration:", startDate, endDate, error);
     return "";
