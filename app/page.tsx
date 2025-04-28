@@ -2076,11 +2076,11 @@ const HomePage = () => {
 
     const chartOptionsBase = {
       responsive: true,
-      maintainAspectRatio: false, // Allow charts to fill container height
+      maintainAspectRatio: false,
       plugins: {
         legend: {
           labels: {
-            color: darkMode ? "#e5e7eb" : "#374151", // Adapt legend color to theme
+            color: darkMode ? "#e5e7eb" : "#374151",
             font: { size: 12 },
           },
         },
