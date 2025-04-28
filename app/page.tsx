@@ -1994,7 +1994,6 @@ const HomePage = () => {
   const notificationPanelRef = useRef<HTMLDivElement>(null);
 
   // --- MEMOIZED VALUES & COMPUTED PROPERTIES ---
-
   const processedProjects = useMemo(() => {
     let tempProjects = [...projects];
 
@@ -2091,7 +2090,7 @@ const HomePage = () => {
           borderColor: darkMode ? "#374151" : "#e5e7eb",
           borderWidth: 1,
           padding: 10,
-          displayColors: false, // Simple tooltip
+          displayColors: false,
         },
       },
       scales: {
@@ -2118,11 +2117,10 @@ const HomePage = () => {
           beginAtZero: true,
         },
         r: {
-          // Specific for Radar chart
           min: 0,
           max: 100,
           ticks: {
-            display: false, // Hide radial axis numbers
+            display: false,
             stepSize: 20,
           },
           grid: {
@@ -2132,7 +2130,7 @@ const HomePage = () => {
           },
           pointLabels: {
             color: darkMode ? "#e5e7eb" : "#374151",
-            font: { size: 13, weight: "500" }, // Make point labels slightly larger
+            font: { size: 13, weight: "500" },
           },
           angleLines: {
             // Lines from center to labels
