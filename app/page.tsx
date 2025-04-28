@@ -2300,8 +2300,8 @@ const HomePage = () => {
       const backgroundColors = [
         "#3b82f6",
         "#10b981",
-        "#f97316", // orange-500
-        "#8b5cf6", // violet-500
+        "#f97316",
+        "#8b5cf6",
         "#ec4899", // pink-500
         "#6b7280", // gray-500
       ];
