@@ -2045,7 +2045,7 @@ const HomePage = () => {
           valA = a.stats.stars;
           valB = b.stats.stars;
           break;
-        case "date": // Assuming 'date' means 'startDate'
+        case "date":
         case "startDate":
           valA = new Date(a.startDate).getTime();
           valB = new Date(b.startDate).getTime();
@@ -2058,7 +2058,6 @@ const HomePage = () => {
           return 0;
       }
 
-      // Comparison logic
       if (typeof valA === "string" && typeof valB === "string") {
         return activeSort.order === "asc"
           ? valA.localeCompare(valB)
@@ -2073,7 +2072,6 @@ const HomePage = () => {
   }, [searchQuery, activeFilters, activeSort]);
 
   const initOrUpdateCharts = useCallback(() => {
-    // Ensure DOM is ready and not loading
     if (loading || typeof window === "undefined") return;
 
     const chartOptionsBase = {
