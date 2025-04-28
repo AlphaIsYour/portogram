@@ -2262,7 +2262,7 @@ const HomePage = () => {
           ...chartOptionsBase,
           plugins: {
             ...chartOptionsBase.plugins,
-            legend: { display: false }, // Hide legend for radar
+            legend: { display: false },
             tooltip: {
               ...chartOptionsBase.plugins?.tooltip,
               callbacks: {
@@ -2273,7 +2273,6 @@ const HomePage = () => {
             },
           },
           scales: {
-            // Ensure r scale options are correctly nested
             r: chartOptionsBase.scales?.r,
           },
         } as ChartConfiguration<"radar">["options"], // Cast options type
