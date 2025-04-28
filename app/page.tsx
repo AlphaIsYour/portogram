@@ -2298,8 +2298,8 @@ const HomePage = () => {
           techStack.filter((tech) => tech.category === category).length
       );
       const backgroundColors = [
-        "#3b82f6", // blue-500
-        "#10b981", // emerald-500
+        "#3b82f6",
+        "#10b981",
         "#f97316", // orange-500
         "#8b5cf6", // violet-500
         "#ec4899", // pink-500
