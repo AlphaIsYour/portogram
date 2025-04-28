@@ -2233,7 +2233,7 @@ const HomePage = () => {
             ? categorySkills.reduce((sum, skill) => sum + skill.percentage, 0) /
               categorySkills.length
             : 0;
-        return Math.round(average); // Round the average
+        return Math.round(average);
       });
 
       chartInstances.current.skillRadar = new Chart(skillRadarCtx, {
@@ -2246,14 +2246,14 @@ const HomePage = () => {
               data: categoryAverages,
               backgroundColor: darkMode
                 ? "rgba(59, 130, 246, 0.3)"
-                : "rgba(59, 130, 246, 0.2)", // Slightly more opaque fill
+                : "rgba(59, 130, 246, 0.2)",
               borderColor: "#3b82f6",
               pointBackgroundColor: "#3b82f6",
-              pointBorderColor: darkMode ? "#111827" : "#fff", // Adjust point border for contrast
+              pointBorderColor: darkMode ? "#111827" : "#fff",
               pointHoverBackgroundColor: darkMode ? "#fff" : "#111827",
               pointHoverBorderColor: "#3b82f6",
               borderWidth: 2,
-              pointRadius: 4, // Slightly larger points
+              pointRadius: 4,
               pointHoverRadius: 6,
             },
           ],
