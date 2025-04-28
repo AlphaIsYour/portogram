@@ -2133,7 +2133,6 @@ const HomePage = () => {
             font: { size: 13, weight: "500" },
           },
           angleLines: {
-            // Lines from center to labels
             color: darkMode
               ? "rgba(75, 85, 99, 0.3)"
               : "rgba(209, 213, 219, 0.5)",
@@ -2146,7 +2145,7 @@ const HomePage = () => {
     const activityCtx = activityChartRef.current?.getContext("2d");
     if (activityCtx) {
       if (chartInstances.current.activity)
-        chartInstances.current.activity.destroy(); // Destroy previous instance
+        chartInstances.current.activity.destroy();
 
       const currentYearData =
         contributionData || generateContributionData(new Date().getFullYear());
