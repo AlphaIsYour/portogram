@@ -1945,7 +1945,7 @@ const HomePage = () => {
     null
   );
   const [blogPostDialogOpen, setBlogPostDialogOpen] = useState(false);
-  // const [currentTheme, setCurrentTheme] = useState<'dark' | 'light'>('dark'); // Simplified theme state
+  // const [currentTheme, setCurrentTheme] = useState<'dark' | 'light'>('dark');
   const [isNavbarFixed, setIsNavbarFixed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilters, setActiveFilters] = useState<FilterOption[]>([]);
@@ -1977,13 +1977,13 @@ const HomePage = () => {
     "grid"
   );
   const [contributionData, setContributionData] =
-    useState<ContributionData | null>(null); // For heatmap
+    useState<ContributionData | null>(null);
   const [tooltipInfo, setTooltipInfo] = useState<{
     show: boolean;
     x: number;
     y: number;
     text: string;
-  } | null>(null); // Tooltip for heatmap
+  } | null>(null);
 
   // --- REFS ---
   const navbarRef = useRef<HTMLDivElement>(null);
