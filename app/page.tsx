@@ -1991,7 +1991,7 @@ const HomePage = () => {
   const skillRadarChartRef = useRef<HTMLCanvasElement>(null);
   const techDistributionPieRef = useRef<HTMLCanvasElement>(null);
   const projectCategoryDonutRef = useRef<HTMLCanvasElement>(null);
-  const notificationPanelRef = useRef<HTMLDivElement>(null); // Ref for notification panel
+  const notificationPanelRef = useRef<HTMLDivElement>(null);
 
   // --- MEMOIZED VALUES & COMPUTED PROPERTIES ---
 
