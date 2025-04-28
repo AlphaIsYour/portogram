@@ -2197,7 +2197,7 @@ const HomePage = () => {
               },
             },
           },
-        } as ChartConfiguration<"line">["options"], // Cast options type
+        } as ChartConfiguration<"line">["options"],
       });
     }
 
@@ -2214,7 +2214,7 @@ const HomePage = () => {
         "Database",
         "Tools",
         "Language",
-      ]; // Expanded categories
+      ];
       const categoryAverages = categories.map((category) => {
         const categorySkills = skillsData.filter(
           (skill) =>
