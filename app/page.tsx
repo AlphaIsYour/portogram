@@ -1937,9 +1937,7 @@ const calculateDuration = (
 };
 
 // --- MAIN COMPONENT ---
-
 const HomePage = () => {
-  // --- STATE MANAGEMENT ---
   const [activeTab, setActiveTab] = useState("overview");
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [projectDialogOpen, setProjectDialogOpen] = useState(false);
@@ -1960,10 +1958,10 @@ const HomePage = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [activeSkillCategory, setActiveSkillCategory] = useState("all");
-  const chartInstances = useRef<{ [key: string]: Chart | null }>({}); // Use ref for charts
+  const chartInstances = useRef<{ [key: string]: Chart | null }>({});
   const [currentProjectPage, setCurrentProjectPage] = useState(1);
   const [currentBlogPostPage, setCurrentBlogPostPage] = useState(1);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false); // For accordion sections
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [contactFormData, setContactFormData] = useState({
     name: "",
     email: "",
