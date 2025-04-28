@@ -1889,7 +1889,7 @@ const calculateDuration = (
         : new Date(endDate);
 
     if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-      return ""; // Return empty if dates are invalid
+      return "";
     }
 
     let years = end.getFullYear() - start.getFullYear();
@@ -3118,8 +3118,8 @@ const HomePage = () => {
           alt="Cover Photo"
           layout="fill"
           objectFit="cover"
-          className="opacity-70 group-hover:opacity-90 transition-opacity duration-300"
-          priority // Cover image biasanya penting
+          className="opacity-90 group-hover:opacity-100 transition-opacity duration-300"
+          priority
         />
         {/* Overlay */}
         <div className="absolute inset-0 bg-transparent bg-opacity-30"></div>
