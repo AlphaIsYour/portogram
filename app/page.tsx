@@ -2305,7 +2305,7 @@ const HomePage = () => {
         "#ec4899",
         "#6b7280",
       ];
-      const borderColors = darkMode ? "#1f2937" : "#ffffff"; // Dark gray or white border
+      const borderColors = darkMode ? "#1f2937" : "#ffffff";
 
       chartInstances.current.techDistribution = new Chart(techDistroCtx, {
         type: "doughnut",
@@ -2316,7 +2316,7 @@ const HomePage = () => {
               data: techCategoryCounts,
               backgroundColor: backgroundColors.slice(0, techCategories.length),
               borderColor: borderColors,
-              borderWidth: 3, // Thicker border
+              borderWidth: 3,
               hoverBackgroundColor: backgroundColors.map(
                 (color) => `${color}E6`
               ), // Add slight transparency on hover
