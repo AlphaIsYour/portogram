@@ -2302,8 +2302,8 @@ const HomePage = () => {
         "#10b981",
         "#f97316",
         "#8b5cf6",
-        "#ec4899", // pink-500
-        "#6b7280", // gray-500
+        "#ec4899",
+        "#6b7280",
       ];
       const borderColors = darkMode ? "#1f2937" : "#ffffff"; // Dark gray or white border
 
