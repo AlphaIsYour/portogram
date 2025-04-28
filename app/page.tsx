@@ -2381,7 +2381,7 @@ const HomePage = () => {
       const borderColors = darkMode ? "#1f2937" : "#ffffff";
 
       chartInstances.current.projectCategory = new Chart(projectCatCtx, {
-        type: "pie", // Changed to Pie for variety
+        type: "pie",
         data: {
           labels: categories,
           datasets: [
@@ -2422,7 +2422,7 @@ const HomePage = () => {
               },
             },
           },
-          scales: {}, // No scales for pie
+          scales: {},
         } as ChartConfiguration<"pie">["options"],
       });
     }
