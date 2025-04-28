@@ -2149,7 +2149,6 @@ const HomePage = () => {
 
       const currentYearData =
         contributionData || generateContributionData(new Date().getFullYear());
-      // Aggregate contributions per month for the line chart
       const monthlyContributions = Array(12).fill(0);
       currentYearData.contributions.forEach((day) => {
         const monthIndex = new Date(day.date).getMonth();
@@ -2169,7 +2168,7 @@ const HomePage = () => {
             {
               label: `Contributions (${currentYearData.year})`,
               data: monthlyContributions,
-              borderColor: "#3b82f6", // Blue
+              borderColor: "#3b82f6",
               backgroundColor: darkMode
                 ? "rgba(59, 130, 246, 0.2)"
                 : "rgba(59, 130, 246, 0.1)",
