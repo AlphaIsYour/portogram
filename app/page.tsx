@@ -2326,7 +2326,7 @@ const HomePage = () => {
         },
         options: {
           ...chartOptionsBase,
-          cutout: "70%", // Doughnut hole size
+          cutout: "70%",
           plugins: {
             ...chartOptionsBase.plugins,
             legend: {
