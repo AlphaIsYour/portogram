@@ -2319,7 +2319,7 @@ const HomePage = () => {
               borderWidth: 3,
               hoverBackgroundColor: backgroundColors.map(
                 (color) => `${color}E6`
-              ), // Add slight transparency on hover
+              ),
               hoverBorderColor: borderColors,
             },
           ],
