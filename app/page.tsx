@@ -1971,7 +1971,7 @@ const HomePage = () => {
   const [contactFormStatus, setContactFormStatus] = useState<
     "idle" | "sending" | "success" | "error"
   >("idle");
-  const [darkMode, setDarkMode] = useState(true); // Default to dark mode
+  const [darkMode, setDarkMode] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
   const [currentProjectView, setCurrentProjectView] = useState<"grid" | "list">(
     "grid"
