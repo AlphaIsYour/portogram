@@ -1995,11 +1995,9 @@ const HomePage = () => {
 
   // --- MEMOIZED VALUES & COMPUTED PROPERTIES ---
 
-  // Filter and sort projects based on state
   const processedProjects = useMemo(() => {
     let tempProjects = [...projects];
 
-    // Apply Search Query
     if (searchQuery) {
       const lowerQuery = searchQuery.toLowerCase();
       tempProjects = tempProjects.filter(
@@ -2013,7 +2011,6 @@ const HomePage = () => {
       );
     }
 
-    // Apply Filters
     if (activeFilters.length > 0) {
       tempProjects = tempProjects.filter((project) => {
         return activeFilters.every((filter) => {
@@ -2030,12 +2027,11 @@ const HomePage = () => {
               project.category.toLowerCase() === filter.value.toLowerCase()
             );
           }
-          return true; // Should not happen with defined categories
+          return true;
         });
       });
     }
 
-    // Apply Sorting
     tempProjects.sort((a, b) => {
       let valA: string | number | undefined;
       let valB: string | number | undefined;
