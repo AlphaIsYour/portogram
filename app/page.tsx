@@ -2275,7 +2275,7 @@ const HomePage = () => {
           scales: {
             r: chartOptionsBase.scales?.r,
           },
-        } as ChartConfiguration<"radar">["options"], // Cast options type
+        } as ChartConfiguration<"radar">["options"],
       });
     }
 
