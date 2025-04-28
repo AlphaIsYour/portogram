@@ -2333,7 +2333,7 @@ const HomePage = () => {
               position: "right",
               labels: {
                 ...chartOptionsBase.plugins?.legend?.labels,
-                padding: 15, // Adjust padding
+                padding: 15,
               },
             },
             tooltip: {
@@ -2350,7 +2350,7 @@ const HomePage = () => {
               },
             },
           },
-          scales: {}, // No scales for doughnut/pie typically
+          scales: {},
         } as ChartConfiguration<"doughnut">["options"],
       });
     }
@@ -2369,7 +2369,6 @@ const HomePage = () => {
           projects.filter((project) => project.category === category).length
       );
       const backgroundColors = [
-        // Define more colors if needed
         "#3b82f6",
         "#ef4444",
         "#10b981",
