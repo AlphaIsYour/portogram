@@ -2595,11 +2595,10 @@ const HomePage = () => {
     if (savedMode) {
       setDarkMode(savedMode === "true");
     } else {
-      // Optional: Check system preference
       const prefersDark =
         window.matchMedia &&
         window.matchMedia("(prefers-color-scheme: dark)").matches;
-      setDarkMode(prefersDark); // Default to system preference if no saved pref
+      setDarkMode(prefersDark);
     }
   }, []);
 
