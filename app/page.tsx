@@ -2577,7 +2577,7 @@ const HomePage = () => {
         );
         return dateB.getTime() - dateA.getTime();
       } catch {
-        return 0; // Fallback if date parsing fails
+        return 0;
       }
     });
   }, []);
