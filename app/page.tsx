@@ -2541,7 +2541,6 @@ const HomePage = () => {
     });
 
     certifications.slice(0, 3).forEach((cert, index) => {
-      // Limit certs shown
       events.push({
         id: `cert-${index}`,
         date: cert.date,
