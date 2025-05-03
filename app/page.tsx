@@ -2569,7 +2569,6 @@ const HomePage = () => {
 
     return events.sort((a, b) => {
       try {
-        // Handle different date formats (YYYY-MM vs YYYY-MM-DD)
         const dateA = new Date(
           a.date.includes("-") ? a.date : `${a.date}-01-01`
         );
