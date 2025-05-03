@@ -2590,7 +2590,6 @@ const HomePage = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Handle dark mode persistence (example using localStorage)
   useEffect(() => {
     const savedMode = localStorage.getItem("darkMode");
     if (savedMode) {
