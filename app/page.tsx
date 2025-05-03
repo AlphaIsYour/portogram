@@ -2603,7 +2603,6 @@ const HomePage = () => {
   }, []);
 
   useEffect(() => {
-    // Apply dark mode class to root element
     if (darkMode) {
       document.documentElement.classList.add("dark");
     } else {
@@ -2613,8 +2612,6 @@ const HomePage = () => {
     localStorage.setItem("darkMode", String(darkMode));
     // Re-initialize charts on theme change if needed (colors might depend on theme)
     if (!loading) {
-      // Avoid re-init during initial load
-      // Debounce or delay chart re-initialization
       const timer = setTimeout(() => initOrUpdateCharts(), 300);
       return () => clearTimeout(timer);
     }
