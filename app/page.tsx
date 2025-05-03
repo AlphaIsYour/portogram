@@ -2502,7 +2502,7 @@ const HomePage = () => {
     workExperience.forEach((exp, index) => {
       events.push({
         id: `work-${index}`,
-        date: exp.period.split(" - ")[0], // Use start date/period
+        date: exp.period.split(" - ")[0],
         type: "work",
         title: exp.position,
         subtitle: exp.company,
