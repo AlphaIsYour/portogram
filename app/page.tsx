@@ -2484,7 +2484,6 @@ const HomePage = () => {
     []
   );
 
-  // Process and paginate blog posts
   const paginatedBlogPosts = useMemo(() => {
     // Add sorting/filtering later if needed
     const sortedPosts = [...blogPosts].sort(
