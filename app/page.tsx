@@ -2608,7 +2608,6 @@ const HomePage = () => {
     } else {
       document.documentElement.classList.remove("dark");
     }
-    // Save preference
     localStorage.setItem("darkMode", String(darkMode));
     if (!loading) {
       const timer = setTimeout(() => initOrUpdateCharts(), 300);
