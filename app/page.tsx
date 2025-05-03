@@ -2471,7 +2471,6 @@ const HomePage = () => {
     return { tech, status, category };
   }, []);
 
-  // Define sort options for projects
   const projectSortOptions: SortOption[] = useMemo(
     () => [
       { field: "startDate", order: "desc", label: "Date (Newest)" },
