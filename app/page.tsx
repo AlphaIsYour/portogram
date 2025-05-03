@@ -2556,7 +2556,6 @@ const HomePage = () => {
       .filter((p) => p.status === "completed")
       .slice(0, 4)
       .forEach((proj, index) => {
-        // Limit completed projects shown
         events.push({
           id: `proj-${index}`,
           date: proj.startDate,
