@@ -2485,7 +2485,6 @@ const HomePage = () => {
   );
 
   const paginatedBlogPosts = useMemo(() => {
-    // Add sorting/filtering later if needed
     const sortedPosts = [...blogPosts].sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
