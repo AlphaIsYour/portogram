@@ -2586,7 +2586,7 @@ const HomePage = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false);
-    }, 1500); // Simulate network/loading delay
+    }, 1500);
     return () => clearTimeout(timer);
   }, []);
 
