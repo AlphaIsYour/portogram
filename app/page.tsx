@@ -2496,7 +2496,6 @@ const HomePage = () => {
     return Math.ceil(blogPosts.length / BLOG_POSTS_PER_PAGE);
   }, []);
 
-  // Create timeline data from various sources
   const timelineData: TimelineEvent[] = useMemo(() => {
     const events: TimelineEvent[] = [];
 
