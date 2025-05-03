@@ -2610,7 +2610,6 @@ const HomePage = () => {
     }
     // Save preference
     localStorage.setItem("darkMode", String(darkMode));
-    // Re-initialize charts on theme change if needed (colors might depend on theme)
     if (!loading) {
       const timer = setTimeout(() => initOrUpdateCharts(), 300);
       return () => clearTimeout(timer);
