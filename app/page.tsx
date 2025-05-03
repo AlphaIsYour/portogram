@@ -2567,7 +2567,6 @@ const HomePage = () => {
         });
       });
 
-    // Sort events by date, descending
     return events.sort((a, b) => {
       try {
         // Handle different date formats (YYYY-MM vs YYYY-MM-DD)
