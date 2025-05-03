@@ -2526,7 +2526,6 @@ const HomePage = () => {
     });
 
     achievements.slice(0, 5).forEach((ach, index) => {
-      // Limit achievements shown
       events.push({
         id: `ach-${index}`,
         date: ach.date,
