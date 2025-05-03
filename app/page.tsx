@@ -2583,8 +2583,6 @@ const HomePage = () => {
   }, []);
 
   // --- EFFECTS ---
-
-  // Initial loading simulation
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false);
