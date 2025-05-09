@@ -405,7 +405,6 @@ const LINKEDIN_USERNAME = "alphareno-yanuar-syaputra";
 const TWITTER_USERNAME = "yrlpha";
 
 // --- DATA ---
-// (Keep existing data, maybe add a few more items for demonstration)
 
 const skillsData: Skill[] = [
   // --- Backend ---
@@ -671,7 +670,6 @@ const skillsData: Skill[] = [
 ];
 
 const certifications: Certification[] = [
-  // Existing certifications...
   {
     name: "AWS Certified Developer - Associate",
     issuer: "Amazon Web Services",
@@ -1567,7 +1565,6 @@ const testimonials: Testimonial[] = [
 ];
 
 const contacts: Contact[] = [
-  // Existing contacts...
   {
     type: "Email",
     value: "youralpha@example.com",
@@ -1593,18 +1590,17 @@ const contacts: Contact[] = [
     value: "+1 (555) 123-4567",
     icon: fas.faMobileAlt,
     isPublic: false,
-  }, // Keep non-public
+  },
   {
     type: "Calendly",
     value: "Book a Meeting",
     icon: fas.faCalendarCheck,
     isPublic: true,
     link: "https://calendly.com/youralpha/meeting",
-  }, // Added Calendly
+  },
 ];
 
 const socialMedia: SocialMedia[] = [
-  // Existing social media...
   {
     platform: "GitHub",
     url: `https://github.com/${GITHUB_USERNAME}`,
@@ -1640,31 +1636,30 @@ const socialMedia: SocialMedia[] = [
     url: "https://stackoverflow.com/users/1234567/youralpha",
     icon: fab.faStackOverflow,
     username: "youralpha",
-  }, // Added Stack Overflow
+  },
   {
     platform: "Codepen",
     url: "https://codepen.io/youralpha",
     icon: fab.faCodepen,
     username: "youralpha",
-  }, // Added Codepen
+  },
 ];
 
 const devStats: DevStats = {
   repos: 20,
   stars: 199,
-  contributions: 498, // Placeholder - could fetch real data
-  rating: "4.9/5", // Based on testimonials maybe?
-  followers: 358, // Placeholder
-  following: 125, // Placeholder
-  streak: 87, // Placeholder
-  commits: 1245, // Placeholder
-  prsOpened: 150, // Added
-  issuesClosed: 210, // Added
-  rank: "Top 10% GitHub Contributor (Overall)", // Added
+  contributions: 498,
+  rating: "4.9/5",
+  followers: 358,
+  following: 125,
+  streak: 87,
+  commits: 1245,
+  prsOpened: 150,
+  issuesClosed: 210,
+  rank: "Top 10% GitHub Contributor (Overall)",
 };
 
 const techStack: TechStackItem[] = [
-  // Existing tech stack... (Ensure consistency with skillsData)
   {
     name: "React",
     icon: fab.faReact,
@@ -1787,7 +1782,6 @@ const techStack: TechStackItem[] = [
   },
 ];
 
-// Generate more detailed contribution data for heatmap
 const generateContributionData = (year: number): ContributionData => {
   const startDate = new Date(year, 0, 1);
   const endDate = new Date(year, 11, 31);
@@ -1797,18 +1791,14 @@ const generateContributionData = (year: number): ContributionData => {
 
   while (currentDate <= endDate) {
     const dateString = currentDate.toISOString().split("T")[0];
-    // Simulate contribution count (skew towards weekdays)
-    const dayOfWeek = currentDate.getDay(); // 0 = Sunday, 6 = Saturday
+    const dayOfWeek = currentDate.getDay();
     let count = 0;
     if (dayOfWeek > 0 && dayOfWeek < 6) {
-      // Monday to Friday
-      count = Math.random() < 0.6 ? Math.floor(Math.random() * 8) : 0; // Higher chance of commits
+      count = Math.random() < 0.6 ? Math.floor(Math.random() * 8) : 0;
     } else {
-      // Weekend
-      count = Math.random() < 0.2 ? Math.floor(Math.random() * 4) : 0; // Lower chance
+      count = Math.random() < 0.2 ? Math.floor(Math.random() * 4) : 0;
     }
 
-    // Determine level for heatmap color
     let level: ContributionDay["level"] = 0;
     if (count > 0 && count <= 2) level = 1;
     else if (count > 2 && count <= 4) level = 2;
@@ -1851,7 +1841,7 @@ const formatDate = (
     const day = parts.length > 2 ? parseInt(parts[2]) : 1;
     const date = new Date(year, month, day);
 
-    if (isNaN(date.getTime())) return dateString; // Return original if invalid
+    if (isNaN(date.getTime())) return dateString;
 
     const options: Intl.DateTimeFormatOptions = {};
     if (format === "short") {
@@ -1861,14 +1851,12 @@ const formatDate = (
       options.year = "numeric";
       options.month = "long";
     } else {
-      // long
       options.year = "numeric";
       options.month = "long";
       if (parts.length > 2) {
         options.day = "numeric";
       }
     }
-    // Adjust for cases like "YYYY-MM" where day is not specified
     if (parts.length === 2 && format === "long") {
       return date.toLocaleDateString(undefined, {
         year: "numeric",
@@ -1879,7 +1867,7 @@ const formatDate = (
     return date.toLocaleDateString(undefined, options);
   } catch (error) {
     console.error("Error formatting date:", dateString, error);
-    return dateString; // Fallback
+    return dateString;
   }
 };
 
@@ -1901,7 +1889,7 @@ const calculateDuration = (
         : new Date(endDate);
 
     if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-      return ""; // Return empty if dates are invalid
+      return "";
     }
 
     let years = end.getFullYear() - start.getFullYear();
@@ -1912,18 +1900,14 @@ const calculateDuration = (
       months += 12;
     }
 
-    // Add the partial month from the start date day
     if (
       start.getDate() > 1 &&
       end.getFullYear() === start.getFullYear() &&
       end.getMonth() === start.getMonth()
     ) {
-      // If same month/year, don't add month if less than a full month passed effectively
     } else if (end.getDate() >= start.getDate()) {
-      // Full month passed or same day
-      months += 1; // Count the end month as well if end date is past start date day
+      months += 1;
     }
-    // if end date day is before start date day, the previous logic handles it
 
     if (months >= 12) {
       years += Math.floor(months / 12);
@@ -1939,14 +1923,13 @@ const calculateDuration = (
       durationStr += `${months} mo${months > 1 ? "s" : ""}`;
     }
 
-    // Handle cases less than a month
     if (!durationStr) {
       const diffTime = Math.abs(end.getTime() - start.getTime());
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      if (diffDays > 0) return `< 1 mo`; // Less than a month duration
+      if (diffDays > 0) return `< 1 mo`;
     }
 
-    return durationStr || "< 1 mo"; // Fallback for very short durations
+    return durationStr || "< 1 mo";
   } catch (error) {
     console.error("Error calculating duration:", startDate, endDate, error);
     return "";
@@ -1954,9 +1937,7 @@ const calculateDuration = (
 };
 
 // --- MAIN COMPONENT ---
-
 const HomePage = () => {
-  // --- STATE MANAGEMENT ---
   const [activeTab, setActiveTab] = useState("overview");
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [projectDialogOpen, setProjectDialogOpen] = useState(false);
@@ -1964,7 +1945,7 @@ const HomePage = () => {
     null
   );
   const [blogPostDialogOpen, setBlogPostDialogOpen] = useState(false);
-  // const [currentTheme, setCurrentTheme] = useState<'dark' | 'light'>('dark'); // Simplified theme state
+  // const [currentTheme, setCurrentTheme] = useState<'dark' | 'light'>('dark');
   const [isNavbarFixed, setIsNavbarFixed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilters, setActiveFilters] = useState<FilterOption[]>([]);
@@ -1977,10 +1958,10 @@ const HomePage = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [activeSkillCategory, setActiveSkillCategory] = useState("all");
-  const chartInstances = useRef<{ [key: string]: Chart | null }>({}); // Use ref for charts
+  const chartInstances = useRef<{ [key: string]: Chart | null }>({});
   const [currentProjectPage, setCurrentProjectPage] = useState(1);
   const [currentBlogPostPage, setCurrentBlogPostPage] = useState(1);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false); // For accordion sections
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [contactFormData, setContactFormData] = useState({
     name: "",
     email: "",
@@ -1990,19 +1971,19 @@ const HomePage = () => {
   const [contactFormStatus, setContactFormStatus] = useState<
     "idle" | "sending" | "success" | "error"
   >("idle");
-  const [darkMode, setDarkMode] = useState(true); // Default to dark mode
+  const [darkMode, setDarkMode] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
   const [currentProjectView, setCurrentProjectView] = useState<"grid" | "list">(
     "grid"
   );
   const [contributionData, setContributionData] =
-    useState<ContributionData | null>(null); // For heatmap
+    useState<ContributionData | null>(null);
   const [tooltipInfo, setTooltipInfo] = useState<{
     show: boolean;
     x: number;
     y: number;
     text: string;
-  } | null>(null); // Tooltip for heatmap
+  } | null>(null);
 
   // --- REFS ---
   const navbarRef = useRef<HTMLDivElement>(null);
@@ -2010,15 +1991,12 @@ const HomePage = () => {
   const skillRadarChartRef = useRef<HTMLCanvasElement>(null);
   const techDistributionPieRef = useRef<HTMLCanvasElement>(null);
   const projectCategoryDonutRef = useRef<HTMLCanvasElement>(null);
-  const notificationPanelRef = useRef<HTMLDivElement>(null); // Ref for notification panel
+  const notificationPanelRef = useRef<HTMLDivElement>(null);
 
   // --- MEMOIZED VALUES & COMPUTED PROPERTIES ---
-
-  // Filter and sort projects based on state
   const processedProjects = useMemo(() => {
     let tempProjects = [...projects];
 
-    // Apply Search Query
     if (searchQuery) {
       const lowerQuery = searchQuery.toLowerCase();
       tempProjects = tempProjects.filter(
@@ -2032,7 +2010,6 @@ const HomePage = () => {
       );
     }
 
-    // Apply Filters
     if (activeFilters.length > 0) {
       tempProjects = tempProjects.filter((project) => {
         return activeFilters.every((filter) => {
@@ -2049,12 +2026,11 @@ const HomePage = () => {
               project.category.toLowerCase() === filter.value.toLowerCase()
             );
           }
-          return true; // Should not happen with defined categories
+          return true;
         });
       });
     }
 
-    // Apply Sorting
     tempProjects.sort((a, b) => {
       let valA: string | number | undefined;
       let valB: string | number | undefined;
@@ -2068,7 +2044,7 @@ const HomePage = () => {
           valA = a.stats.stars;
           valB = b.stats.stars;
           break;
-        case "date": // Assuming 'date' means 'startDate'
+        case "date":
         case "startDate":
           valA = new Date(a.startDate).getTime();
           valB = new Date(b.startDate).getTime();
@@ -2081,7 +2057,6 @@ const HomePage = () => {
           return 0;
       }
 
-      // Comparison logic
       if (typeof valA === "string" && typeof valB === "string") {
         return activeSort.order === "asc"
           ? valA.localeCompare(valB)
@@ -2096,16 +2071,15 @@ const HomePage = () => {
   }, [searchQuery, activeFilters, activeSort]);
 
   const initOrUpdateCharts = useCallback(() => {
-    // Ensure DOM is ready and not loading
     if (loading || typeof window === "undefined") return;
 
     const chartOptionsBase = {
       responsive: true,
-      maintainAspectRatio: false, // Allow charts to fill container height
+      maintainAspectRatio: false,
       plugins: {
         legend: {
           labels: {
-            color: darkMode ? "#e5e7eb" : "#374151", // Adapt legend color to theme
+            color: darkMode ? "#e5e7eb" : "#374151",
             font: { size: 12 },
           },
         },
@@ -2116,7 +2090,7 @@ const HomePage = () => {
           borderColor: darkMode ? "#374151" : "#e5e7eb",
           borderWidth: 1,
           padding: 10,
-          displayColors: false, // Simple tooltip
+          displayColors: false,
         },
       },
       scales: {
@@ -2143,11 +2117,10 @@ const HomePage = () => {
           beginAtZero: true,
         },
         r: {
-          // Specific for Radar chart
           min: 0,
           max: 100,
           ticks: {
-            display: false, // Hide radial axis numbers
+            display: false,
             stepSize: 20,
           },
           grid: {
@@ -2157,10 +2130,9 @@ const HomePage = () => {
           },
           pointLabels: {
             color: darkMode ? "#e5e7eb" : "#374151",
-            font: { size: 13, weight: "500" }, // Make point labels slightly larger
+            font: { size: 13, weight: "500" },
           },
           angleLines: {
-            // Lines from center to labels
             color: darkMode
               ? "rgba(75, 85, 99, 0.3)"
               : "rgba(209, 213, 219, 0.5)",
@@ -2173,11 +2145,10 @@ const HomePage = () => {
     const activityCtx = activityChartRef.current?.getContext("2d");
     if (activityCtx) {
       if (chartInstances.current.activity)
-        chartInstances.current.activity.destroy(); // Destroy previous instance
+        chartInstances.current.activity.destroy();
 
       const currentYearData =
         contributionData || generateContributionData(new Date().getFullYear());
-      // Aggregate contributions per month for the line chart
       const monthlyContributions = Array(12).fill(0);
       currentYearData.contributions.forEach((day) => {
         const monthIndex = new Date(day.date).getMonth();
@@ -2197,7 +2168,7 @@ const HomePage = () => {
             {
               label: `Contributions (${currentYearData.year})`,
               data: monthlyContributions,
-              borderColor: "#3b82f6", // Blue
+              borderColor: "#3b82f6",
               backgroundColor: darkMode
                 ? "rgba(59, 130, 246, 0.2)"
                 : "rgba(59, 130, 246, 0.1)",
@@ -2226,7 +2197,7 @@ const HomePage = () => {
               },
             },
           },
-        } as ChartConfiguration<"line">["options"], // Cast options type
+        } as ChartConfiguration<"line">["options"],
       });
     }
 
@@ -2243,7 +2214,7 @@ const HomePage = () => {
         "Database",
         "Tools",
         "Language",
-      ]; // Expanded categories
+      ];
       const categoryAverages = categories.map((category) => {
         const categorySkills = skillsData.filter(
           (skill) =>
@@ -2262,7 +2233,7 @@ const HomePage = () => {
             ? categorySkills.reduce((sum, skill) => sum + skill.percentage, 0) /
               categorySkills.length
             : 0;
-        return Math.round(average); // Round the average
+        return Math.round(average);
       });
 
       chartInstances.current.skillRadar = new Chart(skillRadarCtx, {
@@ -2275,14 +2246,14 @@ const HomePage = () => {
               data: categoryAverages,
               backgroundColor: darkMode
                 ? "rgba(59, 130, 246, 0.3)"
-                : "rgba(59, 130, 246, 0.2)", // Slightly more opaque fill
+                : "rgba(59, 130, 246, 0.2)",
               borderColor: "#3b82f6",
               pointBackgroundColor: "#3b82f6",
-              pointBorderColor: darkMode ? "#111827" : "#fff", // Adjust point border for contrast
+              pointBorderColor: darkMode ? "#111827" : "#fff",
               pointHoverBackgroundColor: darkMode ? "#fff" : "#111827",
               pointHoverBorderColor: "#3b82f6",
               borderWidth: 2,
-              pointRadius: 4, // Slightly larger points
+              pointRadius: 4,
               pointHoverRadius: 6,
             },
           ],
@@ -2291,7 +2262,7 @@ const HomePage = () => {
           ...chartOptionsBase,
           plugins: {
             ...chartOptionsBase.plugins,
-            legend: { display: false }, // Hide legend for radar
+            legend: { display: false },
             tooltip: {
               ...chartOptionsBase.plugins?.tooltip,
               callbacks: {
@@ -2302,10 +2273,9 @@ const HomePage = () => {
             },
           },
           scales: {
-            // Ensure r scale options are correctly nested
             r: chartOptionsBase.scales?.r,
           },
-        } as ChartConfiguration<"radar">["options"], // Cast options type
+        } as ChartConfiguration<"radar">["options"],
       });
     }
 
@@ -2328,15 +2298,14 @@ const HomePage = () => {
           techStack.filter((tech) => tech.category === category).length
       );
       const backgroundColors = [
-        // Define colors, ensure enough for categories
-        "#3b82f6", // blue-500
-        "#10b981", // emerald-500
-        "#f97316", // orange-500
-        "#8b5cf6", // violet-500
-        "#ec4899", // pink-500
-        "#6b7280", // gray-500
+        "#3b82f6",
+        "#10b981",
+        "#f97316",
+        "#8b5cf6",
+        "#ec4899",
+        "#6b7280",
       ];
-      const borderColors = darkMode ? "#1f2937" : "#ffffff"; // Dark gray or white border
+      const borderColors = darkMode ? "#1f2937" : "#ffffff";
 
       chartInstances.current.techDistribution = new Chart(techDistroCtx, {
         type: "doughnut",
@@ -2347,24 +2316,24 @@ const HomePage = () => {
               data: techCategoryCounts,
               backgroundColor: backgroundColors.slice(0, techCategories.length),
               borderColor: borderColors,
-              borderWidth: 3, // Thicker border
+              borderWidth: 3,
               hoverBackgroundColor: backgroundColors.map(
                 (color) => `${color}E6`
-              ), // Add slight transparency on hover
+              ),
               hoverBorderColor: borderColors,
             },
           ],
         },
         options: {
           ...chartOptionsBase,
-          cutout: "70%", // Doughnut hole size
+          cutout: "70%",
           plugins: {
             ...chartOptionsBase.plugins,
             legend: {
               position: "right",
               labels: {
                 ...chartOptionsBase.plugins?.legend?.labels,
-                padding: 15, // Adjust padding
+                padding: 15,
               },
             },
             tooltip: {
@@ -2381,7 +2350,7 @@ const HomePage = () => {
               },
             },
           },
-          scales: {}, // No scales for doughnut/pie typically
+          scales: {},
         } as ChartConfiguration<"doughnut">["options"],
       });
     }
@@ -2400,7 +2369,6 @@ const HomePage = () => {
           projects.filter((project) => project.category === category).length
       );
       const backgroundColors = [
-        // Define more colors if needed
         "#3b82f6",
         "#ef4444",
         "#10b981",
@@ -2413,7 +2381,7 @@ const HomePage = () => {
       const borderColors = darkMode ? "#1f2937" : "#ffffff";
 
       chartInstances.current.projectCategory = new Chart(projectCatCtx, {
-        type: "pie", // Changed to Pie for variety
+        type: "pie",
         data: {
           labels: categories,
           datasets: [
@@ -2454,7 +2422,7 @@ const HomePage = () => {
               },
             },
           },
-          scales: {}, // No scales for pie
+          scales: {},
         } as ChartConfiguration<"pie">["options"],
       });
     }
@@ -2503,7 +2471,6 @@ const HomePage = () => {
     return { tech, status, category };
   }, []);
 
-  // Define sort options for projects
   const projectSortOptions: SortOption[] = useMemo(
     () => [
       { field: "startDate", order: "desc", label: "Date (Newest)" },
@@ -2517,9 +2484,7 @@ const HomePage = () => {
     []
   );
 
-  // Process and paginate blog posts
   const paginatedBlogPosts = useMemo(() => {
-    // Add sorting/filtering later if needed
     const sortedPosts = [...blogPosts].sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
@@ -2531,14 +2496,13 @@ const HomePage = () => {
     return Math.ceil(blogPosts.length / BLOG_POSTS_PER_PAGE);
   }, []);
 
-  // Create timeline data from various sources
   const timelineData: TimelineEvent[] = useMemo(() => {
     const events: TimelineEvent[] = [];
 
     workExperience.forEach((exp, index) => {
       events.push({
         id: `work-${index}`,
-        date: exp.period.split(" - ")[0], // Use start date/period
+        date: exp.period.split(" - ")[0],
         type: "work",
         title: exp.position,
         subtitle: exp.company,
@@ -2562,7 +2526,6 @@ const HomePage = () => {
     });
 
     achievements.slice(0, 5).forEach((ach, index) => {
-      // Limit achievements shown
       events.push({
         id: `ach-${index}`,
         date: ach.date,
@@ -2578,7 +2541,6 @@ const HomePage = () => {
     });
 
     certifications.slice(0, 3).forEach((cert, index) => {
-      // Limit certs shown
       events.push({
         id: `cert-${index}`,
         date: cert.date,
@@ -2594,7 +2556,6 @@ const HomePage = () => {
       .filter((p) => p.status === "completed")
       .slice(0, 4)
       .forEach((proj, index) => {
-        // Limit completed projects shown
         events.push({
           id: `proj-${index}`,
           date: proj.startDate,
@@ -2606,10 +2567,8 @@ const HomePage = () => {
         });
       });
 
-    // Sort events by date, descending
     return events.sort((a, b) => {
       try {
-        // Handle different date formats (YYYY-MM vs YYYY-MM-DD)
         const dateA = new Date(
           a.date.includes("-") ? a.date : `${a.date}-01-01`
         );
@@ -2618,48 +2577,39 @@ const HomePage = () => {
         );
         return dateB.getTime() - dateA.getTime();
       } catch {
-        return 0; // Fallback if date parsing fails
+        return 0;
       }
     });
   }, []);
 
   // --- EFFECTS ---
-
-  // Initial loading simulation
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false);
-    }, 1500); // Simulate network/loading delay
+    }, 1500);
     return () => clearTimeout(timer);
   }, []);
 
-  // Handle dark mode persistence (example using localStorage)
   useEffect(() => {
     const savedMode = localStorage.getItem("darkMode");
     if (savedMode) {
       setDarkMode(savedMode === "true");
     } else {
-      // Optional: Check system preference
       const prefersDark =
         window.matchMedia &&
         window.matchMedia("(prefers-color-scheme: dark)").matches;
-      setDarkMode(prefersDark); // Default to system preference if no saved pref
+      setDarkMode(prefersDark);
     }
   }, []);
 
   useEffect(() => {
-    // Apply dark mode class to root element
     if (darkMode) {
       document.documentElement.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
     }
-    // Save preference
     localStorage.setItem("darkMode", String(darkMode));
-    // Re-initialize charts on theme change if needed (colors might depend on theme)
     if (!loading) {
-      // Avoid re-init during initial load
-      // Debounce or delay chart re-initialization
       const timer = setTimeout(() => initOrUpdateCharts(), 300);
       return () => clearTimeout(timer);
     }
@@ -3047,7 +2997,7 @@ const HomePage = () => {
             <button
               key={tab.id}
               onClick={() => handleTabClick(tab.id)}
-              className={`flex items-center whitespace-nowrap px-2 py-3 text-sm md:text-base font-medium transition-all duration-200 ease-in-out border-b-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 rounded-t-md ${
+              className={`flex items-center whitespace-nowrap px-2 py-3 text-sm md:text-base font-medium transition-all duration-200 ease-in-out border-b-2 ${
                 activeTab === tab.id
                   ? "text-white border-blue-500"
                   : "text-gray-400 border-transparent hover:text-gray-200 hover:border-gray-500"
@@ -3135,8 +3085,8 @@ const HomePage = () => {
           alt="Cover Photo"
           layout="fill"
           objectFit="cover"
-          className="opacity-70 group-hover:opacity-90 transition-opacity duration-300"
-          priority // Cover image biasanya penting
+          className="opacity-90 group-hover:opacity-100 transition-opacity duration-300"
+          priority
         />
         {/* Overlay */}
         <div className="absolute inset-0 bg-transparent bg-opacity-30"></div>
@@ -3472,8 +3422,8 @@ const HomePage = () => {
                 <div className="h-48 bg-gradient-to-br from-gray-700 to-gray-800 relative overflow-hidden">
                   {projects[0].image ? (
                     <Image
-                      layout="fill"
-                      objectFit="cover"
+                      width={800}
+                      height={450}
                       src={projects[0].image}
                       alt={`${projects[0].title} screenshot`}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
@@ -4256,14 +4206,43 @@ const HomePage = () => {
 
   // --- MAIN RENDER ---
 
+  // Improved Loading Component
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white">
-        <FontAwesomeIcon
-          icon={fas.faSpinner}
-          className="animate-spin text-4xl text-blue-500"
-        />
-        <span className="ml-4 text-xl">Loading Portfolio...</span>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900">
+        <div className="relative">
+          {/* Outer circle with pulse effect */}
+          <div className="absolute inset-0 rounded-full bg-blue-500 opacity-30 animate-ping"></div>
+
+          {/* Inner spinning circle */}
+          <div className="relative flex items-center justify-center w-16 h-16 bg-gray-800 rounded-full">
+            <FontAwesomeIcon
+              icon={fas.faSpinner}
+              className="animate-spin text-2xl text-blue-400"
+            />
+          </div>
+        </div>
+
+        {/* Loading text with fade animation */}
+        <div className="mt-6 text-center">
+          <h3 className="text-xl font-semibold text-blue-400 animate-pulse">
+            Loading Portfolio
+          </h3>
+          <div className="flex justify-center mt-2">
+            <span
+              className="inline-block w-2 h-2 mx-1 bg-blue-400 rounded-full animate-bounce"
+              style={{ animationDelay: "0ms" }}
+            ></span>
+            <span
+              className="inline-block w-2 h-2 mx-1 bg-blue-400 rounded-full animate-bounce"
+              style={{ animationDelay: "300ms" }}
+            ></span>
+            <span
+              className="inline-block w-2 h-2 mx-1 bg-blue-400 rounded-full animate-bounce"
+              style={{ animationDelay: "600ms" }}
+            ></span>
+          </div>
+        </div>
       </div>
     );
   }
@@ -4280,47 +4259,57 @@ const HomePage = () => {
 
       <div
         ref={navbarRef}
-        className={`sticky top-0 z-40 transition-shadow duration-300 bg-gray-850 dark:bg-gray-850 ${
-          // Background selalu ada
-          isNavbarFixed ? "shadow-lg" : "" // Hanya shadow yang conditional
+        className={`sticky top-0 z-40 px-2 transition-all duration-300 bg-gray-900 backdrop-blur-sm ${
+          isNavbarFixed ? "shadow-lg shadow-gray-900/50" : ""
         }`}
       >
-        <div className="container mx-auto px-4">
-          {/* Mobile Menu Button */}
-          <div className="md:hidden flex justify-end pt-4">
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
-              aria-controls="mobile-menu"
-              aria-expanded={mobileMenuOpen}
-            >
-              <span className="sr-only">Open main menu</span>
-              <FontAwesomeIcon
-                icon={mobileMenuOpen ? fas.faTimes : fas.faBars}
-                className="h-6 w-6"
-              />
-            </button>
+        <div className="container px-4">
+          <div className="flex items-center justify-between h-14">
+            {/* Desktop Navigation - with more space from logo */}
+            <div className="hidden md:block flex-grow mx-8 px-5">
+              <div className="flex justify-center space-x-4 mx-auto ml-5">
+                {renderNavigationTabs()}
+              </div>
+            </div>
+
+            {/* Right side actions */}
+            <div className="flex items-center">
+              {/* Mobile Menu Button */}
+              <div className="md:hidden">
+                <button
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  className="p-1 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+                  aria-controls="mobile-menu"
+                  aria-expanded={mobileMenuOpen}
+                >
+                  <span className="sr-only">Open main menu</span>
+                  <FontAwesomeIcon
+                    icon={mobileMenuOpen ? fas.faTimes : fas.faBars}
+                    className="h-5 w-5"
+                  />
+                </button>
+              </div>
+            </div>
           </div>
-          {/* Desktop Navigation */}
-          <div className="hidden md:block">{renderNavigationTabs()}</div>
         </div>
-        {/* Mobile Menu Panel */}
+
+        {/* Mobile Menu Panel - More compact */}
         <Transition
           show={mobileMenuOpen}
           as={Fragment}
           enter="transition ease-out duration-200"
-          enterFrom="opacity-0 scale-95"
-          enterTo="opacity-100 scale-100"
+          enterFrom="opacity-0 -translate-y-2"
+          enterTo="opacity-100 translate-y-0"
           leave="transition ease-in duration-150"
-          leaveFrom="opacity-100 scale-100"
-          leaveTo="opacity-0 scale-95"
+          leaveFrom="opacity-100 translate-y-0"
+          leaveTo="opacity-0 -translate-y-2"
         >
           <div
-            className="md:hidden absolute top-full left-0 right-0 bg-gray-800 dark:bg-gray-800 shadow-lg pb-4 border-t border-gray-700" // Tambah border pemisah?
+            className="md:hidden absolute top-full left-0 right-0 bg-gray-800 shadow-md border-t border-gray-700"
             id="mobile-menu"
           >
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-              {/* Reuse tab data for mobile */}
+            <div className="grid grid-cols-2 gap-1 p-2 max-h-[60vh] overflow-y-auto">
+              {/* Grid layout untuk menu mobile yang lebih padat */}
               {[
                 { id: "overview", icon: fas.faHome, label: "Overview" },
                 { id: "projects", icon: fas.faCodeBranch, label: "Projects" },
@@ -4356,15 +4345,18 @@ const HomePage = () => {
               ].map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => handleTabClick(tab.id)}
-                  className={`w-full text-left flex items-center px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                  onClick={() => {
+                    handleTabClick(tab.id);
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`flex items-center px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
                     activeTab === tab.id
                       ? "bg-blue-600 text-white"
                       : "text-gray-300 hover:bg-gray-700 hover:text-white"
                   }`}
                   aria-current={activeTab === tab.id ? "page" : undefined}
                 >
-                  <FontAwesomeIcon icon={tab.icon} className="mr-3 h-5 w-5" />
+                  <FontAwesomeIcon icon={tab.icon} className="mr-2 h-3 w-3" />
                   {tab.label}
                 </button>
               ))}
@@ -4526,9 +4518,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           <Image
             src={project.image}
             alt={`${project.title}`}
-            width={128}
-            height={96}
-            className="w-full sm:w-32 h-auto sm:h-24 object-cover rounded-md mb-3 sm:mb-0 sm:mr-4 flex-shrink-0"
+            fill={true}
+            objectFit="cover"
+            className="object-cover rounded-md mb-3 sm:mb-0 sm:mr-4 flex-shrink-0"
           />
         )}
         {!project.image && (
@@ -4632,13 +4624,15 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         {/* Project Image */}
         <div className="h-48 bg-gradient-to-br from-gray-700 to-gray-800 relative overflow-hidden">
           {project.image ? (
-            <Image
-              src={project.image}
-              alt={`${project.title} screenshot`}
-              layout="fill"
-              objectFit="cover"
-              className="transition-transform duration-300 group-hover:scale-105"
-            />
+            <div className="w-full overflow-hidden rounded-md aspect-video">
+              <Image
+                width={800}
+                height={450}
+                src={project.image}
+                alt={`${project.title} screenshot`}
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              />
+            </div>
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-500">
               <FontAwesomeIcon icon={fas.faCodeBranch} size="3x" />
@@ -4821,13 +4815,15 @@ const ProjectDialog: React.FC<ProjectDialogProps> = ({
                 <div className="mt-2 space-y-4 max-h-[70vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700">
                   {/* Optional Image */}
                   {project.image && (
-                    <Image
-                      src={project.image}
-                      alt={`${project.title}`}
-                      width={800} // Sesuaikan dengan rasio gambar asli jika memungkinkan
-                      height={450} // Sesuaikan dengan rasio gambar asli jika memungkinkan
-                      className="w-full h-auto max-h-64 object-contain rounded-md mb-4 bg-gray-700"
-                    />
+                    <div className="relative w-full aspect-video max-h-64 mb-4 bg-gray-700 rounded-md">
+                      <Image
+                        src={project.image}
+                        alt={`${project.title}`}
+                        fill={true}
+                        className="object-cover rounded-md"
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                      />
+                    </div>
                   )}
 
                   {/* Description */}

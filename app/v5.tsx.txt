@@ -1,0 +1,4702 @@
+"use client"; // <-- PASTIKAN ADA DIRECTIVE INI DI SINI!
+/* eslint-disable @typescript-eslint/no-unused-vars */
+// --- BAGIAN SERVER ---
+import { PrismaClient, Prisma } from "@/app/generated/prisma/client"; // <-- SESUAIKAN PATH prisma client!
+import type {
+  // Impor tipe data Prisma yang dibutuhkan
+  User as PrismaUser,
+  Skill as PrismaSkill,
+  Project as PrismaProject,
+  WorkExperience as PrismaWorkExperience,
+  Education as PrismaEducation,
+  Certification as PrismaCertification,
+  Achievement as PrismaAchievement,
+  BlogPost as PrismaBlogPost,
+  Testimonial as PrismaTestimonial,
+  Contact as PrismaContact,
+  SocialMedia as PrismaSocialMedia,
+  DevStats as PrismaDevStats, // Dst... sesuaikan dengan relasi yang di-include
+} from "@/app/generated/prisma/client"; // <-- SESUAIKAN PATH prisma client!
+
+// Inisialisasi Prisma Client (sebaiknya singleton di aplikasi nyata)
+const prisma = new PrismaClient();
+
+// --- FUNGSI FETCH DATA SERVER ---
+// --- FUNGSI FETCH DATA SERVER ---
+async function getPortfolioData(userIdentifier: string) {
+    // Log awal fetch
+    console.log(`[Server Fetch] Attempting to fetch data for user identifier: ${userIdentifier}`);
+
+    try {
+        // Fetch user beserta semua relasi yang dibutuhkan oleh komponen client
+        const userWithRelations = await prisma.user.findUnique({
+            where: {
+                // Kamu bisa pakai email atau username, pastikan salah satu unik
+                email: userIdentifier,
+                // username: userIdentifier, // Jika pakai username
+            },
+            include: {
+                skills: { orderBy: { percentage: 'desc' } }, // Urutkan skill berdasarkan persentase
+                projects: {
+                    include: { // Include relasi 1-M dari Project
+                        features: true,
+                        techStack: true,
+                        collaborators: true,
+                        learnings: true,
+                        // TIDAK include M2M (skills, testimonials) di sini untuk menghindari query terlalu dalam/circular
+                    },
+                    orderBy: { startDate: 'desc' } // Urutkan project berdasarkan tanggal mulai terbaru
+                },
+                workExperiences: {
+                    include: { // Include relasi 1-M dari WorkExperience
+                        responsibilities: true,
+                        technologies: true,
+                        achievements: true
+                    },
+                    // Perlu field tanggal mulai yang sebenarnya untuk sorting yg benar
+                    // Untuk sementara, urutkan berdasarkan kapan diupdate
+                    orderBy: { updatedAt: 'desc' }
+                },
+                educations: {
+                    include: { // Include relasi 1-M dari Education
+                        achievements: true
+                    },
+                    // Urutkan berdasarkan kapan diupdate
+                    orderBy: { updatedAt: 'desc' }
+                },
+                certifications: {
+                    include: { // Include relasi 1-M dari Certification
+                        skills: true
+                    },
+                    orderBy: { date: 'desc' } // Urutkan berdasarkan tanggal sertifikasi terbaru
+                },
+                achievements: { orderBy: { date: 'desc' } }, // Urutkan achievement berdasarkan tanggal terbaru
+                blogPosts: {
+                    include: { // Include relasi 1-M dari BlogPost
+                        tags: true
+                    },
+                    orderBy: { date: 'desc' } // Urutkan blog post berdasarkan tanggal terbaru
+                },
+                testimonials: {
+                    // Include relasi M2M ProjectTestimonial jika perlu menampilkan project terkait di testimonial
+                    // include: { projectTestimonials: { include: { project: { select: { title: true, slug: true } } } } },
+                    orderBy: { date: 'desc' } // Urutkan testimoni berdasarkan tanggal terbaru
+                },
+                contacts: true,    // Include kontak
+                socialMedia: true, // Include sosial media
+                devStats: true,    // Include dev stats (one-to-one)
+                // contributionData: { include: { days: true } }, // Include jika data kontribusi ada dan digunakan
+                // timelineEvents: { orderBy: { date: 'desc' } }, // Include jika data timeline ada dan digunakan
+            }
+        });
+
+        // Handle jika user tidak ditemukan
+        if (!userWithRelations) {
+            console.error(`[Server Fetch] User not found with identifier: ${userIdentifier}`);
+            // Di aplikasi nyata, mungkin lebih baik throw error atau redirect
+            return null;
+        }
+
+        console.log(`[Server Fetch] Data fetched successfully for user: ${userWithRelations.username}`);
+
+        // --- Serialisasi Data ---
+        // Fungsi rekursif untuk mengkonversi semua objek Date menjadi string ISO
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const serializeDates = (obj: any): any => {
+            // Handle null dan tipe non-objek
+            if (obj === null || typeof obj !== 'object') {
+                return obj;
+            }
+            // Handle objek Date
+            if (obj instanceof Date) {
+                return obj.toISOString();
+            }
+            // Handle Array
+            if (Array.isArray(obj)) {
+                return obj.map(serializeDates);
+            }
+            // Handle Objek biasa
+            const newObj: { [key: string]: any } = {}; // eslint-disable-line @typescript-eslint/no-explicit-any
+            for (const key in obj) {
+                // Pastikan properti milik objek itu sendiri (bukan dari prototype)
+                if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                    newObj[key] = serializeDates(obj[key]); // Rekursif
+                }
+            }
+            return newObj;
+        };
+
+        // Lakukan serialisasi pada data yang diambil
+        const serializableData = serializeDates(userWithRelations);
+
+        // Persiapan akhir data untuk props client component
+        // Memastikan semua array relasi ada, meskipun kosong, untuk mencegah error di client
+        const propsData = {
+            ...serializableData,
+            // Pastikan array ada (meskipun kosong)
+            skills: serializableData.skills ?? [],
+            projects: serializableData.projects ?? [],
+            workExperiences: serializableData.workExperiences ?? [],
+            educations: serializableData.educations ?? [],
+            certifications: serializableData.certifications ?? [],
+            achievements: serializableData.achievements ?? [],
+            blogPosts: serializableData.blogPosts ?? [],
+            testimonials: serializableData.testimonials ?? [],
+            contacts: serializableData.contacts ?? [],
+            socialMedia: serializableData.socialMedia ?? [],
+            devStats: serializableData.devStats, // devStats bisa null jika one-to-one dan belum ada data
+            // contributionData: serializableData.contributionData, // Uncomment jika ada
+            // timelineEvents: serializableData.timelineEvents ?? [], // Uncomment jika ada
+        };
+
+        console.log("[Server Fetch] Data serialized and prepared for client.");
+        return propsData;
+
+    } catch (error) {
+        console.error("[Server Fetch] Error fetching portfolio data:", error);
+        // Pertimbangkan untuk log error lebih detail atau mekanisme retry
+        return null; // Kembalikan null jika ada error saat fetch
+    }
+    // Jangan disconnect prisma di sini jika ini adalah bagian dari aplikasi yang berjalan terus-menerus
+    // finally {
+    //     await prisma.$disconnect();
+    // }
+}
+
+// --- SERVER COMPONENT (PAGE) ---
+export default async function Page() {
+  // !!!! GANTI IDENTIFIER USER DI SINI !!!!
+  const userIdentifier = "youralpha@example.com"; // <-- GANTI INI!
+  const portfolioData = await getPortfolioData(userIdentifier);
+
+  if (!portfolioData) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-900 text-red-400 p-8 text-center">
+        {" "}
+        Error: Gagal memuat data portfolio.{" "}
+      </div>
+    );
+  }
+
+  // Render Client Component di bawah, lewatkan data sebagai props
+  return <PortfolioClientComponent portfolioData={portfolioData} />;
+}
+
+// ==============================================================
+// ================== CLIENT COMPONENT START ==================
+// ==============================================================
+
+// Client-side imports (biarkan import React, hooks, library lain yang sudah ada di v1.tsx)
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+  Fragment,
+  SetStateAction,
+  RefObject,
+} from "react"; // <-- Pastikan React diimpor
+import Image from "next/image";
+import {
+  Chart,
+  registerables,
+  ChartConfiguration,
+  TooltipItem,
+} from "chart.js";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  library,
+  IconDefinition,
+  findIconDefinition as findIconDefinitionCore,
+  IconName,
+  IconPrefix,
+} from "@fortawesome/fontawesome-svg-core";
+import { fas } from "@fortawesome/free-solid-svg-icons";
+import { fab } from "@fortawesome/free-brands-svg-icons";
+import { Transition, Dialog } from "@headlessui/react";
+// !!! HAPUS impor tipe data Prisma dari bagian client ini !!!
+// Contoh: Hapus baris seperti `import type { User, Skill ... } from ...` jika ada di bawah "use client"
+
+// Daftarkan ikon & chart (pindahkan ini ke bawah "use client")
+library.add(fas, fab);
+Chart.register(...registerables);
+
+// --- INTERFACES LOKAL (UNTUK PROPS & STATE CLIENT) ---
+// (Salin definisi interface Skill, Project, ..., Notification, TimelineEvent, dll. dari jawaban saya sebelumnya di sini)
+// Pastikan tipe `icon` adalah `string?` atau `string | null`
+interface Skill {
+  id: string;
+  name: string;
+  percentage: number | null;
+  color: string | null;
+  icon?: string | null;
+  category: string | null;
+  description: string | null;
+  years?: number | null;
+  projectsUsedIn?: string[];
+}
+interface Certification {
+  id: string;
+  name: string;
+  issuer: string;
+  date: string;
+  icon?: string | null;
+  credentialId: string | null;
+  expiry?: string | null;
+  skills: { skill: string }[];
+  description: string | null;
+  verificationUrl?: string | null;
+}
+interface Education {
+  id: string;
+  institution: string;
+  degree: string;
+  field: string;
+  period: string;
+  description: string | null;
+  logo?: string | null;
+  achievements: { achievement: string }[];
+  gpa?: string | null;
+  location?: string | null;
+}
+interface WorkExperience {
+  id: string;
+  company: string;
+  position: string;
+  period: string;
+  description: string | null;
+  technologies: { technology: string }[];
+  achievements: { achievement: string }[];
+  logo?: string | null;
+  location: string | null;
+  type: string | null;
+  responsibilities: { responsibility: string }[];
+  website?: string | null;
+}
+interface Project {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  longDescription: string | null;
+  category: string;
+  techStack: { tech: string }[];
+  stats: {
+    branches?: number | null;
+    stars?: number | null;
+    views?: number | null;
+    forks?: number | null;
+    issues?: number | null;
+    commits?: number | null;
+  };
+  image?: string | null;
+  demoUrl?: string | null;
+  githubUrl?: string | null;
+  features: { feature: string }[];
+  status: string;
+  startDate: string;
+  endDate?: string | null;
+  collaborators: { name: string; username: string }[];
+  learnings: { learning: string }[];
+}
+interface Achievement {
+  id: string;
+  title: string;
+  date: string;
+  description: string | null;
+  icon?: string | null;
+  category: string | null;
+  issuer?: string | null;
+  link?: string | null;
+}
+interface BlogPost {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  date: string;
+  tags: { tag: string }[];
+  readTime: number | null;
+  image?: string | null;
+  likes: number;
+  comments: number;
+  shares: number;
+  category: string;
+  views: number;
+  author: string;
+}
+interface Testimonial {
+  id: string;
+  name: string;
+  position: string;
+  company: string;
+  text: string;
+  avatar?: string | null;
+  rating: number;
+  date: string;
+  relation: string;
+  projectLink?: string | null;
+}
+interface Contact {
+  id: string;
+  type: string;
+  value: string;
+  icon?: string | null;
+  isPublic: boolean;
+  link?: string | null;
+}
+interface SocialMedia {
+  id: string;
+  platform: string;
+  url: string;
+  icon?: string | null;
+  username: string;
+}
+interface DevStats {
+  id: string;
+  repos: number;
+  stars: number;
+  contributions: number;
+  rating: number | null;
+  followers: number;
+  following: number;
+  streak: number;
+  commits: number;
+  prsOpened: number;
+  issuesClosed: number;
+  rank?: string | null;
+}
+interface ContributionDay {
+  date: string;
+  count: number;
+  level: number;
+}
+interface ContributionData {
+  year: number;
+  total: number;
+  startRange: string;
+  endRange: string;
+  days: ContributionDay[];
+}
+interface FilterOption {
+  label: string;
+  value: string;
+  category: string;
+}
+interface SortOption {
+  field: string;
+  order: "asc" | "desc";
+  label: string;
+}
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: "info" | "success" | "warning" | "error";
+  date: Date;
+  read: boolean;
+  link?: string;
+}
+interface TimelineEvent {
+  id: string;
+  date: string;
+  type: "work" | "education" | "achievement" | "project" | "certification";
+  title: string;
+  subtitle?: string;
+  description?: string;
+  icon?: string | null;
+  color?: string;
+}
+
+// --- PROPS INTERFACE UNTUK CLIENT COMPONENT ---
+interface PortfolioClientProps {
+  portfolioData: {
+    // Tipe ini harus cocok dengan return value getPortfolioData
+    id: string;
+    name: string;
+    username: string;
+    email: string;
+    phone?: string | null;
+    location?: string | null;
+    bio?: string | null;
+    website?: string | null;
+    avatar?: string | null;
+    createdAt: string;
+    updatedAt: string;
+    skills: Skill[];
+    projects: Project[];
+    workExperiences: WorkExperience[];
+    educations: Education[];
+    certifications: Certification[];
+    achievements: Achievement[];
+    blogPosts: BlogPost[];
+    testimonials: Testimonial[];
+    contacts: Contact[];
+    socialMedia: SocialMedia[];
+    devStats: DevStats | null;
+  };
+}
+
+// --- KONSTANTA (Pindahkan dari v1.tsx jika perlu) ---
+const PROJECTS_PER_PAGE = 6;
+const BLOG_POSTS_PER_PAGE = 4;
+
+// --- ICON HELPER FUNCTION ---
+const findIconDefinitionByName = (
+  iconName?: string | null
+): IconDefinition | undefined => {
+  // ... (Salin fungsi findIconDefinitionByName dari jawaban sebelumnya) ...
+  if (!iconName) return undefined;
+  const lowerIconName = iconName
+    .toLowerCase()
+    .replace(/^fa[sbrl]?-?/, "") as IconName;
+  const prefixes: IconPrefix[] = ["fas", "fab"]; // Tambah 'far', 'fal' jika perlu
+  for (const prefix of prefixes) {
+    try {
+      const definition = findIconDefinitionCore({
+        prefix,
+        iconName: lowerIconName,
+      });
+      if (definition) return definition;
+    } catch (e) {}
+  }
+  // Fallback jika tidak ditemukan
+  const questionIcon = findIconDefinitionCore({
+    prefix: "fas",
+    iconName: "question-circle",
+  });
+  return questionIcon;
+};
+
+// --- UTILITY FUNCTIONS ---
+const formatDate = (
+  dateInput: string | Date | undefined | null,
+  format: "short" | "medium" | "long" = "medium"
+): string => {
+  /* ... implementasi ... */ return "Formatted Date";
+};
+const calculateDuration = (
+  startDateStr: string,
+  endDateStr?: string | null
+): string => {
+  /* ... implementasi ... */ return "Duration";
+};
+// Implementasi detail (disalin dari sebelumnya)
+const formatDateImpl = (
+  dateInput: string | Date | undefined | null,
+  format: "short" | "medium" | "long" = "medium"
+): string => {
+  if (!dateInput) return "N/A";
+  try {
+    const date =
+      typeof dateInput === "string" ? new Date(dateInput) : dateInput;
+    if (isNaN(date.getTime())) {
+      if (typeof dateInput === "string" && dateInput.match(/^\d{4}-\d{2}$/)) {
+        const [year, month] = dateInput.split("-");
+        const yearNum = parseInt(year);
+        const monthNum = parseInt(month) - 1;
+        if (!isNaN(yearNum) && !isNaN(monthNum)) {
+          const dt = new Date(Date.UTC(yearNum, monthNum));
+          const options: Intl.DateTimeFormatOptions = {
+            year: "numeric",
+            month: format === "short" ? "short" : "long",
+            timeZone: "UTC",
+          };
+          return dt.toLocaleDateString("en-US", options);
+        }
+      }
+      return dateInput.toString();
+    }
+    const options: Intl.DateTimeFormatOptions = {
+      year: "numeric",
+      month: format === "short" ? "short" : "long",
+      timeZone: "UTC",
+    };
+    if (
+      format === "long" &&
+      (typeof dateInput !== "string" ||
+        dateInput.split("-").length > 2 ||
+        dateInput.includes("T"))
+    ) {
+      options.day = "numeric";
+    }
+    return date.toLocaleDateString("en-US", options);
+  } catch {
+    return dateInput?.toString() ?? "N/A";
+  }
+};
+const calculateDurationImpl = (
+  startDateStr: string,
+  endDateStr?: string | null
+): string => {
+  try {
+    const start = new Date(startDateStr);
+    const end =
+      !endDateStr || endDateStr.toLowerCase() === "present"
+        ? new Date()
+        : new Date(endDateStr);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return "";
+    let years = end.getFullYear() - start.getFullYear();
+    let months = end.getMonth() - start.getMonth();
+    if (months < 0 || (months === 0 && end.getDate() < start.getDate())) {
+      years--;
+      months += 12;
+    }
+    let durationStr = "";
+    if (years > 0) durationStr += `${years} yr${years > 1 ? "s" : ""}`;
+    if (months > 0) {
+      if (durationStr) durationStr += " ";
+      durationStr += `${months} mo${months > 1 ? "s" : ""}`;
+    }
+    return durationStr || "< 1 mo";
+  } catch {
+    return "";
+  }
+};
+
+// --- CLIENT COMPONENT DEFINITION ---
+// Ganti nama 'HomePage' menjadi nama komponen client-mu, misal 'PortfolioClientComponent'
+const PortfolioClientComponent = ({ portfolioData }: PortfolioClientProps) => {
+  // Ekstrak data dari props
+  const {
+    id: userId,
+    name: userName,
+    username,
+    email,
+    phone,
+    location,
+    bio,
+    website,
+    avatar,
+    skills,
+    projects,
+    workExperiences,
+    educations,
+    certifications,
+    achievements,
+    blogPosts,
+    testimonials,
+    contacts,
+    socialMedia,
+    devStats,
+  } = portfolioData;
+
+  // --- STATE HOOKS ---
+  // (Salin semua state hooks [useState, useRef] dari v1.tsx.txt ke sini)
+  const [activeTab, setActiveTab] = useState("overview");
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [projectDialogOpen, setProjectDialogOpen] = useState(false);
+  const [selectedBlogPost, setSelectedBlogPost] = useState<BlogPost | null>(
+    null
+  );
+  const [blogPostDialogOpen, setBlogPostDialogOpen] = useState(false);
+  const [isNavbarFixed, setIsNavbarFixed] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilters, setActiveFilters] = useState<FilterOption[]>([]);
+  const [activeSort, setActiveSort] = useState<SortOption>({
+    field: "startDate",
+    order: "desc",
+    label: "Date (Newest)",
+  });
+  const [loading, setLoading] = useState(true); // Tetap true untuk animasi awal
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [activeSkillCategory, setActiveSkillCategory] = useState("all");
+  const chartInstances = useRef<{ [key: string]: Chart | null }>({});
+  const [currentProjectPage, setCurrentProjectPage] = useState(1);
+  const [currentBlogPostPage, setCurrentBlogPostPage] = useState(1);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [contactFormData, setContactFormData] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
+  });
+  const [contactFormStatus, setContactFormStatus] = useState<
+    "idle" | "sending" | "success" | "error"
+  >("idle");
+  const [darkMode, setDarkMode] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
+  const [currentProjectView, setCurrentProjectView] = useState<"grid" | "list">(
+    "grid"
+  );
+  const [contributionData, setContributionData] =
+    useState<ContributionData | null>(null); // Isi dari props jika ada
+  const [tooltipInfo, setTooltipInfo] = useState<{
+    show: boolean;
+    x: number;
+    y: number;
+    text: string;
+  } | null>(null);
+
+  // --- REFS ---
+  // (Salin semua useRef dari v1.tsx.txt ke sini)
+  const navbarRef = useRef<HTMLDivElement>(null);
+  const activityChartRef = useRef<HTMLCanvasElement>(null);
+  const skillRadarChartRef = useRef<HTMLCanvasElement>(null);
+  const projectCategoryDonutRef = useRef<HTMLCanvasElement>(null);
+  const notificationPanelRef = useRef<HTMLDivElement>(null);
+
+  // --- EFFECTS ---
+  // (Salin semua useEffect dari v1.tsx.txt, SESUAIKAN dependensi jika perlu)
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 500);
+    return () => clearTimeout(timer);
+  }, []); // Loading awal
+  useEffect(() => {
+    /* Logika inisialisasi dark mode */ const saved =
+      localStorage.getItem("darkMode");
+    const prefers = window.matchMedia?.("(prefers-color-scheme: dark)").matches;
+    setDarkMode(saved === "true" || (saved === null && prefers));
+  }, []);
+  useEffect(() => {
+    /* Logika terapkan dark mode ke HTML & simpan ke localStorage */ if (
+      darkMode
+    )
+      document.documentElement.classList.add("dark");
+    else document.documentElement.classList.remove("dark");
+    localStorage.setItem("darkMode", String(darkMode));
+  }, [darkMode]);
+  useEffect(() => {
+    /* Logika navbar fixed */ const handleScroll = () => {
+      setIsNavbarFixed(
+        (navbarRef.current?.offsetTop ?? 0) < window.scrollY - 50
+      );
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+  useEffect(() => {
+    /* Logika mock notifikasi atau fetch notif */ setNotifications([]);
+  }, []);
+  useEffect(() => {
+    /* Logika klik di luar notifikasi */
+  }, [showNotifications]);
+  // Efek untuk chart (didefinisikan ulang di bawah setelah useCallback)
+
+  // --- MEMOIZED VALUES & COMPUTED PROPERTIES ---
+  // (Salin semua useMemo dari v1.tsx.txt, PASTIKAN menggunakan data dari props: skills, projects, blogPosts)
+  const processedProjects = useMemo(() => {
+    /* ... logika filter/sort ... */ return projects;
+  }, [projects, searchQuery, activeFilters, activeSort]);
+  const paginatedProjects = useMemo(() => {
+    const start = (currentProjectPage - 1) * PROJECTS_PER_PAGE;
+    return processedProjects.slice(start, start + PROJECTS_PER_PAGE);
+  }, [processedProjects, currentProjectPage]);
+  const totalProjectPages = useMemo(
+    () => Math.ceil(processedProjects.length / PROJECTS_PER_PAGE),
+    [processedProjects]
+  );
+  const filteredSkills = useMemo(
+    () =>
+      activeSkillCategory === "all"
+        ? skills
+        : skills.filter(
+            (skill) =>
+              skill.category?.toLowerCase() ===
+              activeSkillCategory.toLowerCase()
+          ),
+    [skills, activeSkillCategory]
+  );
+  const projectFilterOptions = useMemo(() => {
+    /* ... logika filter options ... */ return {
+      tech: [],
+      status: [],
+      category: [],
+    };
+  }, [projects]);
+  const projectSortOptions: SortOption[] = useMemo(
+    () => [
+      {
+        field: "startDate",
+        order: "desc",
+        label: "Date (Newest)",
+      } /* ... lainnya ... */,
+    ],
+    []
+  );
+  const paginatedBlogPosts = useMemo(() => {
+    const sorted = [...blogPosts].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+    const start = (currentBlogPostPage - 1) * BLOG_POSTS_PER_PAGE;
+    return sorted.slice(start, start + BLOG_POSTS_PER_PAGE);
+  }, [blogPosts, currentBlogPostPage]);
+  const totalBlogPostPages = useMemo(
+    () => Math.ceil(blogPosts.length / BLOG_POSTS_PER_PAGE),
+    [blogPosts]
+  );
+  const timelineData: TimelineEvent[] = useMemo(() => {
+    /* ... logika generate timeline ... */ return [];
+  }, [workExperiences, educations, achievements, certifications, projects]);
+
+  // --- Chart Initialization/Update ---
+  // (Salin useCallback initOrUpdateCharts dari jawaban sebelumnya, pastikan dependensinya benar)
+  const initOrUpdateCharts = useCallback(() => {
+    if (loading || typeof window === "undefined" || !document) return;
+    console.log("Init/Update Charts...");
+    Object.values(chartInstances.current).forEach((chart) => chart?.destroy());
+    chartInstances.current = {};
+    const chartColor = darkMode
+      ? "rgba(255, 255, 255, 0.7)"
+      : "rgba(0, 0, 0, 0.7)";
+    const gridColor = darkMode
+      ? "rgba(255, 255, 255, 0.1)"
+      : "rgba(0, 0, 0, 0.1)";
+    const chartOptionsBase: ChartConfiguration["options"] = {
+      /* ... base options ... */
+    };
+
+    // Skills Radar Chart
+    const skillRadarCtx = skillRadarChartRef.current?.getContext("2d");
+    if (skillRadarCtx && skills.length > 0) {
+      /* ... logika chart radar ... */
+    }
+
+    // Project Category Pie Chart
+    const projectCatCtx = projectCategoryDonutRef.current?.getContext("2d");
+    if (projectCatCtx && projects.length > 0) {
+      /* ... logika chart pie category ... */
+    }
+
+    // Activity Chart (jika ada data)
+    // const activityCtx = activityChartRef.current?.getContext("2d");
+    // if (activityCtx && contributionData) { /* ... logika chart activity ... */ }
+  }, [loading, darkMode, contributionData, skills, projects]); // Dependensi
+
+  // Chart Initialization Effect
+  useEffect(() => {
+    if (!loading) {
+      const timer = setTimeout(() => initOrUpdateCharts(), 300);
+      return () => {
+        clearTimeout(timer);
+        Object.values(chartInstances.current).forEach((chart) =>
+          chart?.destroy()
+        );
+        chartInstances.current = {};
+      };
+    }
+  }, [initOrUpdateCharts, loading]);
+
+  // --- EVENT HANDLERS ---
+  // (Salin semua useCallback untuk event handlers dari jawaban sebelumnya)
+  const handleTabClick = useCallback((tabId: string) => {
+    setActiveTab(tabId);
+    setMobileMenuOpen(false); /* scroll */
+  }, []);
+  const handleProjectClick = useCallback((project: Project) => {
+    setSelectedProject(project);
+    setProjectDialogOpen(true);
+  }, []);
+  const handleCloseProjectDialog = useCallback(() => {
+    setProjectDialogOpen(false);
+    setTimeout(() => setSelectedProject(null), 300);
+  }, []);
+  const handleBlogPostClick = useCallback((post: BlogPost) => {
+    setSelectedBlogPost(post);
+    setBlogPostDialogOpen(true);
+  }, []);
+  const handleCloseBlogPostDialog = useCallback(() => {
+    setBlogPostDialogOpen(false);
+    setTimeout(() => setSelectedBlogPost(null), 300);
+  }, []);
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchQuery(e.target.value);
+      setCurrentProjectPage(1);
+    },
+    []
+  );
+  const handleFilterToggle = useCallback((filter: FilterOption) => {
+    setActiveFilters((prev) => {
+      const exists = prev.some(
+        (f) => f.value === filter.value && f.category === filter.category
+      );
+      if (exists)
+        return prev.filter(
+          (f) => !(f.value === filter.value && f.category === filter.category)
+        );
+      else return [...prev, filter];
+    });
+    setCurrentProjectPage(1);
+  }, []);
+  const handleClearFilters = useCallback(() => {
+    setActiveFilters([]);
+    setSearchQuery("");
+    setCurrentProjectPage(1);
+  }, []);
+  const handleSortChange = useCallback((option: SortOption) => {
+    setActiveSort(option);
+  }, []);
+  const handleThemeToggle = useCallback(() => {
+    setDarkMode((prev) => !prev);
+  }, []);
+  const handleContactFormChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      setContactFormData((prev) => ({
+        ...prev,
+        [e.target.name]: e.target.value,
+      }));
+    },
+    []
+  );
+  const addNotification = useCallback(
+    (title: string, message: string, type: Notification["type"]) => {
+      /* ... add notification logic ... */
+    },
+    []
+  );
+  const handleContactFormSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      /* ... submit logic ... */
+    },
+    [contactFormStatus, contactFormData, addNotification]
+  );
+  const handleExport = useCallback(
+    (format: "pdf" | "json") => {
+      /* ... export logic ... */
+    },
+    [isExporting, addNotification, portfolioData]
+  ); // Gunakan portfolioData
+  const handleNotificationMarkAsRead = useCallback((id: string) => {
+    /* ... */
+  }, []);
+  const handleNotificationMarkAllRead = useCallback(() => {
+    /* ... */
+  }, []);
+  const handleClearAllNotifications = useCallback(() => {
+    /* ... */
+  }, []);
+  const handleMouseEnterCell = useCallback(
+    (e: React.MouseEvent<SVGRectElement>, day: ContributionDay) => {
+      /* ... */
+    },
+    []
+  );
+  const handleMouseLeaveCell = useCallback(() => {
+    /* ... */
+  }, []);
+
+  // --- RENDER HELPER FUNCTIONS (Panggil Child Components) ---
+  // (Salin semua useCallback untuk render helper dari jawaban sebelumnya)
+  const renderNavigationTabs = useCallback(
+    () => <NavigationTabs activeTab={activeTab} onTabClick={handleTabClick} />,
+    [activeTab, handleTabClick]
+  );
+  const renderStatCards = useCallback(
+    () => (
+      <StatCards
+        devStats={devStats}
+        contributionData={contributionData}
+        username={username}
+      />
+    ),
+    [devStats, contributionData, username]
+  );
+  const renderProfileHeader = useCallback(
+    () => (
+      <ProfileHeader
+        user={portfolioData}
+        socialMedia={socialMedia}
+        darkMode={darkMode}
+        onThemeToggle={handleThemeToggle}
+        onContactClick={() => handleTabClick("contact")}
+      />
+    ),
+    [portfolioData, socialMedia, darkMode, handleThemeToggle, handleTabClick]
+  );
+  const renderOverviewTab = useCallback(
+    () => (
+      <OverviewTab
+        user={portfolioData}
+        contacts={contacts}
+        skills={skills}
+        projects={projects}
+        blogPosts={blogPosts}
+        onProjectClick={handleProjectClick}
+        onBlogPostClick={handleBlogPostClick}
+        onTabClick={handleTabClick}
+      />
+    ),
+    [
+      portfolioData,
+      contacts,
+      skills,
+      projects,
+      blogPosts,
+      handleProjectClick,
+      handleBlogPostClick,
+      handleTabClick,
+    ]
+  );
+  const renderProjectsTab = useCallback(
+    () => (
+      <ProjectsTab
+        projects={projects}
+        processedProjects={processedProjects}
+        paginatedProjects={paginatedProjects}
+        totalProjectPages={totalProjectPages}
+        currentProjectPage={currentProjectPage}
+        onPageChange={setCurrentProjectPage}
+        activeFilters={activeFilters}
+        projectFilterOptions={projectFilterOptions}
+        onFilterToggle={handleFilterToggle}
+        onClearFilters={handleClearFilters}
+        activeSort={activeSort}
+        projectSortOptions={projectSortOptions}
+        onSortChange={handleSortChange}
+        currentView={currentProjectView}
+        onViewChange={setCurrentProjectView}
+        onProjectClick={handleProjectClick}
+        searchQuery={searchQuery}
+        onSearchChange={handleSearchChange}
+      />
+    ),
+    [
+      projects,
+      processedProjects,
+      paginatedProjects,
+      totalProjectPages,
+      currentProjectPage,
+      activeFilters,
+      projectFilterOptions,
+      handleFilterToggle,
+      handleClearFilters,
+      activeSort,
+      projectSortOptions,
+      handleSortChange,
+      currentProjectView,
+      handleProjectClick,
+      searchQuery,
+      handleSearchChange,
+    ]
+  );
+  const renderSkillsTab = useCallback(
+    () => (
+      <SkillsTab
+        skills={skills}
+        filteredSkills={filteredSkills}
+        activeCategory={activeSkillCategory}
+        onCategoryChange={setActiveSkillCategory}
+        skillRadarChartRef={skillRadarChartRef}
+      />
+    ),
+    [skills, filteredSkills, activeSkillCategory]
+  );
+  const renderExperienceTab = useCallback(
+    () => <ExperienceTab workExperiences={workExperiences} />,
+    [workExperiences]
+  );
+  const renderEducationTab = useCallback(
+    () => <EducationTab educations={educations} />,
+    [educations]
+  );
+  const renderCertificationsTab = useCallback(
+    () => <CertificationsTab certifications={certifications} />,
+    [certifications]
+  );
+  const renderAchievementsTab = useCallback(
+    () => <AchievementsTab achievements={achievements} />,
+    [achievements]
+  );
+  const renderActivityTab = useCallback(
+    () => (
+      <ActivityTab
+        contributionData={contributionData}
+        onMouseEnterCell={handleMouseEnterCell}
+        onMouseLeaveCell={handleMouseLeaveCell}
+        darkMode={darkMode}
+        tooltipInfo={tooltipInfo}
+        activityChartRef={activityChartRef as RefObject<HTMLCanvasElement>}
+        projectCategoryDonutRef={
+          projectCategoryDonutRef as RefObject<HTMLCanvasElement>
+        }
+        timelineData={timelineData}
+      />
+    ),
+    [
+      contributionData,
+      handleMouseEnterCell,
+      handleMouseLeaveCell,
+      darkMode,
+      tooltipInfo,
+      activityChartRef,
+      projectCategoryDonutRef,
+      timelineData,
+    ]
+  );
+  const renderBlogTab = useCallback(
+    () => (
+      <BlogTab
+        blogPosts={blogPosts}
+        paginatedBlogPosts={paginatedBlogPosts}
+        totalBlogPostPages={totalBlogPostPages}
+        currentBlogPostPage={currentBlogPostPage}
+        onPageChange={setCurrentBlogPostPage}
+        onBlogPostClick={handleBlogPostClick}
+      />
+    ),
+    [
+      blogPosts,
+      paginatedBlogPosts,
+      totalBlogPostPages,
+      currentBlogPostPage,
+      handleBlogPostClick,
+    ]
+  );
+  const renderTestimonialsTab = useCallback(
+    () => <TestimonialsTab testimonials={testimonials} />,
+    [testimonials]
+  );
+  const renderContactTab = useCallback(
+    () => (
+      <ContactTab
+        contacts={contacts}
+        socialMedia={socialMedia}
+        formData={contactFormData}
+        formStatus={contactFormStatus}
+        onFormChange={handleContactFormChange}
+        onFormSubmit={handleContactFormSubmit}
+      />
+    ),
+    [
+      contacts,
+      socialMedia,
+      contactFormData,
+      contactFormStatus,
+      handleContactFormChange,
+      handleContactFormSubmit,
+    ]
+  );
+
+  // --- MAIN RENDER ---
+  if (loading) {
+    /* ... Loading Component ... */
+  }
+
+  return (
+    <div
+      className={`min-h-screen font-sans transition-colors duration-300 print:bg-white print:text-black ${
+        darkMode
+          ? "dark bg-gray-900 text-gray-300"
+          : "bg-gray-100 text-gray-800"
+      }`}
+    >
+      {/* Navbar */}
+      <div
+        ref={navbarRef}
+        className={`sticky top-0 z-40 ... ${isNavbarFixed ? "shadow-lg" : ""}`}
+      >
+        {/* ... Konten Navbar ... */}
+        <button onClick={handleThemeToggle} className="...">
+          {" "}
+          <FontAwesomeIcon icon={darkMode ? fas.faSun : fas.faMoon} />{" "}
+        </button>
+        {/* ... */}
+      </div>
+      {/* Mobile Menu Panel */}
+      <Transition show={mobileMenuOpen} as={Fragment}>
+        {" "}
+        {/* ... */}{" "}
+      </Transition>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-8">
+        {renderProfileHeader()}
+        <div id="main-content" className="mt-8">
+          {/* Render Tab Content berdasarkan activeTab */}
+          {activeTab === "overview" && renderOverviewTab()}
+          {activeTab === "projects" && renderProjectsTab()}
+          {activeTab === "skills" && renderSkillsTab()}
+          {/* ... render tab lainnya ... */}
+          {activeTab === "contact" && renderContactTab()}
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-gray-800 dark:bg-gray-850 ...">
+        {" "}
+        {/* ... Konten Footer ... */}{" "}
+      </footer>
+
+      {/* Modals & Dialogs */}
+      <ProjectDialog
+        isOpen={projectDialogOpen}
+        onClose={handleCloseProjectDialog}
+        project={selectedProject}
+      />
+      <BlogPostDialog
+        isOpen={blogPostDialogOpen}
+        onClose={handleCloseBlogPostDialog}
+        post={selectedBlogPost}
+      />
+
+      {/* Notifications Panel & Toggle */}
+      <NotificationPanel
+        notifications={notifications}
+        isOpen={showNotifications}
+        onClose={() => setShowNotifications(false)}
+        onMarkRead={handleNotificationMarkAsRead}
+        onMarkAllRead={handleNotificationMarkAllRead}
+        onClearAll={handleClearAllNotifications}
+        panelRef={notificationPanelRef as RefObject<HTMLDivElement>}
+      />
+
+      <button
+        onClick={() => setShowNotifications(!showNotifications)}
+        className="fixed bottom-6 right-6 ..."
+      >
+        {" "}
+        {/* Bell icon */}{" "}
+      </button>
+    </div>
+  );
+}; // Akhir dari PortfolioClientComponent
+
+// ==========================================
+// --- DEFINISI CHILD COMPONENTS LENGKAP ---
+// ==========================================
+// (Salin implementasi LENGKAP dari v1.tsx.txt ke sini,
+//  adaptasi props dan gunakan findIconDefinitionByName)
+
+// Contoh (HARUS DIGANTI DENGAN KODE LENGKAP DARI v1.tsx.txt):
+// --- DEFINISI CHILD COMPONENTS LENGKAP ---
+// ...
+
+// --- Component: NavigationTabs ---
+interface NavigationTabsProps {
+  activeTab: string;
+  onTabClick: (id: string) => void;
+}
+const NavigationTabs: React.FC<NavigationTabsProps> = ({
+  activeTab,
+  onTabClick,
+}) => {
+  // 1. Definisikan array 'tabs' DENGAN NAMA IKON (string), bukan objek IconDefinition
+  const tabs = [
+    { id: "overview", iconName: "home", label: "Overview" }, // Ganti icon: fas.faHome -> iconName: "home"
+    { id: "projects", iconName: "code-branch", label: "Projects" },
+    { id: "skills", iconName: "code", label: "Skills" },
+    { id: "experience", iconName: "briefcase", label: "Experience" },
+    { id: "education", iconName: "graduation-cap", label: "Education" },
+    { id: "certifications", iconName: "certificate", label: "Certs" },
+    { id: "achievements", iconName: "award", label: "Achievements" },
+    { id: "activity", iconName: "chart-line", label: "Activity" },
+    { id: "blog", iconName: "rss", label: "Blog" },
+    { id: "testimonials", iconName: "comment-dots", label: "Testimonials" }, // Sesuaikan nama ikon jika perlu
+    { id: "contact", iconName: "envelope", label: "Contact" },
+  ];
+
+  // 2. Salin blok return JSX dari v1.tsx.txt
+  return (
+    <nav className="flex justify-center">
+      <div className="flex overflow-x-auto space-x-6 md:space-x-8 py-3 scrollbar-hide">
+        {tabs.map((tab) => {
+          // 3. Cari definisi ikon berdasarkan nama string menggunakan helper
+          const iconDef = findIconDefinitionByName(tab.iconName);
+
+          return (
+            <button
+              key={tab.id}
+              // 4. Gunakan 'onTabClick' dari props
+              onClick={() => onTabClick(tab.id)}
+              className={`flex items-center whitespace-nowrap px-2 py-3 text-sm md:text-base font-medium transition-all duration-200 ease-in-out border-b-2 ${
+                // 5. Gunakan 'activeTab' dari props
+                activeTab === tab.id
+                  ? "text-white border-blue-500"
+                  : "text-gray-400 border-transparent hover:text-gray-200 hover:border-gray-500"
+              }`}
+              aria-current={activeTab === tab.id ? "page" : undefined}
+            >
+              {/* 6. Render ikon HANYA jika definisi ditemukan */}
+              {iconDef && (
+                <FontAwesomeIcon icon={iconDef} className="mr-2 h-4 w-4" />
+              )}
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}; // <-- Akhir dari komponen NavigationTabs
+
+// ... Lanjutkan dengan definisi komponen child lainnya (StatCards, ProfileHeader, dst.) ...
+// --- DEFINISI CHILD COMPONENTS LENGKAP ---
+// ...
+
+// --- Component: StatCards ---
+interface StatCardsProps {
+  devStats: DevStats | null;
+  contributionData: ContributionData | null; // ContributionData mungkin perlu didefinisikan jika dipakai
+  username: string | null; // Tambahkan username untuk link GitHub
+}
+const StatCards: React.FC<StatCardsProps> = ({
+  devStats,
+  contributionData,
+  username,
+}) => {
+  // 1. Handle jika devStats null
+  if (!devStats) {
+    return (
+      <div className="text-center text-gray-500 py-4 italic">
+        Developer stats not available.
+      </div>
+    );
+  }
+
+  // 2. Definisikan array stats DENGAN NAMA IKON (string) dan gunakan props
+  const githubBaseUrl = username ? `https://github.com/${username}` : "#";
+  const stats = [
+    {
+      value: devStats.repos,
+      label: "Public Repos",
+      iconName: "code-branch",
+      link: `${githubBaseUrl}?tab=repositories`,
+    }, // Ganti icon -> iconName
+    {
+      value: devStats.stars,
+      label: "GitHub Stars",
+      iconName: "star",
+      link: `${githubBaseUrl}?tab=stars`,
+    },
+    {
+      value: devStats.followers,
+      label: "GitHub Followers",
+      iconName: "users",
+      link: `${githubBaseUrl}?tab=followers`,
+    },
+    {
+      value: devStats.contributions,
+      label: `Contributions (${
+        contributionData?.year || new Date().getFullYear()
+      })`,
+      iconName: "code",
+      link: githubBaseUrl,
+    }, // Gunakan contributionData dari props
+  ];
+
+  // 3. Salin blok return JSX dari v1.tsx.txt
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+      {stats.map((stat, i) => {
+        // 4. Cari definisi ikon berdasarkan nama string
+        const iconDef = findIconDefinitionByName(stat.iconName);
+
+        return (
+          <a
+            key={i}
+            href={stat.link || "#"}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`block bg-gray-800 dark:bg-gray-800 p-4 rounded-lg shadow-md text-center hover:bg-gray-750 dark:hover:bg-gray-700 transition transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${
+              stat.link && stat.link !== "#"
+                ? "cursor-pointer"
+                : "cursor-default"
+            }`} // Perbaiki kondisi cursor
+          >
+            {/* 5. Render ikon HANYA jika definisi ditemukan */}
+            {iconDef && (
+              <FontAwesomeIcon
+                icon={iconDef}
+                className="text-blue-400 dark:text-blue-400 text-2xl mb-2 mx-auto"
+              />
+            )}
+            {/* 6. Gunakan data dari array 'stats' yang baru dibuat */}
+            <div className="text-3xl font-bold text-white dark:text-white">
+              {stat.value ?? 0} {/* Tambah nullish coalescing */}
+            </div>
+            <div className="text-gray-400 dark:text-gray-400 text-sm mt-1">
+              {stat.label}
+            </div>
+          </a>
+        );
+      })}
+    </div>
+  );
+}; // <-- Akhir dari komponen StatCards
+
+// ... Lanjutkan dengan definisi komponen child lainnya (ProfileHeader, dst.) ...
+// --- DEFINISI CHILD COMPONENTS LENGKAP ---
+// ...
+
+// --- Component: ProfileHeader ---
+interface ProfileHeaderProps {
+  user: PortfolioClientProps["portfolioData"]; // Ambil tipe data user lengkap
+  socialMedia: SocialMedia[];
+  darkMode: boolean;
+  onThemeToggle: () => void;
+  onContactClick: () => void; // Ganti handleTabClick -> onContactClick
+}
+const ProfileHeader: React.FC<ProfileHeaderProps> = ({
+  user,
+  socialMedia,
+  darkMode,
+  onThemeToggle,
+  onContactClick, // Terima fungsi klik kontak
+}) => {
+  // 1. Tentukan gambar default jika data user tidak ada
+  const coverImage = "/images/cover-placeholder.png"; // Ganti dengan defaultmu
+  const profileImage = user.avatar || "/images/avatar-placeholder.png"; // Gunakan avatar user atau default
+  const resumeLink = `/api/download-cv?userId=${user.id}`; // Contoh link dinamis (perlu endpoint API)
+  // Atau jika statis: const resumeLink = "/resume/My_Resume.pdf";
+
+  // 2. Cari definisi ikon yang dibutuhkan
+  const shareIcon = findIconDefinitionByName("share-alt");
+  const boltIcon = findIconDefinitionByName("bolt");
+  const paperPlaneIcon = findIconDefinitionByName("paper-plane");
+  const downloadIcon = findIconDefinitionByName("download");
+  const sunIcon = findIconDefinitionByName("sun");
+  const moonIcon = findIconDefinitionByName("moon");
+
+  // 3. Salin JSX dari v1.tsx.txt
+  return (
+    <header className="bg-gray-800 dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden mb-8">
+      {/* Cover Image Area */}
+      <div className="h-48 sm:h-64 md:h-80 bg-gradient-to-r from-cyan-900 via-blue-900 to-indigo-900 relative group">
+        {/* 4. Gunakan gambar dari props atau default */}
+        <Image
+          src={coverImage}
+          alt="Cover Photo"
+          layout="fill"
+          objectFit="cover"
+          className="opacity-90 group-hover:opacity-100 transition-opacity duration-300"
+          priority
+        />
+        <div className="absolute inset-0 bg-black bg-opacity-30"></div>{" "}
+        {/* Overlay */}
+        <div className="absolute top-4 right-4 flex items-center space-x-2 z-10">
+          <button className="p-2 rounded-full bg-gray-700 bg-opacity-60 text-gray-300 hover:bg-opacity-80 hover:text-white transition duration-150 focus:outline-none focus:ring-2 focus:ring-white">
+            {/* 5. Gunakan ikon yang sudah dicari */}
+            {shareIcon && (
+              <FontAwesomeIcon icon={shareIcon} className="h-4 w-4" />
+            )}
+            <span className="sr-only">Share Profile</span>
+          </button>
+        </div>
+        <div className="absolute top-4 left-4 flex items-center px-3 py-1 rounded-full bg-gray-800 bg-opacity-70 z-10">
+          <span className="w-2.5 h-2.5 bg-green-400 rounded-full mr-2 animate-pulse" />
+          <span className="text-green-300 text-xs font-medium">
+            Available for Hire
+          </span>
+        </div>
+      </div>
+
+      {/* Profile Info Area */}
+      <div className="relative px-4 sm:px-6 pb-6">
+        {/* Profile Picture */}
+        <div className="absolute -top-12 sm:-top-16 left-4 sm:left-6 transform ">
+          <div className="relative">
+            {/* 4. Gunakan gambar dari props atau default */}
+            <Image
+              src={profileImage}
+              alt={`${user.name} Profile Picture`}
+              width={128}
+              height={128}
+              className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-gray-800 dark:border-gray-800 bg-gray-700 shadow-lg"
+              priority
+            />
+            <div className="absolute bottom-2 right-1 bg-gradient-to-tr from-blue-500 to-purple-600 text-white text-xs font-bold rounded-full w-8 h-8 flex items-center justify-center border-2 border-gray-800 shadow-md">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-50"></span>
+              {/* 5. Gunakan ikon yang sudah dicari */}
+              {boltIcon && (
+                <FontAwesomeIcon icon={boltIcon} className="h-3 w-3 z-10" />
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Name, Handle, Actions */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end pt-16 sm:pt-4">
+          {/* Left side */}
+          <div className="w-full sm:w-auto mt-1">
+            {" "}
+            {/* Hapus mt-15 */}
+            {/* 6. Gunakan data dari props user */}
+            <h1 className="text-2xl sm:text-3xl font-bold text-white dark:text-white">
+              {user.name || "Your Name"}
+            </h1>
+            <p className="text-blue-400 dark:text-blue-400 text-base sm:text-lg mb-3">
+              @{user.username || "username"}
+            </p>
+            <p className="text-gray-300 dark:text-gray-300 text-sm mb-3 max-w-md">
+              {user.bio || "Your professional bio goes here."}
+            </p>
+            {/* Social Media Links */}
+            <div className="flex flex-wrap gap-x-4 gap-y-2 mt-3">
+              {/* 6. Gunakan data socialMedia dari props */}
+              {socialMedia.slice(0, 5).map((social) => {
+                // 5. Cari ikon untuk setiap social media
+                const iconDef = findIconDefinitionByName(social.icon);
+                return (
+                  <a
+                    key={social.id}
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-400 hover:text-blue-400 dark:hover:text-blue-400 transition duration-150"
+                    aria-label={`Visit my ${social.platform} profile`}
+                  >
+                    {/* 5. Render ikon jika ditemukan */}
+                    {iconDef && (
+                      <FontAwesomeIcon icon={iconDef} className="h-5 w-5" />
+                    )}
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Right side */}
+          <div className="flex flex-wrap gap-3 mt-4 sm:mt-0">
+            {/* 7. Gunakan onContactClick dari props */}
+            <button
+              onClick={onContactClick}
+              className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-150 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+            >
+              {/* 5. Gunakan ikon yang sudah dicari */}
+              {paperPlaneIcon && (
+                <FontAwesomeIcon
+                  icon={paperPlaneIcon}
+                  className="mr-2 h-4 w-4"
+                />
+              )}
+              Contact Me
+            </button>
+            {/* 6. Gunakan link CV dinamis atau statis */}
+            <a
+              href={resumeLink}
+              download={`${user.username}_Resume.pdf`}
+              className="flex items-center bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-150 shadow focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+            >
+              {/* 5. Gunakan ikon yang sudah dicari */}
+              {downloadIcon && (
+                <FontAwesomeIcon icon={downloadIcon} className="mr-2 h-4 w-4" />
+              )}
+              Download CV
+            </a>
+            {/* 7. Gunakan onThemeToggle dari props */}
+            <button
+              onClick={onThemeToggle}
+              className="flex items-center bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg transition duration-150 shadow focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+              aria-label={`Switch to ${darkMode ? "light" : "dark"} mode`}
+            >
+              {/* 5. Gunakan ikon yang sudah dicari & kondisi darkMode dari props */}
+              {darkMode
+                ? sunIcon && (
+                    <FontAwesomeIcon icon={sunIcon} className="h-4 w-4" />
+                  )
+                : moonIcon && (
+                    <FontAwesomeIcon icon={moonIcon} className="h-4 w-4" />
+                  )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}; // <-- Akhir dari komponen ProfileHeader
+
+// ... Lanjutkan dengan definisi komponen child lainnya (OverviewTab, dst.) ...
+// --- DEFINISI CHILD COMPONENTS LENGKAP ---
+// ...
+
+// --- Component: OverviewTab ---
+interface OverviewTabProps {
+  user: PortfolioClientProps["portfolioData"]; // Data user lengkap
+  contacts: Contact[];
+  skills: Skill[];
+  projects: Project[];
+  blogPosts: BlogPost[];
+  onProjectClick: (p: Project) => void;
+  onBlogPostClick: (b: BlogPost) => void;
+  onTabClick: (id: string) => void;
+}
+const OverviewTab: React.FC<OverviewTabProps> = ({
+  user,
+  contacts,
+  skills,
+  projects,
+  blogPosts, // Terima props
+  onProjectClick,
+  onBlogPostClick,
+  onTabClick, // Terima handler dari parent
+}) => {
+  // 1. Cari ikon yang dibutuhkan untuk bagian ini
+  const userCircleIcon = findIconDefinitionByName("user-circle");
+  const infoCircleIcon = findIconDefinitionByName("info-circle");
+  const mapMarkerIcon = findIconDefinitionByName("map-marker-alt");
+  const briefcaseIcon = findIconDefinitionByName("briefcase");
+  const clockIcon = findIconDefinitionByName("clock");
+  const globeIcon = findIconDefinitionByName("globe");
+  const envelopeIcon = findIconDefinitionByName("envelope");
+  const externalLinkIcon = findIconDefinitionByName("external-link-alt");
+  const starIcon = findIconDefinitionByName("star");
+  const projectDiagramIcon = findIconDefinitionByName("project-diagram");
+  const codeIcon = findIconDefinitionByName("code"); // Untuk fallback gambar project
+  const rssIcon = findIconDefinitionByName("rss");
+
+  // 2. Salin JSX dari renderOverviewTab
+  return (
+    <section aria-labelledby="overview-heading">
+      <h2 id="overview-heading" className="sr-only">
+        Overview Section
+      </h2>
+
+      {/* 3. Panggil komponen StatCards (jika sudah didefinisikan) */}
+      {user.devStats && (
+        <StatCards
+          devStats={user.devStats}
+          contributionData={null}
+          username={user.username}
+        />
+      )}
+
+      <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column */}
+        <div className="lg:col-span-1 space-y-6">
+          {/* About Me */}
+          <div className="bg-gray-800 dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <h3 className="text-xl font-semibold text-white dark:text-white mb-4 flex items-center">
+              {/* 4. Gunakan ikon yang sudah dicari */}
+              {userCircleIcon && (
+                <FontAwesomeIcon
+                  icon={userCircleIcon}
+                  className="mr-2 text-blue-400"
+                />
+              )}
+              About Me
+            </h3>
+            {/* 5. Gunakan data bio dari props user */}
+            <p className="text-gray-300 dark:text-gray-300 text-sm leading-relaxed">
+              {user.bio || "Bio not available."}
+            </p>
+          </div>
+
+          {/* Quick Info */}
+          <div className="bg-gray-800 dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <h3 className="text-xl font-semibold text-white dark:text-white mb-4 flex items-center">
+              {infoCircleIcon && (
+                <FontAwesomeIcon
+                  icon={infoCircleIcon}
+                  className="mr-2 text-green-400"
+                />
+              )}
+              Quick Info
+            </h3>
+            <ul className="space-y-3 text-sm">
+              {/* 5. Gunakan data location dari props user */}
+              {user.location && (
+                <li className="flex items-center text-gray-300 dark:text-gray-300">
+                  {/* 4. Gunakan ikon yang sudah dicari */}
+                  {mapMarkerIcon && (
+                    <FontAwesomeIcon
+                      icon={mapMarkerIcon}
+                      className="w-5 h-5 mr-3 text-gray-400"
+                    />
+                  )}
+                  <span>Based in: {user.location}</span>
+                </li>
+              )}
+              {/* Tambahkan item lain sesuai kebutuhan dan data user */}
+              <li className="flex items-center text-gray-300 dark:text-gray-300">
+                {briefcaseIcon && (
+                  <FontAwesomeIcon
+                    icon={briefcaseIcon}
+                    className="w-5 h-5 mr-3 text-gray-400"
+                  />
+                )}
+                <span>Availability: Full-time, Contract, Remote</span>{" "}
+                {/* Ini bisa jadi statis atau dari DB */}
+              </li>
+              {/* Contoh Timezone & Language statis, bisa dibuat dinamis jika ada di DB */}
+              <li className="flex items-center text-gray-300 dark:text-gray-300">
+                {clockIcon && (
+                  <FontAwesomeIcon
+                    icon={clockIcon}
+                    className="w-5 h-5 mr-3 text-gray-400"
+                  />
+                )}
+                <span>Timezone: Pacific Time (PT)</span>
+              </li>
+              <li className="flex items-center text-gray-300 dark:text-gray-300">
+                {globeIcon && (
+                  <FontAwesomeIcon
+                    icon={globeIcon}
+                    className="w-5 h-5 mr-3 text-gray-400"
+                  />
+                )}
+                <span>Languages: English (Native)</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Contact Snippet */}
+          <div className="bg-gray-800 dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <h3 className="text-xl font-semibold text-white dark:text-white mb-4 flex items-center">
+              {envelopeIcon && (
+                <FontAwesomeIcon
+                  icon={envelopeIcon}
+                  className="mr-2 text-red-400"
+                />
+              )}
+              Get In Touch
+            </h3>
+            <ul className="space-y-3 text-sm">
+              {/* 5. Gunakan data contacts dari props */}
+              {contacts
+                .filter((c) => c.isPublic && c.type !== "Location")
+                .map((contact) => {
+                  // 4. Cari ikon kontak
+                  const iconDef = findIconDefinitionByName(contact.icon);
+                  return (
+                    <li
+                      key={contact.id}
+                      className="flex items-center text-gray-300 dark:text-gray-300"
+                    >
+                      {/* 4. Render ikon kontak */}
+                      {iconDef && (
+                        <FontAwesomeIcon
+                          icon={iconDef}
+                          className="w-5 h-5 mr-3 text-gray-400"
+                        />
+                      )}
+                      {contact.link ? (
+                        <a
+                          href={contact.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:text-blue-400 transition duration-150 break-all"
+                        >
+                          {contact.value}
+                          {/* 4. Gunakan ikon external link */}
+                          {externalLinkIcon && (
+                            <FontAwesomeIcon
+                              icon={externalLinkIcon}
+                              className="ml-1.5 h-3 w-3 opacity-70"
+                            />
+                          )}
+                        </a>
+                      ) : (
+                        <span className="break-all">{contact.value}</span>
+                      )}
+                    </li>
+                  );
+                })}
+            </ul>
+            {/* 6. Gunakan onTabClick dari props */}
+            <button
+              onClick={() => onTabClick("contact")}
+              className="mt-4 w-full text-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-150 text-sm"
+            >
+              Send a Message
+            </button>
+          </div>
+        </div>
+
+        {/* Right Column */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Core Skills */}
+          <div className="bg-gray-800 dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-semibold text-white dark:text-white flex items-center">
+                {starIcon && (
+                  <FontAwesomeIcon
+                    icon={starIcon}
+                    className="mr-2 text-yellow-400"
+                  />
+                )}{" "}
+                Core Skills
+              </h3>
+              {/* 6. Gunakan onTabClick dari props */}
+              <button
+                className="text-blue-400 hover:text-blue-300 text-sm font-medium"
+                onClick={() => onTabClick("skills")}
+              >
+                View All Skills →
+              </button>
+            </div>
+            <div className="space-y-4">
+              {/* 5. Gunakan data skills dari props */}
+              {skills.slice(0, 6).map((skill) => {
+                // 4. Cari ikon skill
+                const iconDef = findIconDefinitionByName(skill.icon);
+                return (
+                  <div key={skill.id}>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-sm font-medium text-white dark:text-white flex items-center">
+                        {/* 4. Render ikon skill */}
+                        {iconDef && (
+                          <FontAwesomeIcon
+                            icon={iconDef}
+                            className="mr-2 h-4 w-4 text-gray-400"
+                          />
+                        )}
+                        {skill.name}
+                      </span>
+                      <span className="text-xs font-medium text-gray-400 dark:text-gray-400">
+                        {skill.percentage ?? 0}%
+                      </span>{" "}
+                      {/* Handle null percentage */}
+                    </div>
+                    <div className="w-full bg-gray-700 dark:bg-gray-600 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full bg-gradient-to-r ${
+                          skill.color || "from-blue-500 to-cyan-500"
+                        }`}
+                        style={{ width: `${skill.percentage ?? 0}%` }}
+                        role="progressbar"
+                        aria-valuenow={skill.percentage ?? 0}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-label={`${skill.name} proficiency`}
+                      ></div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Featured Project */}
+          <div className="bg-gray-800 dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <div className="flex justify-between items-center mb-5">
+              <h3 className="text-xl font-semibold text-white dark:text-white flex items-center">
+                {/* 4. Gunakan ikon */}
+                {projectDiagramIcon && (
+                  <FontAwesomeIcon
+                    icon={projectDiagramIcon}
+                    className="mr-2 text-purple-400"
+                  />
+                )}{" "}
+                Featured Project
+              </h3>
+              {/* 6. Gunakan onTabClick dari props */}
+              <button
+                className="text-blue-400 hover:text-blue-300 text-sm font-medium"
+                onClick={() => onTabClick("projects")}
+              >
+                View All Projects →
+              </button>
+            </div>
+            {/* 5. Gunakan data projects dari props */}
+            {projects.length > 0 ? (
+              // 7. Panggil komponen ProjectCard dengan props yang sesuai
+              <ProjectCard
+                project={projects[0]}
+                onClick={() => onProjectClick(projects[0])}
+                viewMode="grid"
+              />
+            ) : (
+              <p className="text-gray-400">
+                No featured projects available yet.
+              </p>
+            )}
+          </div>
+
+          {/* Recent Blog Posts */}
+          <div className="bg-gray-800 dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-semibold text-white dark:text-white flex items-center">
+                {/* 4. Gunakan ikon */}
+                {rssIcon && (
+                  <FontAwesomeIcon
+                    icon={rssIcon}
+                    className="mr-2 text-orange-400"
+                  />
+                )}{" "}
+                Recent Blog Posts
+              </h3>
+              {/* 6. Gunakan onTabClick dari props */}
+              <button
+                className="text-blue-400 hover:text-blue-300 text-sm font-medium"
+                onClick={() => onTabClick("blog")}
+              >
+                View All Posts →
+              </button>
+            </div>
+            <div className="space-y-4">
+              {/* 5. Gunakan data blogPosts dari props */}
+              {blogPosts.slice(0, 2).map((post) => (
+                <div
+                  key={post.id}
+                  className="border-b border-gray-700 dark:border-gray-700 pb-3 last:border-b-0 last:pb-0"
+                >
+                  {/* 6. Gunakan onBlogPostClick dari props */}
+                  <h4
+                    className="text-md font-semibold text-white dark:text-white hover:text-blue-400 transition cursor-pointer mb-1"
+                    onClick={() => onBlogPostClick(post)}
+                  >
+                    {post.title}
+                  </h4>
+                  <p className="text-xs text-gray-400 dark:text-gray-400">
+                    {formatDateImpl(post.date, "medium")} •{" "}
+                    {post.readTime ?? "?"} min read
+                  </p>{" "}
+                  {/* Gunakan formatDateImpl & handle null readTime */}
+                </div>
+              ))}
+              {blogPosts.length === 0 && (
+                <p className="text-gray-400 text-sm">
+                  No blog posts yet. Stay tuned!
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// ... Lanjutkan dengan definisi komponen child lainnya (ProjectsTab, SkillsTab, dst.) ...
+// --- DEFINISI CHILD COMPONENTS LENGKAP ---
+// ...
+
+// --- Component: ProjectsTab ---
+// (Definisi props lengkap dari jawaban sebelumnya)
+interface ProjectsTabProps {
+  projects: Project[]; // Data asli jika diperlukan
+  processedProjects: Project[]; // Data setelah filter/sort
+  paginatedProjects: Project[]; // Data untuk halaman saat ini
+  totalProjectPages: number;
+  currentProjectPage: number;
+  onPageChange: (page: number) => void;
+  activeFilters: FilterOption[];
+  projectFilterOptions: {
+    tech: FilterOption[];
+    status: FilterOption[];
+    category: FilterOption[];
+  };
+  onFilterToggle: (f: FilterOption) => void;
+  onClearFilters: () => void;
+  activeSort: SortOption;
+  projectSortOptions: SortOption[];
+  onSortChange: (o: SortOption) => void;
+  currentView: "grid" | "list";
+  onViewChange: (v: "grid" | "list") => void;
+  onProjectClick: (p: Project) => void;
+  searchQuery: string;
+  onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+const ProjectsTab: React.FC<ProjectsTabProps> = ({
+  // Destructure semua props
+  projects,
+  processedProjects,
+  paginatedProjects,
+  totalProjectPages,
+  currentProjectPage,
+  onPageChange,
+  activeFilters,
+  projectFilterOptions,
+  onFilterToggle,
+  onClearFilters,
+  activeSort,
+  projectSortOptions,
+  onSortChange,
+  currentView,
+  onViewChange,
+  onProjectClick,
+  searchQuery,
+  onSearchChange,
+}) => {
+  // 1. Cari ikon yang dibutuhkan
+  const searchIcon = findIconDefinitionByName("search");
+  const sortIcon = findIconDefinitionByName("sort");
+  const tableIcon = findIconDefinitionByName("table");
+  const listUlIcon = findIconDefinitionByName("list-ul");
+
+  // 2. Salin JSX dari renderProjectsTab
+  return (
+    <section aria-labelledby="projects-heading">
+      <h2 id="projects-heading" className="text-2xl font-bold text-white mb-6">
+        My Projects
+      </h2>
+      {/* Filter and Sort Controls */}
+      <div className="bg-gray-800 dark:bg-gray-850 p-4 rounded-lg mb-6 shadow-sm sticky top-14 z-30">
+        {" "}
+        {/* Sesuaikan top jika perlu */}
+        <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+          {/* Search Bar */}
+          <div className="relative w-full md:w-1/3">
+            {/* 3. Gunakan props untuk value dan handler */}
+            <input
+              type="text"
+              placeholder="Search projects (title, tech...)"
+              value={searchQuery}
+              onChange={onSearchChange}
+              className="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-700 dark:bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400"
+            />
+            {/* 4. Gunakan ikon yang sudah dicari */}
+            {searchIcon && (
+              <FontAwesomeIcon
+                icon={searchIcon}
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4"
+              />
+            )}
+          </div>
+          {/* Filters (Desktop) */}
+          <div className="hidden md:flex flex-wrap gap-3 items-center">
+            {/* 3. Gunakan props */}
+            {projectFilterOptions.status.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => onFilterToggle(opt)}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition ${
+                  activeFilters.some(
+                    (f) => f.value === opt.value && f.category === "status"
+                  )
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+            {activeFilters.length > 0 && (
+              <button
+                onClick={onClearFilters}
+                className="text-xs text-red-400 hover:text-red-300 ml-2"
+              >
+                Clear Filters
+              </button>
+            )}
+          </div>
+          {/* Sort Dropdown (Desktop) */}
+          <div className="hidden md:block relative">
+            {/* 3. Gunakan props */}
+            <select
+              value={`${activeSort.field}-${activeSort.order}`}
+              onChange={(e) => {
+                const [field, order] = e.target.value.split("-");
+                const selectedOpt = projectSortOptions.find(
+                  (opt) => opt.field === field && opt.order === order
+                );
+                if (selectedOpt) onSortChange(selectedOpt);
+              }}
+              className="appearance-none w-full md:w-auto bg-gray-700 dark:bg-gray-700 text-white text-sm px-4 py-2 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {projectSortOptions.map((opt) => (
+                <option
+                  key={`${opt.field}-${opt.order}`}
+                  value={`${opt.field}-${opt.order}`}
+                >
+                  Sort by: {opt.label}
+                </option>
+              ))}
+            </select>
+            {/* 4. Gunakan ikon */}
+            {sortIcon && (
+              <FontAwesomeIcon
+                icon={sortIcon}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-3 w-3 pointer-events-none"
+              />
+            )}
+          </div>
+          {/* View Toggle */}
+          <div className="hidden md:flex items-center bg-gray-700 rounded-lg p-1">
+            {/* 3. Gunakan props */}
+            <button
+              onClick={() => onViewChange("grid")}
+              className={`px-2 py-1 rounded ${
+                currentView === "grid"
+                  ? "bg-blue-600 text-white"
+                  : "text-gray-400 hover:text-white"
+              }`}
+              aria-label="Grid View"
+            >
+              {tableIcon && <FontAwesomeIcon icon={tableIcon} />}
+            </button>
+            <button
+              onClick={() => onViewChange("list")}
+              className={`px-2 py-1 rounded ${
+                currentView === "list"
+                  ? "bg-blue-600 text-white"
+                  : "text-gray-400 hover:text-white"
+              }`}
+              aria-label="List View"
+            >
+              {listUlIcon && <FontAwesomeIcon icon={listUlIcon} />}
+            </button>
+          </div>
+        </div>
+      </div>
+      {/* Project Grid/List */}
+      {/* 3. Gunakan props */}
+      {processedProjects.length > 0 ? (
+        <>
+          <div
+            className={`grid ${
+              currentView === "grid"
+                ? "grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
+                : "grid-cols-1"
+            } gap-6 mb-8`}
+          >
+            {paginatedProjects.map((project) => (
+              // 7. Panggil komponen ProjectCard dengan props
+              <ProjectCard
+                key={project.id}
+                project={project}
+                onClick={() => onProjectClick(project)}
+                viewMode={currentView}
+              />
+            ))}
+          </div>
+          {totalProjectPages > 1 && (
+            // 7. Panggil komponen PaginationControls dengan props
+            <PaginationControls
+              currentPage={currentProjectPage}
+              totalPages={totalProjectPages}
+              onPageChange={onPageChange}
+            />
+          )}
+        </>
+      ) : (
+        <div className="text-center py-12">
+          {searchIcon && (
+            <FontAwesomeIcon
+              icon={searchIcon}
+              className="text-4xl text-gray-500 mb-4"
+            />
+          )}
+          <p className="text-gray-400">
+            No projects found matching your criteria.
+          </p>
+          {(searchQuery || activeFilters.length > 0) && (
+            <button
+              onClick={onClearFilters}
+              className="mt-4 text-blue-400 hover:text-blue-300"
+            >
+              Clear Search & Filters
+            </button>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}; // <-- Akhir dari komponen ProjectsTab
+
+// ... Lanjutkan dengan definisi komponen child lainnya (SkillsTab, dst.) ...
+// --- DEFINISI CHILD COMPONENTS LENGKAP ---
+// ...
+
+// --- Component: SkillsTab ---
+// --- DEFINISI CHILD COMPONENTS LENGKAP ---
+// ... (Komponen sebelumnya seperti NavigationTabs, StatCards, ProfileHeader, OverviewTab, ProjectsTab) ...
+
+// --- Component: SkillsTab ---
+interface SkillsTabProps {
+  skills: Skill[]; // Data skill asli dari props
+  filteredSkills: Skill[]; // Data skill yang sudah difilter dari state/memo parent
+  activeCategory: string; // Kategori aktif dari state parent
+  onCategoryChange: (cat: string) => void; // Handler dari parent
+  skillRadarChartRef: React.RefObject<HTMLCanvasElement | null>; // Ref dari parent (Tipe sudah benar)
+}
+const SkillsTab: React.FC<SkillsTabProps> = ({
+  skills,
+  filteredSkills,
+  activeCategory,
+  onCategoryChange,
+  skillRadarChartRef, // Terima ref
+}) => {
+  // Hitung daftar kategori unik dari props skills
+  const skillCategories = useMemo(
+    () =>
+      [
+        ...new Set(skills.map((s) => s.category).filter(Boolean) as string[]),
+      ].sort(),
+    [skills]
+  );
+
+  // JSX lengkap dari renderSkillsTab, diadaptasi untuk props
+  return (
+    <section aria-labelledby="skills-heading">
+      <h2 id="skills-heading" className="text-2xl font-bold text-white mb-6">
+        Skills & Expertise
+      </h2>
+
+      {/* Skill Category Filters */}
+      <div className="flex flex-wrap justify-center gap-3 mb-8">
+        <button
+          onClick={() => onCategoryChange("all")} // Gunakan handler onCategoryChange
+          className={`px-4 py-1.5 rounded-full text-sm font-medium transition ${
+            // Gunakan props activeCategory
+            activeCategory === "all"
+              ? "bg-blue-600 text-white"
+              : "bg-gray-700 dark:bg-gray-700 text-gray-300 hover:bg-gray-600 dark:hover:bg-gray-600" // Tambah dark mode style
+          }`}
+        >
+          All Skills
+        </button>
+        {/* Gunakan skillCategories yang dihitung */}
+        {skillCategories.map((category) => (
+          <button
+            key={category}
+            onClick={() => onCategoryChange(category)} // Gunakan handler onCategoryChange
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition capitalize ${
+              // Gunakan props activeCategory
+              activeCategory === category
+                ? "bg-blue-600 text-white"
+                : "bg-gray-700 dark:bg-gray-700 text-gray-300 hover:bg-gray-600 dark:hover:bg-gray-600" // Tambah dark mode style
+            }`}
+          >
+            {category}
+          </button>
+        ))}
+      </div>
+
+      {/* Skills List/Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Gunakan props filteredSkills */}
+        {filteredSkills.length > 0 ? (
+          filteredSkills
+            .sort((a, b) => (b.percentage ?? 0) - (a.percentage ?? 0)) // Handle null percentage saat sort
+            // Panggil komponen SkillCard (pastikan SkillCard sudah didefinisikan LENGKAP di bawah)
+            .map((skill) => <SkillCard key={skill.id} skill={skill} />) // Gunakan ID skill sebagai key
+        ) : (
+          <p className="text-gray-400 md:col-span-2 lg:col-span-3 text-center py-8">
+            No skills found in this category.
+          </p>
+        )}
+      </div>
+
+      {/* Skill Radar Chart */}
+      <div className="mt-12 bg-gray-800 dark:bg-gray-800 p-6 rounded-lg shadow-md">
+        <h3 className="text-xl font-semibold text-white dark:text-white mb-4 text-center">
+          Overall Skill Distribution
+        </h3>
+        <div
+          className="relative mx-auto"
+          style={{ height: "350px", maxWidth: "450px" }}
+        >
+          {/* Gunakan props skillRadarChartRef */}
+          <canvas ref={skillRadarChartRef}></canvas>
+        </div>
+      </div>
+    </section>
+  );
+}; // <-- Akhir dari komponen SkillsTab
+
+// ... Lanjutkan dengan definisi LENGKAP komponen child lainnya (ExperienceTab, EducationTab, dst.) ...
+// ... Pastikan definisi SkillCard juga ada di bawah ...
+
+// ... Lanjutkan dengan definisi komponen child lainnya (ExperienceTab, dst.) ...
+// --- DEFINISI CHILD COMPONENTS LENGKAP ---
+// ...
+
+// --- Component: ExperienceTab ---
+interface ExperienceTabProps {
+  workExperiences: WorkExperience[]; // Terima data dari props
+}
+const ExperienceTab: React.FC<ExperienceTabProps> = ({ workExperiences }) => {
+  // Terima props
+  // 1. Salin JSX dari renderExperienceTab
+  return (
+    <section aria-labelledby="experience-heading">
+      <h2
+        id="experience-heading"
+        className="text-2xl font-bold text-white mb-6"
+      >
+        Work Experience
+      </h2>
+      <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-gray-700 dark:before:from-gray-700 before:via-gray-700 dark:before:via-gray-700 before:to-gray-800 dark:before:to-gray-850">
+        {" "}
+        {/* Sesuaikan warna gradient jika perlu */}
+        {/* 2. Gunakan workExperiences dari props */}
+        {workExperiences.length > 0 ? (
+          workExperiences.map((exp) => (
+            // 3. Panggil komponen ExperienceCard dengan props
+            // Gunakan exp.id sebagai key yang lebih stabil
+            <ExperienceCard key={exp.id} experience={exp} />
+          ))
+        ) : (
+          <p className="text-gray-400 text-center py-8">
+            No work experience listed.
+          </p>
+        )}
+      </div>
+    </section>
+  );
+}; // <-- Akhir dari komponen ExperienceTab
+
+// ... Lanjutkan dengan definisi komponen child lainnya (EducationTab, dst.) ...
+// --- DEFINISI CHILD COMPONENTS LENGKAP ---
+// ...
+
+// --- Component: EducationTab ---
+interface EducationTabProps {
+  educations: Education[]; // Terima data dari props
+}
+const EducationTab: React.FC<EducationTabProps> = ({ educations }) => {
+  // Terima props
+  // 1. Salin JSX dari renderEducationTab
+  return (
+    <section aria-labelledby="education-heading">
+      <h2 id="education-heading" className="text-2xl font-bold text-white mb-6">
+        Education
+      </h2>
+      <div className="space-y-8">
+        {/* 2. Gunakan educations dari props */}
+        {educations.length > 0 ? (
+          educations.map((edu) => (
+            // 3. Panggil komponen EducationCard dengan props
+            // Gunakan edu.id sebagai key
+            <EducationCard key={edu.id} education={edu} />
+          ))
+        ) : (
+          <p className="text-gray-400 text-center py-8">No education listed.</p>
+        )}
+      </div>
+    </section>
+  );
+}; // <-- Akhir dari komponen EducationTab
+
+// ... Lanjutkan dengan definisi komponen child lainnya (CertificationsTab, dst.) ...
+// --- DEFINISI CHILD COMPONENTS LENGKAP ---
+// ...
+
+// --- Component: CertificationsTab ---
+interface CertificationsTabProps {
+  certifications: Certification[]; // Terima data dari props
+}
+const CertificationsTab: React.FC<CertificationsTabProps> = ({
+  certifications,
+}) => {
+  // Terima props
+  // 1. Salin JSX dari renderCertificationsTab
+  return (
+    <section aria-labelledby="certifications-heading">
+      <h2
+        id="certifications-heading"
+        className="text-2xl font-bold text-white mb-6"
+      >
+        Licenses & Certifications
+      </h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* 2. Gunakan certifications dari props */}
+        {certifications.length > 0 ? (
+          certifications.map((cert) => (
+            // 3. Panggil komponen CertificationCard dengan props
+            // Gunakan cert.id sebagai key
+            <CertificationCard key={cert.id} certification={cert} />
+          ))
+        ) : (
+          <p className="text-gray-400 md:col-span-2 text-center py-8">
+            No certifications listed.
+          </p>
+        )}
+      </div>
+    </section>
+  );
+}; // <-- Akhir dari komponen CertificationsTab
+
+// ... Lanjutkan dengan definisi komponen child lainnya (AchievementsTab, dst.) ...
+// --- DEFINISI CHILD COMPONENTS LENGKAP ---
+// ...
+
+// --- Component: AchievementsTab ---
+interface AchievementsTabProps {
+  achievements: Achievement[]; // Terima data dari props
+}
+const AchievementsTab: React.FC<AchievementsTabProps> = ({ achievements }) => {
+  // Terima props
+  // 1. Salin JSX dari renderAchievementsTab
+  return (
+    <section aria-labelledby="achievements-heading">
+      <h2
+        id="achievements-heading"
+        className="text-2xl font-bold text-white mb-6"
+      >
+        Awards & Achievements
+      </h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* 2. Gunakan achievements dari props */}
+        {achievements.length > 0 ? (
+          achievements.map((ach) => (
+            // 3. Panggil komponen AchievementCard dengan props
+            // Gunakan ach.id sebagai key
+            <AchievementCard key={ach.id} achievement={ach} />
+          ))
+        ) : (
+          <p className="text-gray-400 sm:col-span-2 lg:col-span-3 text-center py-8">
+            No achievements listed.
+          </p>
+        )}
+      </div>
+    </section>
+  );
+}; // <-- Akhir dari komponen AchievementsTab
+
+// ... Lanjutkan dengan definisi komponen child lainnya (ActivityTab, dst.) ...
+// --- DEFINISI CHILD COMPONENTS LENGKAP ---
+// ...
+
+// --- Component: ActivityTab ---
+interface ActivityTabProps {
+  contributionData: ContributionData | null;
+  onMouseEnterCell: (
+    e: React.MouseEvent<SVGRectElement>,
+    day: ContributionDay
+  ) => void;
+  onMouseLeaveCell: () => void;
+  darkMode: boolean;
+  tooltipInfo: { show: boolean; x: number; y: number; text: string } | null;
+  activityChartRef: React.RefObject<HTMLCanvasElement> | null;
+  projectCategoryDonutRef: React.RefObject<HTMLCanvasElement> | null;
+  timelineData: TimelineEvent[];
+}
+const ActivityTab: React.FC<ActivityTabProps> = ({
+  // Terima semua props yang dibutuhkan
+  contributionData,
+  onMouseEnterCell,
+  onMouseLeaveCell,
+  darkMode,
+  tooltipInfo,
+  activityChartRef,
+  projectCategoryDonutRef,
+  timelineData,
+}) => {
+  // 1. Salin JSX dari renderActivityTab
+  return (
+    <section aria-labelledby="activity-heading">
+      <h2 id="activity-heading" className="text-2xl font-bold text-white mb-6">
+        Activity & Timeline
+      </h2>
+
+      {/* Contribution Heatmap */}
+      <div className="bg-gray-800 dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-md mb-8">
+        <h3 className="text-lg sm:text-xl font-semibold text-white dark:text-white mb-4">
+          {/* 2. Gunakan contributionData dari props */}
+          Contribution Activity ({contributionData?.year || "Data Unavailable"})
+        </h3>
+        {/* 7. Panggil komponen ContributionHeatmap dengan props */}
+        <ContributionHeatmap
+          data={contributionData}
+          onMouseEnterCell={onMouseEnterCell}
+          onMouseLeaveCell={onMouseLeaveCell}
+          darkMode={darkMode}
+        />
+        {/* 2. Gunakan contributionData dari props */}
+        {contributionData && (
+          <p className="text-xs text-gray-400 mt-2 text-right">
+            Total Contributions: {contributionData.total}
+          </p>
+        )}
+        {/* Tooltip Display */}
+        {/* 2. Gunakan tooltipInfo dari props */}
+        {tooltipInfo && tooltipInfo.show && (
+          <div
+            className="absolute z-50 px-3 py-1.5 text-xs font-medium text-white bg-gray-900 rounded-md shadow-sm tooltip dark:bg-black"
+            style={{
+              left: `${tooltipInfo.x}px`,
+              top: `${tooltipInfo.y}px`,
+              transform: "translate(-50%, -100%)",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {tooltipInfo.text}
+          </div>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        {/* Activity Line Chart */}
+        <div className="bg-gray-800 dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-md">
+          <h3 className="text-lg sm:text-xl font-semibold text-white dark:text-white mb-4">
+            Monthly Contribution Trend
+          </h3>
+          <div className="relative h-64 md:h-80">
+            {/* 2. Gunakan activityChartRef dari props */}
+            <canvas ref={activityChartRef}></canvas>
+          </div>
+        </div>
+
+        {/* Project Categories Donut Chart */}
+        <div className="bg-gray-800 dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-md">
+          <h3 className="text-lg sm:text-xl font-semibold text-white dark:text-white mb-4">
+            Project Distribution by Category
+          </h3>
+          <div className="relative h-64 md:h-80">
+            {/* 2. Gunakan projectCategoryDonutRef dari props */}
+            <canvas ref={projectCategoryDonutRef}></canvas>
+          </div>
+        </div>
+      </div>
+
+      {/* Combined Timeline */}
+      <div className="bg-gray-800 dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-md">
+        <h3 className="text-lg sm:text-xl font-semibold text-white dark:text-white mb-6">
+          Career & Education Timeline
+        </h3>
+        <div className="space-y-8">
+          {/* 2. Gunakan timelineData dari props */}
+          {timelineData.length > 0 ? (
+            timelineData.map((event) => (
+              // 7. Panggil komponen TimelineItem dengan props
+              <TimelineItem key={event.id} event={event} />
+            ))
+          ) : (
+            <p className="text-gray-400 text-center py-6">
+              Timeline data is not available.
+            </p>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}; // <-- Akhir dari komponen ActivityTab
+
+// ... Lanjutkan dengan definisi komponen child lainnya (BlogTab, dst.) ...
+// --- DEFINISI CHILD COMPONENTS LENGKAP ---
+// ...
+
+// --- Component: BlogTab ---
+interface BlogTabProps {
+  blogPosts: BlogPost[]; // Data asli (untuk cek length)
+  paginatedBlogPosts: BlogPost[]; // Data terpaginasi
+  totalBlogPostPages: number;
+  currentBlogPostPage: number;
+  onPageChange: (page: number) => void; // Handler paginasi
+  onBlogPostClick: (b: BlogPost) => void; // Handler klik post
+}
+const BlogTab: React.FC<BlogTabProps> = ({
+  blogPosts, // Terima props
+  paginatedBlogPosts,
+  totalBlogPostPages,
+  currentBlogPostPage,
+  onPageChange,
+  onBlogPostClick,
+}) => {
+  // 1. Cari ikon yang dibutuhkan
+  const rssIcon = findIconDefinitionByName("rss");
+
+  // 2. Salin JSX dari renderBlogTab
+  return (
+    <section aria-labelledby="blog-heading">
+      <h2 id="blog-heading" className="text-2xl font-bold text-white mb-6">
+        Latest Articles
+      </h2>
+      {/* 3. Gunakan blogPosts dari props untuk cek length */}
+      {blogPosts.length > 0 ? (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            {/* 3. Gunakan paginatedBlogPosts dari props */}
+            {paginatedBlogPosts.map((post) => (
+              // 7. Panggil komponen BlogPostCard dengan props
+              // Gunakan post.id sebagai key (lebih unik dari slug)
+              <BlogPostCard
+                key={post.id}
+                post={post}
+                onClick={() => onBlogPostClick(post)} // Gunakan handler dari props
+              />
+            ))}
+          </div>
+          {/* 3. Gunakan totalBlogPostPages dari props */}
+          {totalBlogPostPages > 1 && (
+            // 7. Panggil komponen PaginationControls dengan props
+            <PaginationControls
+              currentPage={currentBlogPostPage} // Gunakan state dari props
+              totalPages={totalBlogPostPages} // Gunakan state dari props
+              onPageChange={onPageChange} // Gunakan handler dari props
+            />
+          )}
+        </>
+      ) : (
+        <div className="text-center py-12">
+          {/* 4. Gunakan ikon yang sudah dicari */}
+          {rssIcon && (
+            <FontAwesomeIcon
+              icon={rssIcon}
+              className="text-4xl text-gray-500 mb-4"
+            />
+          )}
+          <p className="text-gray-400">
+            No blog posts published yet. Check back soon!
+          </p>
+        </div>
+      )}
+    </section>
+  );
+}; // <-- Akhir dari komponen BlogTab
+
+// ... Lanjutkan dengan definisi komponen child lainnya (TestimonialsTab, dst.) ...
+// --- DEFINISI CHILD COMPONENTS LENGKAP ---
+// ...
+
+// --- Component: TestimonialsTab ---
+interface TestimonialsTabProps {
+  testimonials: Testimonial[]; // Terima data dari props
+}
+const TestimonialsTab: React.FC<TestimonialsTabProps> = ({ testimonials }) => {
+  // Terima props
+  // 1. Cari ikon yang dibutuhkan
+  const commentDotsIcon = findIconDefinitionByName("comment-dots");
+
+  // 2. Salin JSX dari renderTestimonialsTab
+  return (
+    <section aria-labelledby="testimonials-heading">
+      <h2
+        id="testimonials-heading"
+        className="text-2xl font-bold text-white mb-6"
+      >
+        What People Say
+      </h2>
+      {/* 3. Gunakan testimonials dari props */}
+      {testimonials.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {testimonials.map((testimonial) => (
+            // 5. Panggil komponen TestimonialCard dengan props
+            // Key sudah menggunakan id dari data lama, aman
+            <TestimonialCard key={testimonial.id} testimonial={testimonial} />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-12">
+          {/* 4. Gunakan ikon yang sudah dicari */}
+          {commentDotsIcon && (
+            <FontAwesomeIcon
+              icon={commentDotsIcon}
+              className="text-4xl text-gray-500 mb-4"
+            />
+          )}
+          <p className="text-gray-400">
+            No testimonials available at the moment.
+          </p>
+        </div>
+      )}
+    </section>
+  );
+}; // <-- Akhir dari komponen TestimonialsTab
+
+// ... Lanjutkan dengan definisi komponen child lainnya (ContactTab, ... Card, dll) ...
+// --- DEFINISI CHILD COMPONENTS LENGKAP ---
+// ...
+
+// --- Component: ContactTab ---
+interface ContactTabProps {
+  contacts: Contact[];
+  socialMedia: SocialMedia[];
+  formData: { name: string; email: string; subject: string; message: string };
+  formStatus: "idle" | "sending" | "success" | "error";
+  onFormChange: (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => void;
+  onFormSubmit: (e: React.FormEvent) => void;
+}
+const ContactTab: React.FC<ContactTabProps> = ({
+  contacts, // Terima props
+  socialMedia,
+  formData,
+  formStatus,
+  onFormChange,
+  onFormSubmit,
+}) => {
+  // 1. Cari ikon yang dibutuhkan
+  const spinnerIcon = findIconDefinitionByName("spinner");
+  const checkIcon = findIconDefinitionByName("check");
+  const paperPlaneIcon = findIconDefinitionByName("paper-plane");
+  const externalLinkIcon = findIconDefinitionByName("external-link-alt");
+
+  // 2. Salin JSX dari renderContactTab
+  return (
+    <section aria-labelledby="contact-heading">
+      <h2 id="contact-heading" className="text-2xl font-bold text-white mb-6">
+        Contact Me
+      </h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Contact Form */}
+        <div className="bg-gray-800 dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <h3 className="text-xl font-semibold text-white mb-4">
+            Send a Message
+          </h3>
+          {/* 3. Gunakan onFormSubmit */}
+          <form onSubmit={onFormSubmit} className="space-y-4">
+            <div>
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium text-gray-300 mb-1"
+              >
+                Name
+              </label>
+              {/* 3. Gunakan formData & onFormChange */}
+              <input
+                type="text"
+                name="name"
+                id="name"
+                required
+                minLength={2}
+                value={formData.name}
+                onChange={onFormChange}
+                className="w-full px-3 py-2 rounded-md bg-gray-700 text-white focus:ring-blue-500 focus:border-blue-500 border-gray-600"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-300 mb-1"
+              >
+                Email
+              </label>
+              <input
+                type="email"
+                name="email"
+                id="email"
+                required
+                value={formData.email}
+                onChange={onFormChange}
+                className="w-full px-3 py-2 rounded-md bg-gray-700 text-white focus:ring-blue-500 focus:border-blue-500 border-gray-600"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="subject"
+                className="block text-sm font-medium text-gray-300 mb-1"
+              >
+                Subject
+              </label>
+              <input
+                type="text"
+                name="subject"
+                id="subject"
+                required
+                value={formData.subject}
+                onChange={onFormChange}
+                className="w-full px-3 py-2 rounded-md bg-gray-700 text-white focus:ring-blue-500 focus:border-blue-500 border-gray-600"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="message"
+                className="block text-sm font-medium text-gray-300 mb-1"
+              >
+                Message
+              </label>
+              <textarea
+                name="message"
+                id="message"
+                rows={4}
+                required
+                minLength={10}
+                value={formData.message}
+                onChange={onFormChange}
+                className="w-full px-3 py-2 rounded-md bg-gray-700 text-white focus:ring-blue-500 focus:border-blue-500 border-gray-600"
+              ></textarea>
+            </div>
+            <button
+              type="submit"
+              disabled={formStatus === "sending"}
+              className={`w-full flex justify-center items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg transition duration-150 font-semibold disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              {/* 3. Gunakan formStatus */}
+              {/* 4. Gunakan ikon yang dicari */}
+              {formStatus === "sending" && spinnerIcon && (
+                <>
+                  <FontAwesomeIcon
+                    icon={spinnerIcon}
+                    className="animate-spin mr-2 h-4 w-4"
+                  />{" "}
+                  Sending...
+                </>
+              )}
+              {formStatus === "success" && checkIcon && (
+                <>
+                  <FontAwesomeIcon icon={checkIcon} className="mr-2 h-4 w-4" />{" "}
+                  Sent!
+                </>
+              )}
+              {formStatus !== "sending" &&
+                formStatus !== "success" &&
+                paperPlaneIcon && (
+                  <>
+                    <FontAwesomeIcon
+                      icon={paperPlaneIcon}
+                      className="mr-2 h-4 w-4"
+                    />{" "}
+                    Send Message
+                  </>
+                )}
+            </button>
+            {/* 3. Gunakan formStatus */}
+            {formStatus === "error" && (
+              <p className="text-sm text-red-400 mt-2 text-center">
+                Failed to send message. Please try again.
+              </p>
+            )}
+          </form>
+        </div>
+
+        {/* Contact Information */}
+        <div className="space-y-6">
+          <div className="bg-gray-800 dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <h3 className="text-xl font-semibold text-white mb-4">
+              Contact Details
+            </h3>
+            <ul className="space-y-4 text-sm">
+              {/* 3. Gunakan contacts dari props */}
+              {contacts
+                .filter((c) => c.isPublic)
+                .map((contact) => {
+                  // 4. Cari ikon kontak
+                  const iconDef = findIconDefinitionByName(contact.icon);
+                  return (
+                    <li
+                      key={contact.id}
+                      className="flex items-start text-gray-300"
+                    >
+                      {/* 4. Render ikon kontak */}
+                      {iconDef && (
+                        <FontAwesomeIcon
+                          icon={iconDef}
+                          className="w-5 h-5 mr-4 text-gray-400 mt-0.5 flex-shrink-0"
+                        />
+                      )}
+                      <div>
+                        <span className="font-medium text-gray-200">
+                          {contact.type}:
+                        </span>
+                        <br />
+                        {contact.link ? (
+                          <a
+                            href={contact.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-blue-400 transition duration-150 break-all"
+                          >
+                            {contact.value}
+                            {/* 4. Gunakan ikon external link */}
+                            {contact.type !== "Email" && externalLinkIcon && (
+                              <FontAwesomeIcon
+                                icon={externalLinkIcon}
+                                className="ml-1.5 h-3 w-3 opacity-70"
+                              />
+                            )}
+                          </a>
+                        ) : (
+                          <span className="break-all">{contact.value}</span>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+            </ul>
+          </div>
+          {/* Social Media Links */}
+          <div className="bg-gray-800 dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <h3 className="text-xl font-semibold text-white mb-4">
+              Find Me Online
+            </h3>
+            <div className="flex flex-wrap gap-4">
+              {/* 3. Gunakan socialMedia dari props */}
+              {socialMedia.map((social) => {
+                // 4. Cari ikon sosial media
+                const iconDef = findIconDefinitionByName(social.icon);
+                return (
+                  <a
+                    key={social.id}
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center space-x-2 text-gray-300 hover:text-blue-400 transition duration-150 bg-gray-700 px-3 py-2 rounded-lg text-sm"
+                    aria-label={`Visit my ${social.platform} profile`}
+                  >
+                    {/* 4. Render ikon sosial media */}
+                    {iconDef && (
+                      <FontAwesomeIcon icon={iconDef} className="h-4 w-4" />
+                    )}
+                    <span>{social.platform}</span>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}; // <-- Akhir dari komponen ContactTab
+
+// ... Definisi SEMUA child component lainnya (Card, Dialog, Panel, dll.) HARUS ADA DI SINI ...
+// --- DEFINISI CHILD COMPONENTS LENGKAP ---
+// ...
+
+// --- Component: ProjectCard ---
+interface ProjectCardProps {
+  project: Project; // Gunakan tipe Project baru dari props parent
+  onClick: () => void;
+  viewMode?: "grid" | "list";
+}
+const ProjectCard: React.FC<ProjectCardProps> = ({
+  project,
+  onClick,
+  viewMode = "grid",
+}) => {
+  // 1. Cari definisi ikon yang dibutuhkan
+  const defaultCodeIcon = findIconDefinitionByName("code-branch"); // Untuk fallback gambar & stats
+  const starIcon = findIconDefinitionByName("star");
+  const eyeIcon = findIconDefinitionByName("eye");
+  const githubIcon = findIconDefinitionByName("github");
+  const externalLinkIcon = findIconDefinitionByName("external-link-alt");
+  const infoIcon = findIconDefinitionByName("info-circle");
+  const defaultImage = "/images/placeholder-project.png"; // Definisikan fallback
+
+  // 2. Salin & Adaptasi JSX untuk List View
+  if (viewMode === "list") {
+    return (
+      <div
+        onClick={onClick}
+        className="flex flex-col sm:flex-row items-start bg-gray-800 dark:bg-gray-800 rounded-lg shadow-md hover:bg-gray-750 dark:hover:bg-gray-700 transition duration-200 cursor-pointer overflow-hidden p-4"
+      >
+        {/* Image */}
+        {project.image ? (
+          <Image
+            src={project.image || defaultImage}
+            alt={`${project.title}`}
+            width={128}
+            height={72}
+            className="w-full sm:w-32 h-auto sm:h-20 object-cover rounded-md mb-3 sm:mb-0 sm:mr-4 flex-shrink-0"
+          />
+        ) : (
+          <div className="w-full sm:w-32 h-20 flex-shrink-0 bg-gray-700 rounded-md flex items-center justify-center text-gray-500 mb-3 sm:mb-0 sm:mr-4">
+            {defaultCodeIcon && (
+              <FontAwesomeIcon icon={defaultCodeIcon} size="2x" />
+            )}
+          </div>
+        )}
+        {/* Details */}
+        <div className="flex-grow">
+          <div className="flex justify-between items-start mb-1">
+            <h3 className="text-lg font-semibold text-white dark:text-white group-hover:text-blue-400 transition-colors">
+              {project.title}
+            </h3>
+            <span
+              className={`text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${
+                project.status === "completed"
+                  ? "bg-green-600 text-green-100"
+                  : project.status === "in-progress"
+                  ? "bg-yellow-600 text-yellow-100"
+                  : "bg-gray-600 text-gray-100"
+              }`}
+            >
+              {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
+            </span>
+          </div>
+          <p className="text-sm text-gray-300 dark:text-gray-400 mb-2 line-clamp-2">
+            {project.description}
+          </p>
+          {/* Tech Stack */}
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {/* 3. Akses techStack dari props */}
+            {project.techStack.slice(0, 5).map((tech, idx) => (
+              <span
+                key={idx}
+                className="text-xs bg-gray-700 dark:bg-gray-600 text-gray-200 px-2 py-0.5 rounded-full"
+              >
+                {tech.tech}
+              </span>
+            ))}
+            {project.techStack.length > 5 && (
+              <span className="text-xs bg-gray-700 dark:bg-gray-600 text-gray-200 px-2 py-0.5 rounded-full">
+                +{project.techStack.length - 5}
+              </span>
+            )}
+          </div>
+          {/* Stats and Links */}
+          <div className="flex flex-wrap justify-between items-center text-xs text-gray-400">
+            <div className="flex items-center space-x-3">
+              {/* 4. Gunakan ikon yang dicari & data stats dari props */}
+              {starIcon && (
+                <span title="Stars">
+                  <FontAwesomeIcon icon={starIcon} className="mr-1" />{" "}
+                  {project.stats?.stars ?? 0}
+                </span>
+              )}
+              {defaultCodeIcon && (
+                <span title="Forks">
+                  <FontAwesomeIcon icon={defaultCodeIcon} className="mr-1" />{" "}
+                  {project.stats?.forks ?? 0}
+                </span>
+              )}{" "}
+              {/* Ganti ikon fork */}
+              {eyeIcon && (
+                <span title="Views">
+                  <FontAwesomeIcon icon={eyeIcon} className="mr-1" />{" "}
+                  {project.stats?.views ?? 0}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center space-x-3 mt-2 sm:mt-0">
+              {project.githubUrl && githubIcon && (
+                <a
+                  href={project.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-blue-400"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <FontAwesomeIcon icon={githubIcon} className="mr-1" /> Code
+                </a>
+              )}
+              {project.demoUrl && externalLinkIcon && (
+                <a
+                  href={project.demoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-blue-400"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <FontAwesomeIcon icon={externalLinkIcon} className="mr-1" />{" "}
+                  Demo
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  } else {
+    // 3. Salin & Adaptasi JSX untuk Grid View
+    return (
+      <div
+        onClick={onClick}
+        className="bg-gray-800 dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden group transform hover:-translate-y-1 flex flex-col"
+      >
+        <div className="h-48 bg-gradient-to-br from-gray-700 to-gray-800 relative overflow-hidden">
+          {project.image ? (
+            <Image
+              width={800}
+              height={450}
+              src={project.image || defaultImage}
+              alt={`${project.title}`}
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-500">
+              {defaultCodeIcon && (
+                <FontAwesomeIcon icon={defaultCodeIcon} size="3x" />
+              )}
+            </div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-70 group-hover:opacity-50 transition-opacity duration-300"></div>
+          <span
+            className={`absolute top-2 right-2 text-xs ... ${
+              project.status === "completed"
+                ? "bg-green-600"
+                : project.status === "in-progress"
+                ? "bg-yellow-600"
+                : "bg-gray-600"
+            } ...`}
+          >
+            {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
+          </span>
+          <div className="absolute bottom-2 left-2 flex items-center space-x-3 text-xs text-white bg-black bg-opacity-50 px-2 py-1 rounded">
+            {/* 4. Gunakan ikon & data stats */}
+            {starIcon && (
+              <span title="Stars">
+                <FontAwesomeIcon
+                  icon={starIcon}
+                  className="mr-1 text-yellow-400"
+                />{" "}
+                {project.stats?.stars ?? 0}
+              </span>
+            )}
+            {defaultCodeIcon && (
+              <span title="Forks">
+                <FontAwesomeIcon icon={defaultCodeIcon} className="mr-1" />{" "}
+                {project.stats?.forks ?? 0}
+              </span>
+            )}
+            {eyeIcon && (
+              <span title="Views">
+                <FontAwesomeIcon icon={eyeIcon} className="mr-1" />{" "}
+                {project.stats?.views ?? 0}
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="p-4 flex flex-col flex-grow">
+          <h3 className="text-lg font-semibold text-white ... mb-1 group-hover:text-blue-400 ...">
+            {project.title}
+          </h3>
+          <p className="text-sm text-gray-300 ... mb-3 line-clamp-3 flex-grow">
+            {project.description}
+          </p>
+          <div className="flex flex-wrap gap-1.5 mb-4">
+            {/* 3. Akses techStack dari props */}
+            {project.techStack.slice(0, 4).map((tech, idx) => (
+              <span
+                key={idx}
+                className="text-xs bg-gray-700 ... px-2 py-0.5 rounded-full"
+              >
+                {tech.tech}
+              </span>
+            ))}
+            {project.techStack.length > 4 && (
+              <span className="text-xs ...">
+                +{project.techStack.length - 4} more
+              </span>
+            )}
+          </div>
+          <div className="mt-auto flex justify-end space-x-3 pt-2 border-t border-gray-700 dark:border-gray-600">
+            {/* 4. Gunakan ikon & data props */}
+            {project.githubUrl && githubIcon && (
+              <a
+                href={project.githubUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="text-gray-400 hover:text-blue-400 transition"
+                aria-label="GitHub"
+              >
+                <FontAwesomeIcon icon={githubIcon} size="lg" />
+              </a>
+            )}
+            {project.demoUrl && externalLinkIcon && (
+              <a
+                href={project.demoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="text-gray-400 hover:text-blue-400 transition"
+                aria-label="Live Demo"
+              >
+                <FontAwesomeIcon icon={externalLinkIcon} size="lg" />
+              </a>
+            )}
+            <button
+              onClick={onClick}
+              className="text-gray-400 hover:text-blue-400 transition"
+              aria-label="Details"
+            >
+              {infoIcon && <FontAwesomeIcon icon={infoIcon} size="lg" />}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+}; // <-- Akhir dari komponen ProjectCard
+
+// ... Lanjutkan dengan definisi komponen child lainnya (ProjectDialog, SkillCard, dst.) ...
+// --- DEFINISI CHILD COMPONENTS LENGKAP ---
+// ...
+
+// --- Component: ProjectDialog ---
+interface ProjectDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  project: Project | null; // Gunakan tipe Project baru
+}
+const ProjectDialog: React.FC<ProjectDialogProps> = ({
+  isOpen,
+  onClose,
+  project,
+}) => {
+  // 1. Handle jika project null
+  if (!project) return null;
+
+  // 2. Cari definisi ikon yang dibutuhkan
+  const timesIcon = findIconDefinitionByName("times");
+  const starIcon = findIconDefinitionByName("star");
+  const forkIcon = findIconDefinitionByName("code-branch");
+  const eyeIcon = findIconDefinitionByName("eye");
+  const commitIcon = findIconDefinitionByName("history"); // Atau 'code-commit'
+  const userIcon = findIconDefinitionByName("user");
+  const githubIcon = findIconDefinitionByName("github");
+  const externalLinkIcon = findIconDefinitionByName("external-link-alt");
+  const defaultImage = "/images/placeholder-project.png";
+
+  // 3. Salin JSX dari v1.tsx.txt
+  return (
+    <Transition appear show={isOpen} as={Fragment}>
+      <Dialog as="div" className="relative z-50 print:hidden" onClose={onClose}>
+        {/* Backdrop */}
+        <Transition.Child
+          as={Fragment}
+          enter="ease-out duration-300"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in duration-200"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm" />
+        </Transition.Child>
+
+        {/* Modal Content */}
+        <div className="fixed inset-0 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4 text-center">
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 scale-95"
+              enterTo="opacity-100 scale-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 scale-100"
+              leaveTo="opacity-0 scale-95"
+            >
+              <Dialog.Panel className="w-full max-w-3xl transform overflow-hidden rounded-lg bg-gray-800 dark:bg-gray-800 p-6 text-left align-middle shadow-xl transition-all">
+                {/* Header */}
+                <Dialog.Title
+                  as="h3"
+                  className="text-xl md:text-2xl font-bold leading-6 text-white dark:text-white mb-2 flex justify-between items-center"
+                >
+                  {/* 4. Gunakan data project dari props */}
+                  <span>{project.title}</span>
+                  <button
+                    onClick={onClose}
+                    className="text-gray-400 hover:text-white p-1 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {/* 5. Gunakan ikon yang dicari */}
+                    {timesIcon && (
+                      <FontAwesomeIcon icon={timesIcon} className="h-5 w-5" />
+                    )}
+                  </button>
+                </Dialog.Title>
+                <span
+                  className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full mb-4 ${
+                    project.status === "completed"
+                      ? "bg-green-600 text-green-100"
+                      : project.status === "in-progress"
+                      ? "bg-yellow-600 text-yellow-100"
+                      : "bg-gray-600 text-gray-100"
+                  }`}
+                >
+                  Status:{" "}
+                  {project.status.charAt(0).toUpperCase() +
+                    project.status.slice(1)}
+                </span>
+
+                {/* Main Content */}
+                <div className="mt-2 space-y-4 max-h-[70vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700">
+                  {/* Optional Image */}
+                  {project.image && (
+                    <div className="relative w-full aspect-video max-h-64 mb-4 bg-gray-700 rounded-md">
+                      <Image
+                        src={project.image || defaultImage}
+                        alt={`${project.title}`}
+                        fill={true}
+                        className="object-cover rounded-md"
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                      />
+                    </div>
+                  )}
+
+                  {/* Description */}
+                  <p className="text-sm text-gray-300 dark:text-gray-300 leading-relaxed">
+                    {project.longDescription || project.description}
+                  </p>
+
+                  {/* Key Features */}
+                  <div>
+                    <h4 className="text-md font-semibold text-white mb-2">
+                      Key Features:
+                    </h4>
+                    {/* 4. Akses nested features */}
+                    <ul className="list-disc list-inside space-y-1 text-sm text-gray-300">
+                      {project.features.map((feature, idx) => (
+                        <li key={idx}>{feature.feature}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Tech Stack */}
+                  <div>
+                    <h4 className="text-md font-semibold text-white mb-2">
+                      Technology Stack:
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {/* 4. Akses nested techStack */}
+                      {project.techStack.map((tech, idx) => {
+                        // 5. Cari ikon untuk tech (opsional)
+                        const iconDef = findIconDefinitionByName(tech.tech);
+                        return (
+                          <span
+                            key={idx}
+                            className="text-xs bg-gray-700 dark:bg-gray-600 text-gray-200 px-2.5 py-1 rounded-full flex items-center"
+                          >
+                            {/* 5. Render ikon tech */}
+                            {iconDef && (
+                              <FontAwesomeIcon
+                                icon={iconDef}
+                                className="mr-1.5 h-3 w-3 text-gray-400"
+                              />
+                            )}
+                            {tech.tech}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Stats */}
+                  <div>
+                    <h4 className="text-md font-semibold text-white mb-2">
+                      Statistics:
+                    </h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                      {/* 4. Akses stats & 5. Gunakan ikon */}
+                      <div className="bg-gray-700 dark:bg-gray-750 p-2 rounded text-center">
+                        {starIcon && (
+                          <FontAwesomeIcon
+                            icon={starIcon}
+                            className="text-yellow-400 mr-1.5"
+                          />
+                        )}{" "}
+                        {project.stats?.stars ?? 0} Stars
+                      </div>
+                      <div className="bg-gray-700 dark:bg-gray-750 p-2 rounded text-center">
+                        {forkIcon && (
+                          <FontAwesomeIcon
+                            icon={forkIcon}
+                            className="text-blue-400 mr-1.5"
+                          />
+                        )}{" "}
+                        {project.stats?.forks ?? 0} Forks
+                      </div>
+                      <div className="bg-gray-700 dark:bg-gray-750 p-2 rounded text-center">
+                        {eyeIcon && (
+                          <FontAwesomeIcon
+                            icon={eyeIcon}
+                            className="text-green-400 mr-1.5"
+                          />
+                        )}{" "}
+                        {project.stats?.views ?? 0} Views
+                      </div>
+                      <div className="bg-gray-700 dark:bg-gray-750 p-2 rounded text-center">
+                        {commitIcon && (
+                          <FontAwesomeIcon
+                            icon={commitIcon}
+                            className="text-purple-400 mr-1.5"
+                          />
+                        )}{" "}
+                        {project.stats?.commits ?? "N/A"} Commits
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Learnings/Challenges */}
+                  {/* 4. Akses nested learnings */}
+                  {project.learnings && project.learnings.length > 0 && (
+                    <div>
+                      <h4 className="text-md font-semibold text-white mb-2">
+                        Key Learnings / Challenges:
+                      </h4>
+                      <ul className="list-disc list-inside space-y-1 text-sm text-gray-300">
+                        {project.learnings.map((learning, idx) => (
+                          <li key={idx}>{learning.learning}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Collaborators */}
+                  {/* 4. Akses nested collaborators */}
+                  {project.collaborators &&
+                    project.collaborators.length > 0 && (
+                      <div>
+                        <h4 className="text-md font-semibold text-white mb-2">
+                          Collaborators:
+                        </h4>
+                        <div className="flex flex-wrap gap-2 text-sm">
+                          {project.collaborators.map((collab, idx) => (
+                            <span
+                              key={idx}
+                              className="bg-gray-700 px-2 py-1 rounded text-gray-300"
+                            >
+                              {/* 5. Gunakan ikon */}
+                              {userIcon && (
+                                <FontAwesomeIcon
+                                  icon={userIcon}
+                                  className="mr-1.5 text-gray-400"
+                                />
+                              )}
+                              {collab.name} ({collab.username}){" "}
+                              {/* Akses name & username */}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                </div>
+
+                {/* Footer / Actions */}
+                <div className="mt-6 pt-4 border-t border-gray-700 dark:border-gray-600 flex flex-wrap justify-end gap-3">
+                  {/* 4. Gunakan data & 5. Gunakan ikon */}
+                  {project.githubUrl && githubIcon && (
+                    <a
+                      href={project.githubUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center ... bg-gray-600 ..."
+                    >
+                      <FontAwesomeIcon
+                        icon={githubIcon}
+                        className="mr-2 h-4 w-4"
+                      />{" "}
+                      View Code
+                    </a>
+                  )}
+                  {project.demoUrl && externalLinkIcon && (
+                    <a
+                      href={project.demoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center ... bg-blue-600 ..."
+                    >
+                      <FontAwesomeIcon
+                        icon={externalLinkIcon}
+                        className="mr-2 h-4 w-4"
+                      />{" "}
+                      Live Demo
+                    </a>
+                  )}
+                  <button
+                    type="button"
+                    className="inline-flex justify-center ... bg-gray-700 ..."
+                    onClick={onClose}
+                  >
+                    Close
+                  </button>
+                </div>
+              </Dialog.Panel>
+            </Transition.Child>
+          </div>
+        </div>
+      </Dialog>
+    </Transition>
+  );
+}; // <-- Akhir dari komponen ProjectDialog
+
+// ... Lanjutkan dengan definisi komponen child lainnya (SkillCard, dst.) ...
+// --- DEFINISI CHILD COMPONENTS LENGKAP ---
+// ...
+
+// --- Component: SkillCard ---
+interface SkillCardProps {
+  skill: Skill; // Gunakan tipe Skill baru (icon adalah string)
+}
+const SkillCard: React.FC<SkillCardProps> = ({ skill }) => {
+  // 1. Cari definisi ikon berdasarkan nama string dari props.skill.icon
+  const iconDef = findIconDefinitionByName(skill.icon);
+
+  // 2. Salin JSX dari v1.tsx.txt
+  return (
+    <div className="bg-gray-800 dark:bg-gray-800 p-5 rounded-lg shadow-md flex flex-col h-full hover:bg-gray-750 dark:hover:bg-gray-700 transition duration-200">
+      <div className="flex items-center mb-3">
+        {/* 3. Render ikon HANYA jika definisi ditemukan */}
+        {iconDef && (
+          <span className="w-10 h-10 flex items-center justify-center bg-gray-700 dark:bg-gray-700 rounded-lg mr-3">
+            <FontAwesomeIcon icon={iconDef} className="text-xl text-blue-400" />
+          </span>
+        )}
+        {/* 4. Gunakan data skill dari props */}
+        <h4 className="text-lg font-semibold text-white dark:text-white flex-1">
+          {skill.name}
+        </h4>
+        {skill.years && (
+          <span className="text-xs text-gray-400 bg-gray-700 px-2 py-0.5 rounded-full">
+            {skill.years} yrs
+          </span>
+        )}
+      </div>
+      {/* 4. Gunakan data skill dari props */}
+      <p className="text-sm text-gray-300 dark:text-gray-400 mb-3 flex-grow">
+        {skill.description}
+      </p>
+      <div>
+        <div className="flex justify-between items-center mb-1">
+          <span className="text-xs font-medium text-gray-400">Proficiency</span>
+          {/* 4. Gunakan data skill dari props, handle null */}
+          <span className="text-xs font-medium text-blue-300">
+            {skill.percentage ?? 0}%
+          </span>
+        </div>
+        <div className="w-full bg-gray-700 dark:bg-gray-600 rounded-full h-2.5">
+          <div
+            className={`h-2.5 rounded-full bg-gradient-to-r ${
+              skill.color || "from-blue-500 to-cyan-500"
+            }`}
+            style={{ width: `${skill.percentage ?? 0}%` }} // Handle null
+            role="progressbar"
+            aria-valuenow={skill.percentage ?? 0} // Handle null
+            aria-label={`${skill.name} proficiency level`}
+          ></div>
+        </div>
+      </div>
+      {/* 4. Gunakan projectsUsedIn dari props (jika ada) */}
+      {/* Catatan: projectsUsedIn mungkin tidak ada di data fetch awal, tergantung include */}
+      {skill.projectsUsedIn && skill.projectsUsedIn.length > 0 && (
+        <div className="mt-3 pt-2 border-t border-gray-700 dark:border-gray-600">
+          <p className="text-xs text-gray-400 mb-1">Used in:</p>
+          <div className="flex flex-wrap gap-1.5">
+            {skill.projectsUsedIn.map(
+              (
+                projIdentifier,
+                idx // Ini mungkin judul atau slug
+              ) => (
+                <span
+                  key={idx}
+                  className="text-xs bg-gray-600 text-gray-200 px-2 py-0.5 rounded-full"
+                >
+                  {projIdentifier}
+                </span>
+              )
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}; // <-- Akhir dari komponen SkillCard
+
+// ... Lanjutkan dengan definisi komponen child lainnya (ExperienceCard, dst.) ...
+// --- DEFINISI CHILD COMPONENTS LENGKAP ---
+// ...
+
+// --- Component: ExperienceCard ---
+interface ExperienceCardProps {
+  experience: WorkExperience; // Gunakan tipe WorkExperience baru
+}
+const ExperienceCard: React.FC<ExperienceCardProps> = ({ experience }) => {
+  // 1. Kalkulasi durasi & ID (tetap sama, tapi gunakan utility global)
+  const duration = calculateDurationImpl(
+    experience.period.split(" - ")[0],
+    experience.period.split(" - ")[1]
+  );
+  const cardId = `exp-${experience.id}`; // Gunakan ID asli sebagai basis key
+  const [isExpanded, setIsExpanded] = useState(false); // State lokal tetap
+
+  // 2. Cari ikon yang dibutuhkan
+  const externalLinkIcon = findIconDefinitionByName("external-link-alt");
+  const mapPinIcon = findIconDefinitionByName("map-pin");
+  const chevronUpIcon = findIconDefinitionByName("chevron-up");
+  const chevronDownIcon = findIconDefinitionByName("chevron-down");
+
+  // 3. Salin JSX dari v1.tsx.txt
+  return (
+    <div className="flex items-start relative pl-10">
+      {/* Timeline Dot */}
+      <span className="absolute left-0 top-1 flex items-center justify-center w-10 h-10">
+        <span className="h-3 w-3 rounded-full bg-blue-500 ring-4 ring-gray-800 dark:ring-gray-850"></span>
+      </span>
+
+      {/* Card Content */}
+      <div className="bg-gray-800 dark:bg-gray-800 p-5 rounded-lg shadow-md w-full">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2">
+          <div>
+            <h3 className="text-lg font-semibold text-white">
+              {experience.position}
+            </h3>
+            <p className="text-sm text-blue-400 font-medium">
+              {experience.company} {/* 4. Gunakan ikon yang dicari */}
+              {experience.website && externalLinkIcon && (
+                <a
+                  href={experience.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ml-1 opacity-70 hover:opacity-100"
+                >
+                  <FontAwesomeIcon icon={externalLinkIcon} size="xs" />
+                </a>
+              )}
+            </p>
+          </div>
+          <div className="text-xs text-gray-400 mt-1 sm:mt-0 text-left sm:text-right">
+            {/* 4. Gunakan utility formatDateImpl */}
+            <p>
+              {formatDateImpl(experience.period.split(" - ")[0], "short")} -{" "}
+              {experience.period.split(" - ")[1] === "Present"
+                ? "Present"
+                : formatDateImpl(experience.period.split(" - ")[1], "short")}
+            </p>
+            {duration && <p>({duration})</p>}
+            <p className="mt-1 capitalize">
+              {/* 4. Gunakan ikon yang dicari */}
+              {mapPinIcon && (
+                <FontAwesomeIcon icon={mapPinIcon} className="mr-1" />
+              )}{" "}
+              {experience.location} ({experience.type})
+            </p>
+          </div>
+        </div>
+        <p className="text-sm text-gray-300 mb-3">{experience.description}</p>
+
+        {/* Technologies */}
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {/* 5. Akses nested technologies */}
+          {experience.technologies.map((tech, idx) => (
+            <span
+              key={idx}
+              className="text-xs bg-gray-700 dark:bg-gray-600 text-gray-200 px-2 py-0.5 rounded-full"
+            >
+              {tech.technology}
+            </span>
+          ))}
+        </div>
+
+        {/* Toggle Button for Details */}
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="text-xs text-blue-400 hover:text-blue-300 mb-3 flex items-center"
+          aria-expanded={isExpanded}
+          aria-controls={`${cardId}-details`}
+        >
+          {isExpanded ? "Hide Details" : "Show Details"}
+          {/* 4. Gunakan ikon yang dicari */}
+          {isExpanded
+            ? chevronUpIcon && (
+                <FontAwesomeIcon
+                  icon={chevronUpIcon}
+                  className="ml-1 h-3 w-3"
+                />
+              )
+            : chevronDownIcon && (
+                <FontAwesomeIcon
+                  icon={chevronDownIcon}
+                  className="ml-1 h-3 w-3"
+                />
+              )}
+        </button>
+
+        {/* Collapsible Details */}
+        <Transition
+          show={isExpanded}
+          enter="transition-opacity duration-150"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="transition-opacity duration-100"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <div
+            id={`${cardId}-details`}
+            className="space-y-3 border-t border-gray-700 dark:border-gray-600 pt-3"
+          >
+            {/* Responsibilities */}
+            {/* 5. Akses nested responsibilities */}
+            {experience.responsibilities &&
+              experience.responsibilities.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold text-white mb-1">
+                    Key Responsibilities:
+                  </h4>
+                  <ul className="list-disc list-inside space-y-1 text-xs text-gray-300">
+                    {experience.responsibilities.map((resp, idx) => (
+                      <li key={idx}>{resp.responsibility}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            {/* Achievements */}
+            {/* 5. Akses nested achievements */}
+            {experience.achievements && experience.achievements.length > 0 && (
+              <div>
+                <h4 className="text-sm font-semibold text-white mb-1">
+                  Notable Achievements:
+                </h4>
+                <ul className="list-disc list-inside space-y-1 text-xs text-gray-300">
+                  {experience.achievements.map((ach, idx) => (
+                    <li key={idx}>{ach.achievement}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </Transition>
+      </div>
+    </div>
+  );
+}; // <-- Akhir dari komponen ExperienceCard
+
+// ... Lanjutkan dengan definisi komponen child lainnya (EducationCard, dst.) ...
+// --- DEFINISI CHILD COMPONENTS LENGKAP ---
+// ...
+
+// --- Component: EducationCard ---
+interface EducationCardProps {
+  education: Education; // Gunakan tipe Education baru
+}
+const EducationCard: React.FC<EducationCardProps> = ({ education }) => {
+  // 1. Cari ikon yang dibutuhkan
+  const universityIcon = findIconDefinitionByName("university"); // Atau 'building-columns'
+  const mapPinIcon = findIconDefinitionByName("map-pin");
+  const defaultLogo = "/images/placeholder-education.png"; // Definisikan fallback
+
+  // 2. Salin JSX dari v1.tsx.txt
+  return (
+    <div className="bg-gray-800 dark:bg-gray-800 p-5 rounded-lg shadow-md flex flex-col sm:flex-row items-start gap-4">
+      {/* Logo (optional) */}
+      {/* 3. Gunakan props education.logo */}
+      {education.logo ? (
+        <Image
+          src={education.logo || defaultLogo}
+          alt={`${education.institution} logo`}
+          width={64}
+          height={64}
+          className="object-contain rounded-md bg-white p-1 flex-shrink-0 mb-3 sm:mb-0"
+        />
+      ) : (
+        // 4. Gunakan ikon yang dicari sebagai fallback
+        <div className="w-16 h-16 flex-shrink-0 bg-gray-700 rounded-md flex items-center justify-center text-gray-500 mb-3 sm:mb-0">
+          {universityIcon && (
+            <FontAwesomeIcon icon={universityIcon} size="2x" />
+          )}
+        </div>
+      )}
+
+      {/* Details */}
+      <div className="flex-grow">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-1">
+          <div>
+            {/* 3. Gunakan data education dari props */}
+            <h3 className="text-lg font-semibold text-white">
+              {education.degree}
+            </h3>
+            <p className="text-sm text-blue-400 font-medium">
+              {education.institution}
+            </p>
+            <p className="text-xs text-gray-300">{education.field}</p>
+          </div>
+          <div className="text-xs text-gray-400 mt-1 sm:mt-0 text-left sm:text-right">
+            <p>{education.period}</p>
+            {/* 3. Gunakan data education & 4. Gunakan ikon */}
+            {education.location && mapPinIcon && (
+              <p className="mt-1">
+                <FontAwesomeIcon icon={mapPinIcon} className="mr-1" />{" "}
+                {education.location}
+              </p>
+            )}
+            {education.gpa && <p className="mt-1">GPA: {education.gpa}</p>}
+          </div>
+        </div>
+        {/* 3. Gunakan data education */}
+        <p className="text-sm text-gray-300 mt-2 mb-3">
+          {education.description}
+        </p>
+
+        {/* Achievements */}
+        {/* 3. Akses nested achievements */}
+        {education.achievements && education.achievements.length > 0 && (
+          <div>
+            <h4 className="text-sm font-semibold text-white mb-1">
+              Achievements/Activities:
+            </h4>
+            <ul className="list-disc list-inside space-y-1 text-xs text-gray-300">
+              {/* Akses properti 'achievement' dari objek nested */}
+              {education.achievements.map((ach, idx) => (
+                <li key={idx}>{ach.achievement}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}; // <-- Akhir dari komponen EducationCard
+
+// ... Lanjutkan dengan definisi komponen child lainnya (CertificationCard, dst.) ...
+// --- DEFINISI CHILD COMPONENTS LENGKAP ---
+// ...
+
+// --- Component: CertificationCard ---
+interface CertificationCardProps {
+  certification: Certification; // Gunakan tipe Certification baru
+}
+const CertificationCard: React.FC<CertificationCardProps> = ({
+  certification,
+}) => {
+  // 1. Cari ikon yang dibutuhkan
+  const iconDef = findIconDefinitionByName(certification.icon);
+  const externalLinkIcon = findIconDefinitionByName("external-link-alt");
+  const defaultCertIcon = findIconDefinitionByName("certificate"); // Fallback
+
+  // 2. Salin JSX dari v1.tsx.txt
+  return (
+    <div className="bg-gray-800 dark:bg-gray-800 p-5 rounded-lg shadow-md flex items-start gap-4 hover:bg-gray-750 dark:hover:bg-gray-700 transition duration-200">
+      {/* Icon */}
+      <div className="w-12 h-12 flex-shrink-0 bg-gray-700 dark:bg-gray-700 rounded-lg flex items-center justify-center mt-1">
+        {/* 3. Render ikon (gunakan fallback jika tidak ada) */}
+        <FontAwesomeIcon
+          icon={iconDef || defaultCertIcon!}
+          className="text-2xl text-blue-400"
+        />
+      </div>
+      {/* Details */}
+      <div className="flex-grow">
+        {/* 4. Gunakan data certification dari props */}
+        <h3 className="text-md font-semibold text-white">
+          {certification.name}
+        </h3>
+        <p className="text-sm text-gray-400 mb-1">
+          Issued by: {certification.issuer}
+        </p>
+        {/* 4. Gunakan formatDateImpl utility */}
+        <p className="text-xs text-gray-400 mb-2">
+          {" "}
+          Issued: {formatDateImpl(certification.date, "medium")}{" "}
+          {certification.expiry &&
+            certification.expiry !== "Lifetime" &&
+            ` | Expires: ${formatDateImpl(
+              certification.expiry,
+              "medium"
+            )}`}{" "}
+          {certification.expiry === "Lifetime" && ` | Lifetime`}{" "}
+        </p>
+        <p className="text-sm text-gray-300 mb-3">
+          {certification.description}
+        </p>
+        {/* Skills */}
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          <span className="text-xs font-medium text-gray-400 mr-1">
+            Skills:
+          </span>
+          {/* 4. Akses nested skills */}
+          {certification.skills.slice(0, 5).map((skill, idx) => (
+            <span
+              key={idx}
+              className="text-xs bg-gray-700 dark:bg-gray-600 text-gray-200 px-2 py-0.5 rounded-full"
+            >
+              {skill.skill}
+            </span>
+          ))}
+          {certification.skills.length > 5 && (
+            <span className="text-xs bg-gray-700 dark:bg-gray-600 text-gray-200 px-2 py-0.5 rounded-full">
+              +{certification.skills.length - 5} more
+            </span>
+          )}
+        </div>
+        {/* Credential & Verification */}
+        <div className="text-xs text-gray-400">
+          <span>Credential ID: {certification.credentialId || "N/A"}</span>
+          {/* 4. Gunakan ikon yang dicari */}
+          {certification.verificationUrl &&
+            certification.verificationUrl !== "#" &&
+            externalLinkIcon && (
+              <a
+                href={certification.verificationUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ml-3 text-blue-400 hover:text-blue-300 font-medium"
+              >
+                Verify Credential{" "}
+                <FontAwesomeIcon icon={externalLinkIcon} size="xs" />
+              </a>
+            )}
+        </div>
+      </div>
+    </div>
+  );
+}; // <-- Akhir dari komponen CertificationCard
+
+// ... Lanjutkan dengan definisi komponen child lainnya (AchievementCard, dst.) ...
+// --- DEFINISI CHILD COMPONENTS LENGKAP ---
+// ...
+
+// --- Component: AchievementCard ---
+interface AchievementCardProps {
+  achievement: Achievement; // Gunakan tipe Achievement baru (icon string)
+}
+const AchievementCard: React.FC<AchievementCardProps> = ({ achievement }) => {
+  // 1. Cari ikon yang dibutuhkan
+  const iconDef = findIconDefinitionByName(achievement.icon);
+  const externalLinkIcon = findIconDefinitionByName("external-link-alt");
+  const defaultAwardIcon = findIconDefinitionByName("award"); // Fallback
+
+  // 2. Salin JSX dari v1.tsx.txt
+  return (
+    <div className="bg-gray-800 dark:bg-gray-800 p-5 rounded-lg shadow-md flex flex-col items-center text-center hover:bg-gray-750 dark:hover:bg-gray-700 transition duration-200 h-full">
+      <div className="w-16 h-16 bg-gradient-to-br from-blue-800 to-purple-800 rounded-full mb-3 flex items-center justify-center text-yellow-300 ring-2 ring-blue-700">
+        {/* 3. Render ikon (gunakan fallback jika tidak ada) */}
+        <FontAwesomeIcon
+          icon={iconDef || defaultAwardIcon!}
+          className="text-3xl"
+        />
+      </div>
+      {/* 4. Gunakan data achievement dari props */}
+      <h3 className="text-md font-semibold text-white mb-1">
+        {achievement.title}
+      </h3>
+      <p className="text-xs text-gray-400 mb-2">
+        {achievement.issuer && `${achievement.issuer} • `}
+        {/* 4. Gunakan formatDateImpl utility */}
+        {formatDateImpl(achievement.date, "medium")} •{" "}
+        {achievement.category || "General"} {/* Handle null category */}
+      </p>
+      <p className="text-sm text-gray-300 mb-3 flex-grow">
+        {achievement.description}
+      </p>
+      {/* 4. Gunakan ikon yang dicari */}
+      {achievement.link && achievement.link !== "#" && externalLinkIcon && (
+        <a
+          href={achievement.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-auto text-xs text-blue-400 hover:text-blue-300 font-medium"
+        >
+          View Details <FontAwesomeIcon icon={externalLinkIcon} size="xs" />
+        </a>
+      )}
+    </div>
+  );
+}; // <-- Akhir dari komponen AchievementCard
+
+// ... Lanjutkan dengan definisi komponen child lainnya (BlogPostCard, dst.) ...
+// --- DEFINISI CHILD COMPONENTS LENGKAP ---
+// ...
+
+// --- Component: BlogPostCard ---
+interface BlogPostCardProps {
+  post: BlogPost; // Gunakan tipe BlogPost baru
+  onClick: () => void;
+}
+const BlogPostCard: React.FC<BlogPostCardProps> = ({ post, onClick }) => {
+  // 1. Cari ikon yang dibutuhkan
+  const blogIcon = findIconDefinitionByName("blog"); // Atau 'file-alt', 'newspaper'
+  const thumbsUpIcon = findIconDefinitionByName("thumbs-up");
+  const commentsIcon = findIconDefinitionByName("comments");
+  const eyeIcon = findIconDefinitionByName("eye");
+  const defaultImage = "/images/placeholder-blog.png"; // Fallback
+
+  // 2. Salin JSX dari v1.tsx.txt
+  return (
+    <div
+      onClick={onClick}
+      className="bg-gray-800 dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 cursor-pointer overflow-hidden flex flex-col group"
+    >
+      {/* Image */}
+      {/* 3. Gunakan data post dari props */}
+      <div className="h-48 w-full overflow-hidden relative bg-gray-700">
+        {" "}
+        {/* Tambah bg-gray-700 */}
+        {post.image ? (
+          <Image
+            src={post.image || defaultImage}
+            alt={post.title}
+            layout="fill"
+            objectFit="cover"
+            className="group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (
+          // 4. Gunakan ikon yang dicari
+          <div className="h-full w-full flex items-center justify-center text-gray-500">
+            {blogIcon && <FontAwesomeIcon icon={blogIcon} size="3x" />}
+          </div>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="p-5 flex flex-col flex-grow">
+        <div className="flex justify-between items-center mb-1 text-xs text-gray-400">
+          {/* 3. Gunakan data & 5. Gunakan formatDateImpl */}
+          <span>{formatDateImpl(post.date, "medium")}</span>
+          {/* 3. Gunakan readTime (number) & handle null */}
+          <span>{post.readTime ?? "?"} min read</span>
+        </div>
+        {/* 3. Gunakan data post */}
+        <h3 className="text-lg font-semibold text-white dark:text-white mb-2 group-hover:text-blue-400 transition-colors line-clamp-2">
+          {post.title}
+        </h3>
+        <p className="text-sm text-gray-300 dark:text-gray-300 mb-3 flex-grow line-clamp-3">
+          {post.excerpt}
+        </p>
+        {/* Tags */}
+        <div className="flex flex-wrap gap-1.5 mb-4">
+          {/* 3. Akses nested tags */}
+          {post.tags.slice(0, 3).map((tag, idx) => (
+            <span
+              key={idx}
+              className="text-xs bg-gray-700 dark:bg-gray-600 text-gray-300 px-2 py-0.5 rounded-full"
+            >
+              {tag.tag}
+            </span>
+          ))}
+          {post.tags.length > 3 && (
+            <span className="text-xs bg-gray-700 dark:bg-gray-600 text-gray-300 px-2 py-0.5 rounded-full">
+              +{post.tags.length - 3}
+            </span>
+          )}
+        </div>
+        {/* Stats & Read More */}
+        <div className="mt-auto flex justify-between items-center pt-2 border-t border-gray-700 dark:border-gray-600 text-xs text-gray-400">
+          <div className="flex items-center space-x-3">
+            {/* 3. Gunakan data & 4. Gunakan ikon */}
+            {thumbsUpIcon && (
+              <span title="Likes">
+                <FontAwesomeIcon icon={thumbsUpIcon} className="mr-1" />{" "}
+                {post.likes}
+              </span>
+            )}
+            {commentsIcon && (
+              <span title="Comments">
+                <FontAwesomeIcon icon={commentsIcon} className="mr-1" />{" "}
+                {post.comments}
+              </span>
+            )}
+            {eyeIcon && (
+              <span title="Views">
+                <FontAwesomeIcon icon={eyeIcon} className="mr-1" />{" "}
+                {post.views ?? 0}
+              </span>
+            )}
+          </div>
+          <span className="text-blue-400 group-hover:underline">
+            Read More →
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}; // <-- Akhir dari komponen BlogPostCard
+
+// ... Lanjutkan dengan definisi komponen child lainnya (BlogPostDialog, dst.) ...
+// --- DEFINISI CHILD COMPONENTS LENGKAP ---
+// ...
+
+// --- Component: BlogPostDialog ---
+interface BlogPostDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  post: BlogPost | null; // Gunakan tipe BlogPost baru
+}
+const BlogPostDialog: React.FC<BlogPostDialogProps> = ({
+  isOpen,
+  onClose,
+  post,
+}) => {
+  // 1. Handle jika post null
+  if (!post) return null;
+
+  // 2. Cari ikon yang dibutuhkan
+  const timesIcon = findIconDefinitionByName("times");
+  const defaultImage = "/images/placeholder-blog.png"; // Fallback
+
+  // 3. Salin JSX dari v1.tsx.txt
+  return (
+    <Transition appear show={isOpen} as={Fragment}>
+      <Dialog as="div" className="relative z-50 print:hidden" onClose={onClose}>
+        {/* Backdrop */}
+        <Transition.Child
+          as={Fragment}
+          enter="ease-out duration-300"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in duration-200"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <div className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm" />
+        </Transition.Child>
+
+        {/* Modal Content */}
+        <div className="fixed inset-0 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4 text-center">
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 scale-95"
+              enterTo="opacity-100 scale-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 scale-100"
+              leaveTo="opacity-0 scale-95"
+            >
+              <Dialog.Panel className="w-full max-w-3xl transform overflow-hidden rounded-lg bg-gray-800 dark:bg-gray-800 p-6 text-left align-middle shadow-xl transition-all">
+                <Dialog.Title
+                  as="h3"
+                  className="text-2xl font-bold leading-6 text-white mb-3 flex justify-between items-start"
+                >
+                  {/* 4. Gunakan data post dari props */}
+                  <span>{post.title}</span>
+                  <button
+                    onClick={onClose}
+                    className="text-gray-400 hover:text-white p-1 rounded-full -mt-1 -mr-2"
+                  >
+                    {/* 5. Gunakan ikon yang dicari */}
+                    {timesIcon && (
+                      <FontAwesomeIcon icon={timesIcon} className="h-5 w-5" />
+                    )}
+                  </button>
+                </Dialog.Title>
+                <div className="flex justify-between items-center text-xs text-gray-400 mb-4 pb-3 border-b border-gray-700 dark:border-gray-600">
+                  {/* 4. Gunakan data & 6. Gunakan formatDateImpl */}
+                  <span>
+                    By {post.author || "Author"} on{" "}
+                    {formatDateImpl(post.date, "long")}
+                  </span>
+                  {/* 4. Gunakan data (readTime sudah number) */}
+                  <span>
+                    {post.readTime ?? "?"} min read • {post.category}
+                  </span>
+                </div>
+
+                <div className="mt-2 space-y-4 max-h-[70vh] overflow-y-auto pr-2 text-sm text-gray-300 leading-relaxed scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700">
+                  {/* 4. Gunakan data post */}
+                  {post.image && (
+                    <Image
+                      src={post.image || defaultImage}
+                      alt={post.title}
+                      width={800}
+                      height={450}
+                      className="w-full h-auto max-h-72 object-cover rounded-md mb-4 bg-gray-700"
+                    />
+                  )}
+                  {/* Render content (Idealnya dari post.content) */}
+                  {/* Anda perlu library seperti 'react-markdown' atau 'dangerouslySetInnerHTML'
+                                        jika post.content berisi Markdown atau HTML */}
+                  <div
+                    className="prose prose-sm prose-invert max-w-none"
+                    dangerouslySetInnerHTML={{
+                      __html: post.content || post.excerpt,
+                    }}
+                  >
+                    {/* Fallback jika content kosong tapi excerpt ada */}
+                    {/* {!post.content && <p>{post.excerpt}</p>} */}
+                  </div>
+
+                  {/* Tags */}
+                  <div className="mt-6 pt-4 border-t border-gray-700 dark:border-gray-600">
+                    <span className="text-sm font-semibold text-white mr-2">
+                      Tags:
+                    </span>
+                    <div className="inline-flex flex-wrap gap-2">
+                      {/* 4. Akses nested tags */}
+                      {post.tags.map((tag, idx) => (
+                        <span
+                          key={idx}
+                          className="text-xs bg-gray-700 dark:bg-gray-600 text-gray-200 px-2.5 py-1 rounded-full"
+                        >
+                          {tag.tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-gray-700 dark:border-gray-600 flex justify-end">
+                  <button
+                    type="button"
+                    className="inline-flex justify-center rounded-md bg-gray-700 px-4 py-2 text-sm font-medium text-gray-300 hover:bg-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-800"
+                    onClick={onClose}
+                  >
+                    Close
+                  </button>
+                </div>
+              </Dialog.Panel>
+            </Transition.Child>
+          </div>
+        </div>
+      </Dialog>
+    </Transition>
+  );
+}; // <-- Akhir dari komponen BlogPostDialog
+
+// ... Lanjutkan dengan definisi komponen child lainnya (TestimonialCard, dst.) ...
+// --- DEFINISI CHILD COMPONENTS LENGKAP ---
+// ...
+
+// --- Component: TestimonialCard ---
+interface TestimonialCardProps {
+  testimonial: Testimonial; // Gunakan tipe Testimonial baru
+}
+const TestimonialCard: React.FC<TestimonialCardProps> = ({ testimonial }) => {
+  // 1. Cari ikon yang dibutuhkan
+  const quoteLeftIcon = findIconDefinitionByName("quote-left");
+  const userIcon = findIconDefinitionByName("user"); // Fallback avatar
+  const starIcon = findIconDefinitionByName("star");
+  const starHalfIcon = findIconDefinitionByName("star-half-alt");
+  const defaultAvatar = "/images/avatar-placeholder.png"; // Fallback avatar
+
+  // 2. Salin JSX dari v1.tsx.txt
+  return (
+    <div className="bg-gray-800 dark:bg-gray-800 p-6 rounded-lg shadow-md flex flex-col h-full">
+      {/* 3. Gunakan ikon yang dicari */}
+      {quoteLeftIcon && (
+        <FontAwesomeIcon
+          icon={quoteLeftIcon}
+          className="text-3xl text-blue-500 mb-3"
+        />
+      )}
+      {/* 4. Gunakan data testimonial dari props */}
+      <p className="text-sm text-gray-300 dark:text-gray-300 italic mb-4 flex-grow">
+        {testimonial.text}
+      </p>
+      <div className="mt-auto pt-4 border-t border-gray-700 dark:border-gray-600 flex items-center">
+        {/* 4. Gunakan avatar dari props atau default */}
+        <Image
+          src={testimonial.avatar || defaultAvatar}
+          alt={testimonial.name}
+          width={48}
+          height={48}
+          className="rounded-full object-cover mr-3 border-2 border-gray-600"
+        />
+        <div className="flex-grow">
+          <p className="text-sm font-semibold text-white">{testimonial.name}</p>
+          <p className="text-xs text-gray-400">
+            {testimonial.position}, {testimonial.company}
+          </p>
+          {/* 4. Gunakan formatDateImpl */}
+          <p className="text-xs text-gray-500">
+            {testimonial.relation} •{" "}
+            {formatDateImpl(testimonial.date, "medium")}
+          </p>
+        </div>
+        {/* Rating */}
+        {/* 3. Gunakan ikon yang dicari */}
+        {starIcon && ( // Hanya render jika ikon star ada
+          <div className="flex text-yellow-400 ml-2 flex-shrink-0">
+            {[...Array(Math.floor(testimonial.rating))].map((_, i) => (
+              <FontAwesomeIcon key={i} icon={starIcon} />
+            ))}
+            {testimonial.rating % 1 !== 0 && starHalfIcon && (
+              <FontAwesomeIcon icon={starHalfIcon} />
+            )}
+            {[...Array(5 - Math.ceil(testimonial.rating))].map((_, i) => (
+              <FontAwesomeIcon
+                key={`empty-${i}`}
+                icon={starIcon}
+                className="text-gray-600"
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}; // <-- Akhir dari komponen TestimonialCard
+
+// ... Lanjutkan dengan definisi komponen child lainnya (NotificationPanel, dst.) ...
+// --- DEFINISI CHILD COMPONENTS LENGKAP ---
+// ...
+
+// --- Component: NotificationPanel ---
+interface NotificationPanelProps {
+  notifications: Notification[];
+  isOpen: boolean;
+  onClose: () => void;
+  onMarkRead: (id: string) => void;
+  onMarkAllRead: () => void;
+  onClearAll: () => void;
+  panelRef: RefObject<HTMLDivElement>; // Gunakan RefObject dari React
+}
+const NotificationPanel: React.FC<NotificationPanelProps> = ({
+  notifications,
+  isOpen,
+  onClose,
+  onMarkRead,
+  onMarkAllRead,
+  onClearAll,
+  panelRef,
+}) => {
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  // 1. Modifikasi getIcon untuk MENGEMBALIKAN NAMA IKON (string)
+  const getIconInfo = (
+    type: Notification["type"]
+  ): { iconName: string; color: string } => {
+    switch (type) {
+      case "success":
+        return { iconName: "check-circle", color: "text-green-400" };
+      case "warning":
+        return { iconName: "exclamation-triangle", color: "text-yellow-400" };
+      case "error":
+        return { iconName: "times-circle", color: "text-red-400" };
+      case "info":
+      default:
+        return { iconName: "info-circle", color: "text-blue-400" };
+    }
+  };
+
+  // 2. Cari ikon statis lainnya
+  const timesIcon = findIconDefinitionByName("times");
+  const checkIcon = findIconDefinitionByName("check");
+
+  // 3. Salin JSX dari v1.tsx.txt
+  return (
+    <Transition
+      show={isOpen}
+      as={Fragment}
+      enter="transition ease-out duration-200"
+      enterFrom="opacity-0 translate-y-1"
+      enterTo="opacity-100 translate-y-0"
+      leave="transition ease-in duration-150"
+      leaveFrom="opacity-100 translate-y-0"
+      leaveTo="opacity-0 translate-y-1"
+    >
+      <div
+        ref={panelRef} // Gunakan ref dari props
+        className="fixed top-16 right-4 sm:right-6 w-full max-w-sm bg-gray-800 dark:bg-gray-850 rounded-lg shadow-2xl z-50 border border-gray-700 dark:border-gray-700 print:hidden"
+      >
+        {/* Header */}
+        <div className="flex justify-between items-center px-4 py-3 border-b border-gray-700 dark:border-gray-700">
+          <h4 className="text-md font-semibold text-white">
+            Notifications {unreadCount > 0 && `(${unreadCount})`}
+          </h4>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-white p-1 rounded-full"
+          >
+            {/* 4. Gunakan ikon yang dicari */}
+            {timesIcon && (
+              <FontAwesomeIcon icon={timesIcon} className="h-4 w-4" />
+            )}
+          </button>
+        </div>
+
+        {/* Notification List */}
+        <div className="max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700">
+          {notifications.length === 0 ? (
+            <p className="text-center text-gray-400 py-8 text-sm">
+              No notifications yet.
+            </p>
+          ) : (
+            notifications.map((notification) => {
+              // 1. Panggil getIconInfo baru
+              const { iconName, color } = getIconInfo(notification.type);
+              // 1. Cari definisi ikon berdasarkan nama dari getIconInfo
+              const iconDef = findIconDefinitionByName(iconName);
+              const timeAgo = new Date(notification.date).toLocaleTimeString(
+                [],
+                { hour: "2-digit", minute: "2-digit" }
+              );
+
+              return (
+                <div
+                  key={notification.id}
+                  className={`flex items-start p-3 border-b border-gray-700 dark:border-gray-750 last:border-b-0 transition-colors ${
+                    !notification.read
+                      ? "bg-gray-750 dark:bg-gray-800"
+                      : "hover:bg-gray-700 dark:hover:bg-gray-750"
+                  }`}
+                >
+                  {/* 4. Render ikon jika ditemukan */}
+                  {iconDef && (
+                    <FontAwesomeIcon
+                      icon={iconDef}
+                      className={`w-5 h-5 mt-0.5 mr-3 flex-shrink-0 ${color}`}
+                    />
+                  )}
+                  <div className="flex-grow text-sm">
+                    <p
+                      className={`font-medium ${
+                        !notification.read ? "text-white" : "text-gray-300"
+                      }`}
+                    >
+                      {notification.title}
+                    </p>
+                    <p
+                      className={`text-xs ${
+                        !notification.read ? "text-gray-300" : "text-gray-400"
+                      } mb-1`}
+                    >
+                      {notification.message}
+                    </p>
+                    {/* 5. Gunakan formatDateImpl */}
+                    <span className="text-xs text-gray-500">
+                      {formatDateImpl(notification.date, "short")} at {timeAgo}
+                    </span>
+                  </div>
+                  {/* 4. Gunakan ikon yang dicari */}
+                  {!notification.read && checkIcon && (
+                    <button
+                      onClick={() => onMarkRead(notification.id)}
+                      className="ml-2 p-1 text-xs text-blue-400 hover:text-blue-300 flex-shrink-0"
+                      title="Mark as read"
+                    >
+                      <FontAwesomeIcon icon={checkIcon} />
+                    </button>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Footer Actions */}
+        {notifications.length > 0 && (
+          <div className="flex justify-between items-center px-4 py-2 border-t border-gray-700 dark:border-gray-700 text-xs">
+            <button
+              onClick={onMarkAllRead}
+              disabled={unreadCount === 0}
+              className="text-blue-400 hover:text-blue-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Mark all as read
+            </button>
+            <button
+              onClick={onClearAll}
+              className="text-red-400 hover:text-red-300"
+            >
+              Clear all
+            </button>
+          </div>
+        )}
+      </div>
+    </Transition>
+  );
+}; // <-- Akhir dari komponen NotificationPanel
+
+// ... Lanjutkan dengan definisi komponen child lainnya (PaginationControls, dst.) ...
+// --- DEFINISI CHILD COMPONENTS LENGKAP ---
+// ...
+
+// --- Component: PaginationControls ---
+interface PaginationControlsProps {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}
+const PaginationControls: React.FC<PaginationControlsProps> = ({
+  currentPage,
+  totalPages,
+  onPageChange,
+}) => {
+  // 1. Logika internal (handlePrev, handleNext, getPageNumbers) tetap sama
+  const handlePrev = () => {
+    if (currentPage > 1) {
+      onPageChange(currentPage - 1);
+    }
+  };
+  const handleNext = () => {
+    if (currentPage < totalPages) {
+      onPageChange(currentPage + 1);
+    }
+  };
+  const getPageNumbers = () => {
+    const maxPagesToShow = 5;
+    const pages: (number | string)[] = []; // Tipe eksplisit
+    let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+    const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+    if (endPage === totalPages) {
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+    if (startPage > 1) {
+      pages.push(1);
+      if (startPage > 2) pages.push("...");
+    }
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) pages.push("...");
+      pages.push(totalPages);
+    }
+    return pages;
+  };
+  const pageNumbers = getPageNumbers();
+
+  // 2. Cari ikon yang dibutuhkan
+  const prevIcon = findIconDefinitionByName("chevron-left");
+  const nextIcon = findIconDefinitionByName("chevron-right");
+
+  // 3. Salin JSX dari v1.tsx.txt
+  return (
+    <nav
+      className="flex items-center justify-center space-x-2 mt-8 print:hidden"
+      aria-label="Pagination"
+    >
+      <button
+        onClick={handlePrev}
+        disabled={currentPage === 1}
+        className="px-3 py-1.5 rounded-md bg-gray-700 text-gray-300 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
+      >
+        {/* 4. Render ikon jika ditemukan */}
+        {prevIcon && (
+          <FontAwesomeIcon icon={prevIcon} className="mr-1 h-3 w-3" />
+        )}{" "}
+        Prev
+      </button>
+
+      {pageNumbers.map((page, index) =>
+        typeof page === "number" ? (
+          <button
+            key={page}
+            onClick={() => onPageChange(page)}
+            className={`px-3 py-1.5 rounded-md transition text-sm ${
+              currentPage === page
+                ? "bg-blue-600 text-white font-medium"
+                : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+            }`}
+            aria-current={currentPage === page ? "page" : undefined}
+          >
+            {page}
+          </button>
+        ) : (
+          <span key={`ellipsis-${index}`} className="px-3 py-1.5 text-gray-500">
+            ...
+          </span>
+        )
+      )}
+
+      <button
+        onClick={handleNext}
+        disabled={currentPage === totalPages}
+        className="px-3 py-1.5 rounded-md bg-gray-700 text-gray-300 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
+      >
+        Next {/* 4. Render ikon jika ditemukan */}
+        {nextIcon && (
+          <FontAwesomeIcon icon={nextIcon} className="ml-1 h-3 w-3" />
+        )}
+      </button>
+    </nav>
+  );
+}; // <-- Akhir dari komponen PaginationControls
+
+// ... Lanjutkan dengan definisi komponen child lainnya (ContributionHeatmap, dst.) ...
+// --- DEFINISI CHILD COMPONENTS LENGKAP ---
+// ...
+
+// --- Component: ContributionHeatmap ---
+interface ContributionHeatmapProps {
+  data: ContributionData | null; // Gunakan tipe ContributionData lokal
+  onMouseEnterCell: (
+    e: React.MouseEvent<SVGRectElement>,
+    day: ContributionDay
+  ) => void; // Gunakan tipe ContributionDay lokal
+  onMouseLeaveCell: () => void;
+  darkMode: boolean;
+}
+const ContributionHeatmap: React.FC<ContributionHeatmapProps> = ({
+  data,
+  onMouseEnterCell,
+  onMouseLeaveCell,
+  darkMode,
+}) => {
+  // 1. Handle jika data null
+  if (!data) {
+    return (
+      <div className="text-center text-gray-500 py-4 italic">
+        {" "}
+        Contribution data not available.{" "}
+      </div>
+    );
+  }
+
+  // 2. Logika kalkulasi internal (salin dari v1.tsx.txt)
+  const weeks: ContributionDay[][] = [];
+  let currentWeek: ContributionDay[] = [];
+  // Pastikan data.startRange ada dan valid sebelum membuat Date
+  const firstDayDate = data.startRange ? new Date(data.startRange) : new Date();
+  const firstDayOffset = !isNaN(firstDayDate.getTime())
+    ? firstDayDate.getDay()
+    : 0;
+
+  for (let i = 0; i < firstDayOffset; i++) {
+    currentWeek.push({ date: `padding-${i}`, count: -1, level: 0 });
+  }
+
+  // Pastikan data.days ada
+  (data.days || []).forEach((day) => {
+    currentWeek.push(day);
+    if (currentWeek.length === 7) {
+      weeks.push(currentWeek);
+      currentWeek = [];
+    }
+  });
+
+  if (currentWeek.length > 0) {
+    while (currentWeek.length < 7) {
+      currentWeek.push({
+        date: `padding-end-${currentWeek.length}`,
+        count: -1,
+        level: 0,
+      });
+    }
+    weeks.push(currentWeek);
+  }
+
+  const cellSize = 12;
+  const cellGap = 2;
+  const weekLabelWidth = 30;
+  const monthLabelHeight = 20;
+  const heatmapWidth = weeks.length * (cellSize + cellGap) + weekLabelWidth;
+  const heatmapHeight = 7 * (cellSize + cellGap) + monthLabelHeight;
+
+  const getMonthLabels = () => {
+    const labels: { month: string; x: number }[] = [];
+    let lastMonth = -1;
+    weeks.forEach((week, weekIndex) => {
+      const firstValidDayInWeek = week.find((d) => d.count >= 0);
+      if (firstValidDayInWeek) {
+        const date = new Date(firstValidDayInWeek.date);
+        if (!isNaN(date.getTime())) {
+          // Cek validitas tanggal
+          const month = date.getMonth();
+          if (month !== lastMonth) {
+            if (lastMonth === -1 || weekIndex > 2) {
+              labels.push({
+                month: date.toLocaleString("default", { month: "short" }),
+                x: weekIndex * (cellSize + cellGap) + weekLabelWidth,
+              });
+              lastMonth = month;
+            }
+          }
+        }
+      }
+    });
+    return labels;
+  };
+  const monthLabels = getMonthLabels();
+  const dayLabels: { label: string; y: number }[] = [
+    { label: "Mon", y: 1 },
+    { label: "Wed", y: 3 },
+    { label: "Fri", y: 5 },
+  ];
+  const getColor = (level: number) => {
+    // Tipe level sudah number
+    switch (level) {
+      case 0:
+        return darkMode ? "#2d333b" : "#ebedf0";
+      case 1:
+        return "#0e4429";
+      case 2:
+        return "#006d32";
+      case 3:
+        return "#26a641";
+      case 4:
+        return "#39d353";
+      default:
+        return darkMode ? "#2d333b" : "#ebedf0";
+    }
+  };
+
+  // 3. Salin JSX dari v1.tsx.txt
+  return (
+    <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700 pb-2">
+      <svg
+        width={heatmapWidth}
+        height={heatmapHeight}
+        className="text-xs text-gray-400 dark:text-gray-500"
+      >
+        {/* Month Labels */}
+        {monthLabels.map((label, i) => (
+          <text
+            key={i}
+            x={label.x}
+            y={monthLabelHeight - 5}
+            fill={darkMode ? "#9ca3af" : "#6b7280"}
+          >
+            {label.month}
+          </text>
+        ))}
+        {/* Day Labels */}
+        {dayLabels.map((label, i) => (
+          <text
+            key={i}
+            x={weekLabelWidth - 5}
+            y={
+              monthLabelHeight + label.y * (cellSize + cellGap) + cellSize / 1.5
+            }
+            textAnchor="end"
+            fill={darkMode ? "#9ca3af" : "#6b7280"}
+          >
+            {label.label}
+          </text>
+        ))}
+        {/* Heatmap Cells */}
+        {weeks.map((week, weekIndex) => (
+          <g
+            key={weekIndex}
+            transform={`translate(${
+              weekIndex * (cellSize + cellGap) + weekLabelWidth
+            }, ${monthLabelHeight})`}
+          >
+            {week.map((day, dayIndex) =>
+              day.count >= 0 ? (
+                <rect
+                  key={day.date}
+                  x={0}
+                  y={dayIndex * (cellSize + cellGap)}
+                  width={cellSize}
+                  height={cellSize}
+                  fill={getColor(day.level)}
+                  rx="2"
+                  ry="2"
+                  onMouseEnter={(e) => onMouseEnterCell(e, day)}
+                  onMouseLeave={onMouseLeaveCell}
+                  data-date={day.date}
+                  data-count={day.count}
+                ></rect>
+              ) : null
+            )}
+          </g>
+        ))}
+      </svg>
+    </div>
+  );
+}; // <-- Akhir dari komponen ContributionHeatmap
+
+// ... Lanjutkan dengan definisi komponen child lainnya (TimelineItem, dst.) ...
+// --- DEFINISI CHILD COMPONENTS LENGKAP ---
+// ...
+
+// --- Component: TimelineItem ---
+interface TimelineItemProps {
+  event: TimelineEvent; // Gunakan tipe TimelineEvent baru (icon string)
+}
+const TimelineItem: React.FC<TimelineItemProps> = ({ event }) => {
+  // 1. Logika get color tetap sama
+  const getTimelineIconColor = (type: TimelineEvent["type"]): string => {
+    switch (type) {
+      case "work":
+        return "bg-blue-500";
+      case "education":
+        return "bg-green-500";
+      case "achievement":
+        return "bg-yellow-500";
+      case "project":
+        return "bg-red-500";
+      case "certification":
+        return "bg-purple-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
+
+  // 2. Cari definisi ikon berdasarkan nama string dari props.event.icon
+  const iconDef = findIconDefinitionByName(event.icon);
+  // Fallback jika ikon tidak ditemukan
+  const defaultIcon = findIconDefinitionByName("calendar-alt");
+
+  // 3. Salin JSX dari v1.tsx.txt
+  return (
+    <div className="flex items-start relative pl-12 pb-8 last:pb-0">
+      {/* Timeline Dot and Line */}
+      <div className="absolute left-0 flex flex-col items-center">
+        <span
+          className={`flex items-center justify-center w-8 h-8 rounded-full ${getTimelineIconColor(
+            event.type
+          )} ring-4 ring-gray-800 dark:ring-gray-850 z-10`}
+        >
+          {/* 4. Render ikon (gunakan fallback jika tidak ada) */}
+          <FontAwesomeIcon
+            icon={iconDef || defaultIcon!}
+            className="h-4 w-4 text-white"
+          />
+        </span>
+        {/* Vertical line (biasanya dibuat oleh parent atau CSS ::before) */}
+      </div>
+
+      {/* Card Content */}
+      <div className="bg-gray-850 dark:bg-gray-850 p-4 rounded-lg shadow-sm w-full ml-4">
+        {/* 5. Gunakan formatDateImpl utility */}
+        <p className="text-xs text-gray-400 mb-1">
+          {formatDateImpl(event.date, "medium")}
+        </p>
+        {/* 5. Gunakan data event dari props */}
+        <h4 className="text-md font-semibold text-white">{event.title}</h4>
+        {event.subtitle && (
+          <p className="text-sm text-blue-400 mb-1">{event.subtitle}</p>
+        )}
+        {event.description && (
+          <p className="text-xs text-gray-300 mt-1">{event.description}</p>
+        )}
+      </div>
+    </div>
+  );
+}; // <-- Akhir dari komponen TimelineItem
+
+// AKHIR DARI SEMUA DEFINISI CHILD COMPONENT
+// ============================================
+
+// Export default tidak diperlukan lagi karena ini bagian dari Page component
+// export default PortfolioClientComponent;

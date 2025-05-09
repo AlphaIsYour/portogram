@@ -14,6 +14,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/react-fontawesome": "^0.2.2",
     "@headlessui/react": "^2.2.2",
+    "@prisma/client": "^6.7.0",
     "chart.js": "^4.4.9",
     "framer-motion": "^12.8.0",
     "i18next": "^25.0.1",
@@ -29,12 +30,27 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@types/node": "^20.17.32",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.1",
+    "prisma": "^6.7.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
-  }
+    "typescript": "^5.8.3"
+  },
+  "description": "---",
+  "main": "next-i18next.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlphaIsYour/portogram.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/AlphaIsYour/portogram/issues"
+  },
+  "homepage": "https://github.com/AlphaIsYour/portogram#readme"
 }

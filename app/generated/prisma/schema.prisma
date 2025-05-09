@@ -1,0 +1,484 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 1. Users table
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  username  String   @unique
+  email     String   @unique
+  phone     String?
+  location  String?
+  bio       String?
+  website   String?
+  avatar    String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  skills           Skill[]
+  projects         Project[]
+  workExperiences  WorkExperience[]
+  educations       Education[]
+  certifications   Certification[]
+  achievements     Achievement[]
+  blogPosts        BlogPost[]
+  testimonials     Testimonial[]
+  contacts         Contact[]
+  socialMedia      SocialMedia[]
+  devStats         DevStats?
+  contributionData ContributionData[]
+  timelineEvents   TimelineEvent[]
+
+  @@map("users")
+}
+
+// 2. Skills table
+model Skill {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  name        String
+  percentage  Int
+  color       String?
+  icon        String?
+  category    String?
+  description String?
+  years       Float?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projects Project[] @relation("SkillsProjects")
+
+  @@map("skills")
+}
+
+// 3. Projects table
+model Project {
+  id              String    @id @default(uuid())
+  userId          String    @map("user_id")
+  title           String
+  slug            String    @unique
+  description     String
+  longDescription String    @map("long_description")
+  category        String
+  image           String?
+  demoUrl         String?   @map("demo_url")
+  githubUrl       String?   @map("github_url")
+  status          String
+  startDate       DateTime  @map("start_date")
+  endDate         DateTime? @map("end_date")
+  branches        Int?
+  stars           Int?
+  views           Int?
+  forks           Int?
+  issues          Int?
+  commits         Int?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  user          User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  features      ProjectFeature[]
+  techStack     ProjectTechStack[]
+  collaborators ProjectCollaborator[]
+  learnings     ProjectLearning[]
+  testimonials  ProjectTestimonial[]
+  skills        Skill[]               @relation("SkillsProjects")
+
+  @@map("projects")
+}
+
+// 4. Project Features table
+model ProjectFeature {
+  id        String @id @default(uuid())
+  projectId String @map("project_id")
+  feature   String
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_features")
+}
+
+// 5. Project Tech Stack table
+model ProjectTechStack {
+  id        String @id @default(uuid())
+  projectId String @map("project_id")
+  tech      String
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_tech_stack")
+}
+
+// 6. Project Collaborators table
+model ProjectCollaborator {
+  id        String @id @default(uuid())
+  projectId String @map("project_id")
+  name      String
+  username  String
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_collaborators")
+}
+
+// 7. Project Learnings table
+model ProjectLearning {
+  id        String @id @default(uuid())
+  projectId String @map("project_id")
+  learning  String
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_learnings")
+}
+
+// 8. Work Experiences table
+model WorkExperience {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  company     String
+  position    String
+  period      String
+  description String?
+  location    String?
+  type        String?
+  logo        String?
+  website     String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user             User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  responsibilities WorkResponsibility[]
+  technologies     WorkTechnology[]
+  achievements     WorkAchievement[]
+
+  @@map("work_experiences")
+}
+
+// 9. Work Responsibilities table
+model WorkResponsibility {
+  id             String @id @default(uuid())
+  experienceId   String @map("experience_id")
+  responsibility String
+
+  // Relations
+  workExperience WorkExperience @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+
+  @@map("work_responsibilities")
+}
+
+// 10. Work Technologies table
+model WorkTechnology {
+  id           String @id @default(uuid())
+  experienceId String @map("experience_id")
+  technology   String
+
+  // Relations
+  workExperience WorkExperience @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+
+  @@map("work_technologies")
+}
+
+// 11. Work Achievements table
+model WorkAchievement {
+  id           String @id @default(uuid())
+  experienceId String @map("experience_id")
+  achievement  String
+
+  // Relations
+  workExperience WorkExperience @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+
+  @@map("work_achievements")
+}
+
+// 12. Educations table
+model Education {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  institution String
+  degree      String
+  field       String
+  period      String
+  description String?
+  gpa         String?
+  location    String?
+  logo        String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user         User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievements EducationAchievement[]
+
+  @@map("educations")
+}
+
+// 13. Education Achievements table
+model EducationAchievement {
+  id          String @id @default(uuid())
+  educationId String @map("education_id")
+  achievement String
+
+  // Relations
+  education Education @relation(fields: [educationId], references: [id], onDelete: Cascade)
+
+  @@map("education_achievements")
+}
+
+// 14. Certifications table
+model Certification {
+  id              String    @id @default(uuid())
+  userId          String    @map("user_id")
+  name            String
+  issuer          String
+  date            DateTime
+  icon            String?
+  credentialId    String?   @map("credential_id")
+  expiry          DateTime?
+  description     String?
+  verificationUrl String?   @map("verification_url")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  user   User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skills CertificationSkill[]
+
+  @@map("certifications")
+}
+
+// 15. Certification Skills table
+model CertificationSkill {
+  id              String @id @default(uuid())
+  certificationId String @map("certification_id")
+  skill           String
+
+  // Relations
+  certification Certification @relation(fields: [certificationId], references: [id], onDelete: Cascade)
+
+  @@map("certification_skills")
+}
+
+// 16. Achievements table
+model Achievement {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  title       String
+  date        DateTime
+  description String?
+  icon        String?
+  category    String?
+  issuer      String?
+  link        String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("achievements")
+}
+
+// 17. Blog Posts table
+model BlogPost {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  slug      String   @unique
+  title     String
+  excerpt   String
+  content   String
+  date      DateTime
+  readTime  Int      @map("read_time")
+  image     String?
+  likes     Int      @default(0)
+  comments  Int      @default(0)
+  shares    Int      @default(0)
+  views     Int      @default(0)
+  category  String
+  author    String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tags BlogTag[]
+
+  @@map("blog_posts")
+}
+
+// 18. Blog Tags table
+model BlogTag {
+  id     String @id @default(uuid())
+  blogId String @map("blog_id")
+  tag    String
+
+  // Relations
+  blogPost BlogPost @relation(fields: [blogId], references: [id], onDelete: Cascade)
+
+  @@map("blog_tags")
+}
+
+// 19. Testimonials table
+model Testimonial {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  name        String
+  position    String
+  company     String
+  text        String
+  avatar      String?
+  rating      Int
+  date        DateTime
+  relation    String
+  projectLink String?  @map("project_link")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectTestimonials ProjectTestimonial[]
+
+  @@map("testimonials")
+}
+
+// 20. Contacts table
+model Contact {
+  id       String  @id @default(uuid())
+  userId   String  @map("user_id")
+  type     String
+  value    String
+  icon     String?
+  isPublic Boolean @default(true) @map("is_public")
+  link     String?
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("contacts")
+}
+
+// 21. Social Media table
+model SocialMedia {
+  id       String  @id @default(uuid())
+  userId   String  @map("user_id")
+  platform String
+  url      String
+  icon     String?
+  username String
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("social_media")
+}
+
+// 22. Dev Stats table
+model DevStats {
+  id            String   @id @default(uuid())
+  userId        String   @unique @map("user_id")
+  repos         Int      @default(0)
+  stars         Int      @default(0)
+  contributions Int      @default(0)
+  rating        Float    @default(0)
+  followers     Int      @default(0)
+  following     Int      @default(0)
+  streak        Int      @default(0)
+  commits       Int      @default(0)
+  prsOpened     Int      @default(0) @map("prs_opened")
+  issuesClosed  Int      @default(0) @map("issues_closed")
+  rank          String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("dev_stats")
+}
+
+// 23. Contribution Data table
+model ContributionData {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  year       Int
+  total      Int
+  startRange DateTime @map("start_range")
+  endRange   DateTime @map("end_range")
+
+  // Relations
+  user User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  days ContributionDay[]
+
+  @@map("contribution_data")
+}
+
+// 24. Contribution Days table
+model ContributionDay {
+  id                 String   @id @default(uuid())
+  contributionDataId String   @map("contribution_data_id")
+  date               DateTime
+  count              Int
+  level              Int
+
+  // Relations
+  contributionData ContributionData @relation(fields: [contributionDataId], references: [id], onDelete: Cascade)
+
+  @@map("contribution_days")
+}
+
+// 25. Timeline Events table
+model TimelineEvent {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  date        DateTime
+  type        String
+  title       String
+  subtitle    String?
+  description String?
+  icon        String?
+  color       String?
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("timeline_events")
+}
+
+// 26. Project Testimonials table (junction table)
+model ProjectTestimonial {
+  id            String @id @default(uuid())
+  projectId     String @map("project_id")
+  testimonialId String @map("testimonial_id")
+
+  // Relations
+  project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  testimonial Testimonial @relation(fields: [testimonialId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, testimonialId])
+  @@map("project_testimonials")
+}
+
+// 27. Skills Projects table (junction table)
+// Catatan: Pada Prisma, relasi many-to-many seperti ini sudah ditangani 
+// pada definisi model Skill dan Project dengan @relation("SkillsProjects")
