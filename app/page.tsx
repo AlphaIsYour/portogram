@@ -2433,7 +2433,6 @@ const HomePage = () => {
     return processedProjects.slice(startIndex, startIndex + PROJECTS_PER_PAGE);
   }, [processedProjects, currentProjectPage]);
 
-  // Calculate total pages for project pagination
   const totalProjectPages = useMemo(() => {
     return Math.ceil(processedProjects.length / PROJECTS_PER_PAGE);
   }, [processedProjects]);
@@ -2618,7 +2617,6 @@ const HomePage = () => {
   useEffect(() => {
     const handleScroll = () => {
       const offset = navbarRef.current?.offsetTop ?? 0;
-      // Adjust the threshold value as needed (e.g., 300)
       if (window.scrollY > offset + 50) {
         // Make it fixed slightly after passing the original position
         setIsNavbarFixed(true);
