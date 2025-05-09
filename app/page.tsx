@@ -2716,9 +2716,9 @@ const HomePage = () => {
           chart.destroy();
         }
       });
-      chartInstances.current = {}; // Clear the refs
+      chartInstances.current = {};
     };
-  }, [initOrUpdateCharts]); // Depend on the memoized init function
+  }, [initOrUpdateCharts]);
 
   // --- EVENT HANDLERS ---
 
