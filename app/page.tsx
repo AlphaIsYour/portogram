@@ -2618,7 +2618,6 @@ const HomePage = () => {
     const handleScroll = () => {
       const offset = navbarRef.current?.offsetTop ?? 0;
       if (window.scrollY > offset + 50) {
-        // Make it fixed slightly after passing the original position
         setIsNavbarFixed(true);
       } else {
         setIsNavbarFixed(false);
@@ -2627,9 +2626,8 @@ const HomePage = () => {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []); // Empty dependency array ensures this runs once on mount
-
-  // Generate mock notifications on mount
+  }, []);
+  
   useEffect(() => {
     const mockNotifications: Notification[] = [
       {
