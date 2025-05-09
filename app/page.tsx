@@ -2705,12 +2705,10 @@ const HomePage = () => {
 
   // Initialize charts after loading and on theme change
   useEffect(() => {
-    // Debounce chart initialization
     const timer = setTimeout(() => {
       initOrUpdateCharts();
-    }, 300); // Short delay to allow DOM updates
+    }, 300);
 
-    // Cleanup function to destroy charts on component unmount
     return () => {
       clearTimeout(timer);
       Object.values(chartInstances.current).forEach((chart) => {
