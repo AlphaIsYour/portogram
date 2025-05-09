@@ -2776,7 +2776,7 @@ const HomePage = () => {
         return [...prev, filter]; // Current allows multiple filters across categories
       }
     });
-    setCurrentProjectPage(1); // Reset pagination
+    setCurrentProjectPage(1);
   };
 
   const handleClearFilters = () => {
@@ -2787,7 +2787,6 @@ const HomePage = () => {
 
   const handleSortChange = (option: SortOption) => {
     setActiveSort(option);
-    // No need to reset pagination for sort generally
   };
 
   const handleThemeToggle = () => {
