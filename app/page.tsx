@@ -2627,7 +2627,7 @@ const HomePage = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-  
+
   useEffect(() => {
     const mockNotifications: Notification[] = [
       {
@@ -2678,8 +2678,8 @@ const HomePage = () => {
     setNotifications(mockNotifications);
 
     // Generate contribution data for heatmap
-    setContributionData(generateContributionData(new Date().getFullYear())); // Generate for current year
-  }, []); // Run only once on mount
+    setContributionData(generateContributionData(new Date().getFullYear()));
+  }, []);
 
   // Close notification panel when clicking outside
   useEffect(() => {
@@ -2702,9 +2702,6 @@ const HomePage = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showNotifications]);
-
-  // Function to initialize or update charts
-  // Add darkMode and data dependencies
 
   // Initialize charts after loading and on theme change
   useEffect(() => {
