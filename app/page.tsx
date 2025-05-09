@@ -2428,7 +2428,6 @@ const HomePage = () => {
     }
   }, [loading, darkMode, contributionData]);
 
-  // Paginate the processed projects
   const paginatedProjects = useMemo(() => {
     const startIndex = (currentProjectPage - 1) * PROJECTS_PER_PAGE;
     return processedProjects.slice(startIndex, startIndex + PROJECTS_PER_PAGE);
