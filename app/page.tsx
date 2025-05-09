@@ -2729,7 +2729,7 @@ const HomePage = () => {
       if (contentElement) {
         contentElement.scrollIntoView({ behavior: "smooth", block: "start" });
       }
-      setMobileMenuOpen(false); 
+      setMobileMenuOpen(false);
     },
     [setActiveTab, setMobileMenuOpen]
   );
@@ -2741,7 +2741,6 @@ const HomePage = () => {
 
   const handleCloseProjectDialog = () => {
     setProjectDialogOpen(false);
-    // Delay clearing selected project for smoother transition
     setTimeout(() => setSelectedProject(null), 300);
   };
 
@@ -2757,7 +2756,7 @@ const HomePage = () => {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
-    setCurrentProjectPage(1); // Reset pagination
+    setCurrentProjectPage(1);
   };
 
   const handleFilterToggle = (filter: FilterOption) => {
