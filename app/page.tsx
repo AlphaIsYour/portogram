@@ -2725,12 +2725,11 @@ const HomePage = () => {
   const handleTabClick = useCallback(
     (tabId: string) => {
       setActiveTab(tabId);
-      // Smooth scroll to top of content area when tab changes?
       const contentElement = document.getElementById("main-content");
       if (contentElement) {
         contentElement.scrollIntoView({ behavior: "smooth", block: "start" });
       }
-      setMobileMenuOpen(false); // Close mobile menu on tab click
+      setMobileMenuOpen(false); 
     },
     [setActiveTab, setMobileMenuOpen]
   );
