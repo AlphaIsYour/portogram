@@ -2807,10 +2807,10 @@ const HomePage = () => {
     setContactFormStatus("sending");
     // Simulate API call
     console.log("Submitting contact form:", contactFormData);
-    await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulate network delay
+    await new Promise((resolve) => setTimeout(resolve, 1500)); 
 
     // Simulate success/error
-    const success = Math.random() > 0.1; // 90% success rate
+    const success = Math.random() > 0.1; 
 
     if (success) {
       setContactFormStatus("success");
