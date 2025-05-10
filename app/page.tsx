@@ -3089,8 +3089,8 @@ const HomePage = () => {
             <Image
               src="/images/c10.png"
               alt="Youralpha Profile Picture"
-              width={128} // Ukuran terbesar (sm:w-32)
-              height={128} // Ukuran terbesar (sm:h-32)
+              width={128}
+              height={128}
               className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-gray-800 dark:border-gray-800 bg-gray-700 shadow-lg"
               priority // Gambar penting, load lebih awal
             />
