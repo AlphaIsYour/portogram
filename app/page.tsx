@@ -2806,10 +2806,9 @@ const HomePage = () => {
 
     setContactFormStatus("sending");
     console.log("Submitting contact form:", contactFormData);
-    await new Promise((resolve) => setTimeout(resolve, 1500)); 
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    // Simulate success/error
-    const success = Math.random() > 0.1; 
+    const success = Math.random() > 0.1;
 
     if (success) {
       setContactFormStatus("success");
