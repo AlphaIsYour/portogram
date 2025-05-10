@@ -2874,7 +2874,6 @@ const HomePage = () => {
             degree: e.degree,
             period: e.period,
           })),
-          // Add other relevant sections
         };
         const blob = new Blob([JSON.stringify(exportData, null, 2)], {
           type: "application/json",
