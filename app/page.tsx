@@ -2947,7 +2947,7 @@ const HomePage = () => {
     setTooltipInfo(null);
   };
 
-  // --- RENDER HELPER FUNCTIONS --- (To be potentially broken into components later)
+  // RENDER HELPER FUNCTIONS 
 
   // Render Navigation Tabs
   const renderNavigationTabs = useCallback(() => {
@@ -2957,7 +2957,7 @@ const HomePage = () => {
       { id: "skills", icon: fas.faCode, label: "Skills" },
       { id: "experience", icon: fas.faBriefcase, label: "Experience" },
       { id: "education", icon: fas.faGraduationCap, label: "Education" },
-      { id: "certifications", icon: fas.faCertificate, label: "Certs" }, // Added
+      { id: "certifications", icon: fas.faCertificate, label: "Certs" },
       { id: "achievements", icon: fas.faAward, label: "Achievements" },
       { id: "activity", icon: fas.faChartLine, label: "Activity" },
       { id: "blog", icon: fas.faRss, label: "Blog" },
