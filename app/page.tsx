@@ -2817,7 +2817,6 @@ const HomePage = () => {
         "Your message has been sent successfully. I'll get back to you soon.",
         "success"
       );
-      // Clear form after a short delay
       setTimeout(() => {
         setContactFormData({ name: "", email: "", subject: "", message: "" });
         setContactFormStatus("idle");
