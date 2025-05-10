@@ -2805,7 +2805,6 @@ const HomePage = () => {
     if (contactFormStatus === "sending") return;
 
     setContactFormStatus("sending");
-    // Simulate API call
     console.log("Submitting contact form:", contactFormData);
     await new Promise((resolve) => setTimeout(resolve, 1500)); 
 
