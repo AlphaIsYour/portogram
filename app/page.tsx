@@ -3092,7 +3092,7 @@ const HomePage = () => {
               width={128}
               height={128}
               className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-gray-800 dark:border-gray-800 bg-gray-700 shadow-lg"
-              priority // Gambar penting, load lebih awal
+              priority
             />
             {/* Optional: Online/Status badge on avatar */}
             {/* <span className="absolute bottom-1 right-1 block h-4 w-4 rounded-full bg-green-500 border-2 border-white dark:border-gray-800 ring-2 ring-green-300"></span> */}
