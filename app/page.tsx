@@ -2828,7 +2828,6 @@ const HomePage = () => {
         "Could not send message. Please try again later or contact me directly.",
         "error"
       );
-      // Optionally keep form open on error
       setTimeout(() => setContactFormStatus("idle"), 3000);
     }
   };
