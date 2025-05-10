@@ -2911,7 +2911,7 @@ const HomePage = () => {
       date: new Date(),
       read: false,
     };
-    setNotifications((prev) => [newNotification, ...prev].slice(0, 10)); // Keep max 10 notifications
+    setNotifications((prev) => [newNotification, ...prev].slice(0, 10));
     setShowNotifications(true); // Optionally show panel when new notification arrives
   };
 
