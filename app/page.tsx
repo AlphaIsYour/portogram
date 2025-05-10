@@ -2887,7 +2887,7 @@ const HomePage = () => {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
       } else if (format === "pdf") {
-        window.print(); // This relies on browser's print-to-pdf functionality and print styles
+        window.print();
       }
 
       addNotification(
