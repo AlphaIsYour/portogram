@@ -2912,7 +2912,7 @@ const HomePage = () => {
       read: false,
     };
     setNotifications((prev) => [newNotification, ...prev].slice(0, 10));
-    setShowNotifications(true); // Optionally show panel when new notification arrives
+    setShowNotifications(true);
   };
 
   const handleNotificationMarkAsRead = (id: string) => {
