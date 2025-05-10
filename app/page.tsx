@@ -2833,7 +2833,6 @@ const HomePage = () => {
   };
 
   const handleExport = (format: "pdf" | "json") => {
-    // Simplified options
     if (isExporting) return;
     setIsExporting(true);
     addNotification(
