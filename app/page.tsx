@@ -2930,7 +2930,6 @@ const HomePage = () => {
     setShowNotifications(false);
   };
 
-  // Heatmap tooltip handlers
   const handleMouseEnterCell = (
     e: React.MouseEvent<SVGRectElement>,
     day: ContributionDay
