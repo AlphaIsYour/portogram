@@ -2887,7 +2887,6 @@ const HomePage = () => {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
       } else if (format === "pdf") {
-        // Trigger print dialog for PDF generation
         window.print(); // This relies on browser's print-to-pdf functionality and print styles
       }
 
