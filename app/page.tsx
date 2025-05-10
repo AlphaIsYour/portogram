@@ -2927,7 +2927,7 @@ const HomePage = () => {
 
   const handleClearAllNotifications = () => {
     setNotifications([]);
-    setShowNotifications(false); // Hide panel when cleared
+    setShowNotifications(false);
   };
 
   // Heatmap tooltip handlers
