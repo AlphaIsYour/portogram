@@ -2938,7 +2938,7 @@ const HomePage = () => {
     setTooltipInfo({
       show: true,
       x: rect.left + window.scrollX + rect.width / 2,
-      y: rect.top + window.scrollY - 10, // Position above the cell
+      y: rect.top + window.scrollY - 10,
       text: `${day.count} contributions on ${formatDate(day.date, "long")}`,
     });
   };
