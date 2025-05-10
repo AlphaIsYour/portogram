@@ -2986,7 +2986,7 @@ const HomePage = () => {
         </div>
       </nav>
     );
-  }, [activeTab, handleTabClick]); // Include handleTabClick dependency
+  }, [activeTab, handleTabClick]);
 
   // Render Stat Cards for Overview
   const renderStatCards = useCallback(() => {
@@ -3017,7 +3017,7 @@ const HomePage = () => {
         icon: fas.faCode,
         link: `https://github.com/${GITHUB_USERNAME}`,
       },
-      // { value: devStats.commits, label: "Total Commits", icon: fas.faHistory }, // Maybe too noisy
+      // { value: devStats.commits, label: "Total Commits", icon: fas.faHistory },
       // { value: devStats.rating, label: "Avg Rating", icon: fas.faCheckCircle },
     ];
 
@@ -3052,7 +3052,6 @@ const HomePage = () => {
   // Render Profile Header
   const renderProfileHeader = () => (
     <header className="bg-gray-800 dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden mb-8">
-      {/* Cover Image Area */}
       <div className="h-48 sm:h-64 md:h-80 bg-gradient-to-r from-cyan-900 via-blue-900 to-indigo-900 relative group">
         {/* Placeholder for dynamic cover image */}+{" "}
         <Image
