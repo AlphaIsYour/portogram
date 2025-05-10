@@ -2898,7 +2898,6 @@ const HomePage = () => {
     }, 2500);
   };
 
-  // Add a new notification helper
   const addNotification = (
     title: string,
     message: string,
