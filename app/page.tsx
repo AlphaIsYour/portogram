@@ -2841,7 +2841,6 @@ const HomePage = () => {
       "info"
     );
 
-    // Simulate export process
     setTimeout(() => {
       setIsExporting(false);
       // In a real app, trigger actual export logic here
