@@ -4473,7 +4473,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   viewMode = "grid",
 }) => {
   if (viewMode === "list") {
-    // --- List View Rendering ---
     return (
       <div
         onClick={onClick}
