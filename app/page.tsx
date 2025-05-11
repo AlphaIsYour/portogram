@@ -3723,7 +3723,7 @@ const HomePage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredSkills.length > 0 ? (
           filteredSkills
-            .sort((a, b) => b.percentage - a.percentage) // Sort within category
+            .sort((a, b) => b.percentage - a.percentage)
             .map((skill, index) => <SkillCard key={index} skill={skill} />)
         ) : (
           <p className="text-gray-400 md:col-span-2 lg:col-span-3 text-center py-8">
