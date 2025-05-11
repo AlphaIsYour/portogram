@@ -3141,7 +3141,7 @@ const HomePage = () => {
           {/* Right side: Buttons */}
           <div className="flex flex-wrap gap-3 mt-4 sm:mt-0">
             <button
-              onClick={() => handleTabClick("contact")} // Navigate to contact tab
+              onClick={() => handleTabClick("contact")}
               className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-150 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900"
             >
               <FontAwesomeIcon
@@ -3150,7 +3150,7 @@ const HomePage = () => {
               />
               Contact Me
             </button>
-            {/* Example CV Download Button */}
+            
             <a
               href="/resume/Youralpha_Resume.pdf" // Link to your actual CV PDF
               download="Youralpha_Resume.pdf"
