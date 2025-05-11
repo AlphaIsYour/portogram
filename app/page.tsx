@@ -4464,7 +4464,7 @@ const HomePage = () => {
 interface ProjectCardProps {
   project: Project;
   onClick: () => void;
-  viewMode?: "grid" | "list"; // Add view mode prop
+  viewMode?: "grid" | "list";
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({
