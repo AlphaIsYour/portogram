@@ -3432,7 +3432,7 @@ const HomePage = () => {
                     {projects[0].techStack.slice(0, 4).map(
                       (
                         tech,
-                        idx // Show top 4 tech
+                        idx
                       ) => (
                         <span
                           key={idx}
