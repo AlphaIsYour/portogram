@@ -3332,7 +3332,7 @@ const HomePage = () => {
             <div className="space-y-4">
               {/* Display top 5-6 skills with progress bars */}
               {skillsData
-                .sort((a, b) => b.percentage - a.percentage) // Sort by percentage desc
+                .sort((a, b) => b.percentage - a.percentage)
                 .slice(0, 6) // Take top 6
                 .map((skill, idx) => (
                   <div key={idx}>
