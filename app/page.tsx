@@ -3477,7 +3477,7 @@ const HomePage = () => {
             <div className="space-y-4">
               {blogPosts.slice(0, 2).map(
                 (
-                  post // Show top 2 recent posts
+                  post
                 ) => (
                   <div
                     key={post.slug}
