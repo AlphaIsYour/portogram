@@ -4183,7 +4183,6 @@ const HomePage = () => {
         <div className="relative">
           <div className="absolute inset-0 rounded-full bg-blue-500 opacity-30 animate-ping"></div>
 
-          {/* Inner spinning circle */}
           <div className="relative flex items-center justify-center w-16 h-16 bg-gray-800 rounded-full">
             <FontAwesomeIcon
               icon={fas.faSpinner}
