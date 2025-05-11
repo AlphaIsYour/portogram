@@ -3271,7 +3271,7 @@ const HomePage = () => {
                 .map(
                   (
                     contact,
-                    idx // Show public contacts except location
+                    idx 
                   ) => (
                     <li
                       key={idx}
