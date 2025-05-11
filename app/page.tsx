@@ -4460,8 +4460,6 @@ const HomePage = () => {
 };
 
 // --- CHILD COMPONENTS ---
-// (Breaking down render functions into separate components)
-
 // --- Component: Project Card ---
 interface ProjectCardProps {
   project: Project;
