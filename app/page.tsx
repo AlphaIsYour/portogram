@@ -3388,7 +3388,7 @@ const HomePage = () => {
             {projects.length > 0 ? (
               <div
                 className="bg-gray-750 dark:bg-gray-700 rounded-lg overflow-hidden hover:shadow-lg transition duration-300 group cursor-pointer"
-                onClick={() => handleProjectClick(projects[0])} // Feature the first project
+                onClick={() => handleProjectClick(projects[0])}
               >
                 {/* Project Image */}
                 <div className="h-48 bg-gradient-to-br from-gray-700 to-gray-800 relative overflow-hidden">
