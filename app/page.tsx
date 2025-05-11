@@ -4434,7 +4434,7 @@ const HomePage = () => {
         onMarkRead={handleNotificationMarkAsRead}
         onMarkAllRead={handleNotificationMarkAllRead}
         onClearAll={handleClearAllNotifications}
-        panelRef={notificationPanelRef} // Pass ref
+        panelRef={notificationPanelRef}
       />
 
       {/* --- Global Components (e.g., Fixed Notification Toggle Button) --- */}
@@ -4455,7 +4455,7 @@ const HomePage = () => {
           </span>
         )}
       </button>
-    </div> // End of main wrapper div
+    </div>
   );
 };
 
