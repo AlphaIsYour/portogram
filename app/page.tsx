@@ -3152,7 +3152,7 @@ const HomePage = () => {
             </button>
             
             <a
-              href="/resume/Youralpha_Resume.pdf" // Link to your actual CV PDF
+              href="/resume/Youralpha_Resume.pdf" 
               download="Youralpha_Resume.pdf"
               className="flex items-center bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-150 shadow focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-900"
             >
