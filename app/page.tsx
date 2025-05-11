@@ -3862,7 +3862,7 @@ const HomePage = () => {
             style={{
               left: `${tooltipInfo.x}px`,
               top: `${tooltipInfo.y}px`,
-              transform: "translate(-50%, -100%)", // Center above the point
+              transform: "translate(-50%, -100%)",
               whiteSpace: "nowrap",
             }}
           >
