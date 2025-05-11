@@ -3121,7 +3121,7 @@ const HomePage = () => {
               {socialMedia.slice(0, 5).map(
                 (
                   social,
-                  idx // Show first 5 icons
+                  idx
                 ) => (
                   <a
                     key={idx}
