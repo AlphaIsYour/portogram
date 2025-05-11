@@ -3178,7 +3178,6 @@ const HomePage = () => {
 
   // --- RENDER TAB CONTENT ---
 
-  // Overview Tab Content
   const renderOverviewTab = () => (
     <section aria-labelledby="overview-heading">
       <h2 id="overview-heading" className="sr-only">
