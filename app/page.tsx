@@ -4181,7 +4181,6 @@ const HomePage = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900">
         <div className="relative">
-          {/* Outer circle with pulse effect */}
           <div className="absolute inset-0 rounded-full bg-blue-500 opacity-30 animate-ping"></div>
 
           {/* Inner spinning circle */}
