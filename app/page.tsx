@@ -3333,7 +3333,7 @@ const HomePage = () => {
               {/* Display top 5-6 skills with progress bars */}
               {skillsData
                 .sort((a, b) => b.percentage - a.percentage)
-                .slice(0, 6) // Take top 6
+                .slice(0, 6)
                 .map((skill, idx) => (
                   <div key={idx}>
                     <div className="flex justify-between items-center mb-1">
