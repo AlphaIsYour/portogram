@@ -2947,7 +2947,7 @@ const HomePage = () => {
     setTooltipInfo(null);
   };
 
-  // RENDER HELPER FUNCTIONS 
+  // RENDER HELPER FUNCTIONS
 
   // Render Navigation Tabs
   const renderNavigationTabs = useCallback(() => {
@@ -3094,7 +3094,6 @@ const HomePage = () => {
               className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-gray-800 dark:border-gray-800 bg-gray-700 shadow-lg"
               priority
             />
-            {/* <span className="absolute bottom-1 right-1 block h-4 w-4 rounded-full bg-green-500 border-2 border-white dark:border-gray-800 ring-2 ring-green-300"></span> */}
             <div className="absolute bottom-2 right-1 bg-gradient-to-tr from-blue-500 to-purple-600 text-white text-xs font-bold rounded-full w-8 h-8 flex items-center justify-center border-2 border-gray-800 shadow-md">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-50"></span>
               <FontAwesomeIcon icon={fas.faBolt} className="h-3 w-3 z-10" />
@@ -3118,23 +3117,18 @@ const HomePage = () => {
             </p>
             {/* Social Media Links */}
             <div className="flex flex-wrap gap-x-4 gap-y-2 mt-3">
-              {socialMedia.slice(0, 5).map(
-                (
-                  social,
-                  idx
-                ) => (
-                  <a
-                    key={idx}
-                    href={social.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-blue-400 dark:hover:text-blue-400 transition duration-150"
-                    aria-label={`Visit my ${social.platform} profile`}
-                  >
-                    <FontAwesomeIcon icon={social.icon} className="h-5 w-5" />
-                  </a>
-                )
-              )}
+              {socialMedia.slice(0, 5).map((social, idx) => (
+                <a
+                  key={idx}
+                  href={social.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-blue-400 dark:hover:text-blue-400 transition duration-150"
+                  aria-label={`Visit my ${social.platform} profile`}
+                >
+                  <FontAwesomeIcon icon={social.icon} className="h-5 w-5" />
+                </a>
+              ))}
             </div>
           </div>
 
@@ -3150,9 +3144,9 @@ const HomePage = () => {
               />
               Contact Me
             </button>
-            
+
             <a
-              href="/resume/Youralpha_Resume.pdf" 
+              href="/resume/Youralpha_Resume.pdf"
               download="Youralpha_Resume.pdf"
               className="flex items-center bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-150 shadow focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-900"
             >
@@ -3268,38 +3262,33 @@ const HomePage = () => {
             <ul className="space-y-3 text-sm">
               {contacts
                 .filter((c) => c.isPublic && c.type !== "Location")
-                .map(
-                  (
-                    contact,
-                    idx 
-                  ) => (
-                    <li
-                      key={idx}
-                      className="flex items-center text-gray-300 dark:text-gray-300"
-                    >
-                      <FontAwesomeIcon
-                        icon={contact.icon}
-                        className="w-5 h-5 mr-3 text-gray-400"
-                      />
-                      {contact.link ? (
-                        <a
-                          href={contact.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:text-blue-400 transition duration-150 break-all"
-                        >
-                          {contact.value}
-                          <FontAwesomeIcon
-                            icon={fas.faExternalLinkAlt}
-                            className="ml-1.5 h-3 w-3 opacity-70"
-                          />
-                        </a>
-                      ) : (
-                        <span className="break-all">{contact.value}</span>
-                      )}
-                    </li>
-                  )
-                )}
+                .map((contact, idx) => (
+                  <li
+                    key={idx}
+                    className="flex items-center text-gray-300 dark:text-gray-300"
+                  >
+                    <FontAwesomeIcon
+                      icon={contact.icon}
+                      className="w-5 h-5 mr-3 text-gray-400"
+                    />
+                    {contact.link ? (
+                      <a
+                        href={contact.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:text-blue-400 transition duration-150 break-all"
+                      >
+                        {contact.value}
+                        <FontAwesomeIcon
+                          icon={fas.faExternalLinkAlt}
+                          className="ml-1.5 h-3 w-3 opacity-70"
+                        />
+                      </a>
+                    ) : (
+                      <span className="break-all">{contact.value}</span>
+                    )}
+                  </li>
+                ))}
             </ul>
             <button
               onClick={() => handleTabClick("contact")}
@@ -3429,19 +3418,14 @@ const HomePage = () => {
                     {projects[0].description}
                   </p>
                   <div className="flex flex-wrap gap-1.5">
-                    {projects[0].techStack.slice(0, 4).map(
-                      (
-                        tech,
-                        idx
-                      ) => (
-                        <span
-                          key={idx}
-                          className="text-xs bg-gray-600 dark:bg-gray-500 text-gray-200 dark:text-gray-200 px-2 py-0.5 rounded-full"
-                        >
-                          {tech}
-                        </span>
-                      )
-                    )}
+                    {projects[0].techStack.slice(0, 4).map((tech, idx) => (
+                      <span
+                        key={idx}
+                        className="text-xs bg-gray-600 dark:bg-gray-500 text-gray-200 dark:text-gray-200 px-2 py-0.5 rounded-full"
+                      >
+                        {tech}
+                      </span>
+                    ))}
                     {projects[0].techStack.length > 4 && (
                       <span className="text-xs bg-gray-600 dark:bg-gray-500 text-gray-200 dark:text-gray-200 px-2 py-0.5 rounded-full">
                         +{projects[0].techStack.length - 4} more
@@ -3475,26 +3459,22 @@ const HomePage = () => {
               </button>
             </div>
             <div className="space-y-4">
-              {blogPosts.slice(0, 2).map(
-                (
-                  post
-                ) => (
-                  <div
-                    key={post.slug}
-                    className="border-b border-gray-700 dark:border-gray-700 pb-3 last:border-b-0 last:pb-0"
+              {blogPosts.slice(0, 2).map((post) => (
+                <div
+                  key={post.slug}
+                  className="border-b border-gray-700 dark:border-gray-700 pb-3 last:border-b-0 last:pb-0"
+                >
+                  <h4
+                    className="text-md font-semibold text-white dark:text-white hover:text-blue-400 transition cursor-pointer mb-1"
+                    onClick={() => handleBlogPostClick(post)}
                   >
-                    <h4
-                      className="text-md font-semibold text-white dark:text-white hover:text-blue-400 transition cursor-pointer mb-1"
-                      onClick={() => handleBlogPostClick(post)}
-                    >
-                      {post.title}
-                    </h4>
-                    <p className="text-xs text-gray-400 dark:text-gray-400">
-                      {formatDate(post.date, "medium")} &bull; {post.readTime}
-                    </p>
-                  </div>
-                )
-              )}
+                    {post.title}
+                  </h4>
+                  <p className="text-xs text-gray-400 dark:text-gray-400">
+                    {formatDate(post.date, "medium")} &bull; {post.readTime}
+                  </p>
+                </div>
+              ))}
               {blogPosts.length === 0 && (
                 <p className="text-gray-400 text-sm">
                   No blog posts yet. Stay tuned!
