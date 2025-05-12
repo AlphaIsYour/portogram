@@ -5645,7 +5645,7 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
               const timeAgo = new Date(notification.date).toLocaleTimeString(
                 [],
                 { hour: "2-digit", minute: "2-digit" }
-              ); // Simple time for example
+              );
 
               return (
                 <div
