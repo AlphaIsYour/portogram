@@ -5742,7 +5742,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
     }
   };
 
-  // Determine page numbers to display (e.g., show 5 numbers max)
+  // Determine page numbers to display
   const getPageNumbers = () => {
     const maxPagesToShow = 5;
     const pages = [];
