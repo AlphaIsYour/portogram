@@ -5387,7 +5387,7 @@ const BlogPostDialog: React.FC<BlogPostDialogProps> = ({
   onClose,
   post,
 }) => {
-  // In a real app, 'post.content' would likely be fetched or already available
+  // In a real app, 'post.content' would likely be
   if (!post) return null;
 
   return (
