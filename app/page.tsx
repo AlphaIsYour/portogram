@@ -5387,7 +5387,6 @@ const BlogPostDialog: React.FC<BlogPostDialogProps> = ({
   onClose,
   post,
 }) => {
-  // In a real app,
   if (!post) return null;
 
   return (
