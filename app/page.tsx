@@ -5617,7 +5617,7 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
       leaveTo="opacity-0 translate-y-1"
     >
       <div
-        ref={panelRef} // Attach ref here
+        ref={panelRef}
         className="fixed top-16 right-4 sm:right-6 w-full max-w-sm bg-gray-800 dark:bg-gray-850 rounded-lg shadow-2xl z-50 border border-gray-700 dark:border-gray-700 print:hidden"
       >
         {/* Header */}
