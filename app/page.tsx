@@ -3103,9 +3103,8 @@ const HomePage = () => {
 
         {/* Name, Handle, Actions */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end pt-16 sm:pt-4">
-          {/* Left side: Name, Handle, Socials */}
           <div className="w-full sm:w-auto mt-15">
-            <h1 className="text-2xl sm:text-3xl font-bold text-white dark:text-white">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white dark:ftext-white">
               Youralpha
             </h1>
             <p className="text-blue-400 dark:text-blue-400 text-base sm:text-lg mb-3">
