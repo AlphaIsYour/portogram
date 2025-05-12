@@ -4558,7 +4558,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       </div>
     );
   } else {
-    // --- Grid View Rendering (Default) ---
+    // --- Grid View Rendering ---
     return (
       <div
         onClick={onClick}
