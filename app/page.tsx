@@ -5845,7 +5845,7 @@ const ContributionHeatmap: React.FC<ContributionHeatmapProps> = ({
 
   const weeks: ContributionDay[][] = [];
   let currentWeek: ContributionDay[] = [];
-  const firstDayOffset = new Date(data.range.start).getDay(); // 0 = Sunday, 6 = Saturday
+  const firstDayOffset = new Date(data.range.start).getDay();
 
   // Add padding for the first week
   for (let i = 0; i < firstDayOffset; i++) {
