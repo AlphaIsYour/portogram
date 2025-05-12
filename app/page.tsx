@@ -5749,7 +5749,6 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
     let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
     const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
 
-    // Adjust startPage if endPage reaches the totalPages limit early
     if (endPage === totalPages) {
       startPage = Math.max(1, endPage - maxPagesToShow + 1);
     }
