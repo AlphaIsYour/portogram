@@ -5859,7 +5859,6 @@ const ContributionHeatmap: React.FC<ContributionHeatmapProps> = ({
     }
   });
 
-  // Add the last partial week if it exists
   if (currentWeek.length > 0) {
     // Pad the last week to ensure it has 7 days for grid alignment
     while (currentWeek.length < 7) {
