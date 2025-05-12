@@ -4622,22 +4622,16 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           <p className="text-sm text-gray-300 dark:text-gray-400 mb-3 line-clamp-3 flex-grow">
             {project.description}
           </p>{" "}
-          {/* Use line-clamp */}
           {/* Tech Stack */}
           <div className="flex flex-wrap gap-1.5 mb-4">
-            {project.techStack.slice(0, 4).map(
-              (
-                tech,
-                idx // Show top 4 tech
-              ) => (
-                <span
-                  key={idx}
-                  className="text-xs bg-gray-700 dark:bg-gray-600 text-gray-200 dark:text-gray-200 px-2 py-0.5 rounded-full"
-                >
-                  {tech}
-                </span>
-              )
-            )}
+            {project.techStack.slice(0, 4).map((tech, idx) => (
+              <span
+                key={idx}
+                className="text-xs bg-gray-700 dark:bg-gray-600 text-gray-200 dark:text-gray-200 px-2 py-0.5 rounded-full"
+              >
+                {tech}
+              </span>
+            ))}
             {project.techStack.length > 4 && (
               <span className="text-xs bg-gray-700 dark:bg-gray-600 text-gray-200 px-2 py-0.5 rounded-full">
                 +{project.techStack.length - 4} more
