@@ -3943,7 +3943,6 @@ const HomePage = () => {
         What People Say
       </h2>
       {testimonials.length > 0 ? (
-        // Optional: Use a carousel library here (e.g., Swiper.js, react-slick) for better UX
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {testimonials.map((testimonial) => (
             <TestimonialCard key={testimonial.id} testimonial={testimonial} />
